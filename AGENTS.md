@@ -28,3 +28,14 @@ Cloudflare Pages + R2.
 If a spec detail is ambiguous, use the most conservative
 interpretation and leave a comment flagged with TODO: VERIFY
 so the human reviewer can make the call.
+
+## Git Workflow
+- Never commit directly to main
+- Branch naming: type/short-descriptor
+  - feat/ for new screens and components
+  - api/ for server actions and API routes
+  - schema/ for data layer changes
+  - fix/ for correction tasks
+  - chore/ for config and tooling
+- One Blueprint task per branch
+- All branches merge to main via PR
