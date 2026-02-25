@@ -56,7 +56,7 @@ export const organizations = pgTable("organizations", {
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   businessEmail: varchar("business_email", { length: 255 }).notNull(),
   phone: varchar("phone", { length: 50 }).notNull(),
-  website: varchar("website", { length: 500 }).notNull(),
+  website: varchar("website", { length: 500 }),
   city: varchar("city", { length: 255 }).notNull(),
   state: varchar("state", { length: 100 }).notNull(),
   subscriptionStatus: subscriptionStatusEnum("subscription_status")
