@@ -1,1 +1,1 @@
-ALTER TABLE "jobs" ADD COLUMN "photos" jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE "jobs" ADD COLUMN IF NOT EXISTS "photos" jsonb DEFAULT '[]'::jsonb;
