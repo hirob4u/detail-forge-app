@@ -8,7 +8,10 @@ export function proxy(request: NextRequest) {
 
   if (
     publicPaths.includes(pathname) ||
-    pathname.startsWith("/api/auth")
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/estimate/") ||
+    pathname.startsWith("/api/intake/") ||
+    pathname.startsWith("/api/uploads/")
   ) {
     return NextResponse.next();
   }
