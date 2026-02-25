@@ -63,4 +63,34 @@ One entry per Blueprint task, added after the task passes acceptance criteria an
 
 ---
 
+### 2026-02-24 -- Blueprint A -- New Estimate Screen (ABORTED)
+
+**Built:** Nothing merged. Blueprint was cancelled mid-run.
+
+**Worked well:** The Claude API route structure and `ConditionAssessment` TypeScript type were correctly specified. The two-panel condition report and estimate builder UI approach was sound.
+
+**Corrected:** Blueprint was aborted entirely before acceptance criteria were tested. The core value proposition of the product was misread -- the Blueprint had the detailer uploading photos, which is the exact problem DetailForge is supposed to solve. The correct flow is: customer uploads photos via a public unauthenticated intake form, AI generates a preliminary estimate, detailer reviews and finalizes in an authenticated screen.
+
+**Root cause:** Product Spec language around "photo upload" was written ambiguously enough that the Blueprint framed the detailer as the person uploading photos. The Brand Identity doc actually had this right all along -- the Customer Intake mockup shows "Precision Auto Detail" as the brand with "powered by DetailForge" as a small mark, clearly a customer-facing surface. The spec and build plan docs needed to make this explicit. All docs updated before new Blueprints were written.
+
+**Commit:** None -- branch deleted, no merge.  
+**Time to merge:** N/A -- aborted
+
+---
+
+### 2026-02-24 -- Spec Update -- Public Intake URL Pattern Defined
+
+**Built:** Product Spec updated to v1.2. Organization entity gains `intakeSlug` field. Public intake URL pattern defined as `detailforge.io/estimate/[intakeSlug]`. Settings screen updated to include intake link management and QR code. Embeddable widget (iframe/script embed) explicitly added to out-of-scope section.
+
+**Worked well:** N/A -- documentation update only.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `chore: update Product Spec to v1.2 -- intake URL pattern and embed out of scope`
+**Time to merge:** N/A -- docs only
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
