@@ -15,6 +15,13 @@
       "when": 1771973528153,
       "tag": "0001_nifty_vindicator",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771984281522,
+      "tag": "0002_groovy_mockingbird",
+      "breakpoints": true
     }
   ]
 }
