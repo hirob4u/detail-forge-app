@@ -21,8 +21,6 @@ const ALLOWED_TYPES = new Set([
   "image/heif",
 ]);
 
-const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
-
 /**
  * Generate a presigned PUT URL for uploading a photo to R2.
  * Returns both the presigned URL (for the client PUT) and the public URL
@@ -48,7 +46,6 @@ export async function createPresignedUploadUrl(opts: {
     Bucket: BUCKET,
     Key: key,
     ContentType: contentType,
-    ContentLength: MAX_SIZE, // used as max limit hint
   });
 
   const presignedUrl = await getSignedUrl(r2, command, { expiresIn: 600 });

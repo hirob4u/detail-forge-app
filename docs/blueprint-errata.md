@@ -104,4 +104,24 @@ When this file identifies an improvement to a Blueprint template, apply it the n
 
 ---
 
+### Blueprint B -- API Route (Presigned URL Generation)
+### Issue: PutObjectCommand ContentLength Breaks Browser Uploads
+
+Issue: Presigned URLs included content-length in X-Amz-SignedHeaders.
+R2 rejected browser PUT requests with a 403 because the browser-controlled
+content-length didn't match the signed value.
+
+Root cause: PutObjectCommand was instantiated with a ContentLength property.
+Including ContentLength forces it into the signed headers. Browser uploads
+must not sign content-length because the browser sets that value at upload time.
+
+Fix applied: Removed ContentLength from PutObjectCommand. Command now only
+includes Bucket, Key, and ContentType.
+
+Add to Blueprint: Never include ContentLength in PutObjectCommand when
+generating presigned URLs for browser-side uploads. The browser controls
+content-length -- signing it will always cause a 403.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
