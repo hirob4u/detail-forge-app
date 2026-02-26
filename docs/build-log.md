@@ -93,4 +93,21 @@ One entry per Blueprint task, added after the task passes acceptance criteria an
 
 ---
 
+### 2026-02-25 -- Blueprint F -- fix/presign-content-length
+
+**Built:** Removed ContentLength from PutObjectCommand in presign route.
+
+**Worked well:** Root cause was identifiable from the presigned URL query string
+-- content-length in X-Amz-SignedHeaders was the tell.
+
+**Corrected:** None -- this was the correction.
+
+**Root cause:** PutObjectCommand included ContentLength which forced it into
+signed headers. Browser upload content-length never matches a pre-signed value.
+
+**Commit:** `fix: remove ContentLength from presigned URL generation`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

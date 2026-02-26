@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Upload, X, Loader2, CircleCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,16 +36,13 @@ export default function PhotoUploader({
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const emitUrls = useCallback(
-    (entries: PhotoEntry[]) => {
-      onPhotosChange(
-        entries
-          .filter((p) => p.status === "done" && p.publicUrl)
-          .map((p) => p.publicUrl!),
-      );
-    },
-    [onPhotosChange],
-  );
+  useEffect(() => {
+    onPhotosChange(
+      photos
+        .filter((p) => p.status === "done" && p.publicUrl)
+        .map((p) => p.publicUrl!)
+    );
+  }, [photos, onPhotosChange]);
 
   async function uploadFile(entry: PhotoEntry) {
     try {
@@ -81,7 +78,6 @@ export default function PhotoUploader({
         const next = prev.map((p) =>
           p.id === entry.id ? { ...p, status: "done" as const, publicUrl } : p,
         );
-        emitUrls(next);
         return next;
       });
     } catch {
@@ -119,7 +115,6 @@ export default function PhotoUploader({
       const target = prev.find((p) => p.id === id);
       if (target) URL.revokeObjectURL(target.previewUrl);
       const next = prev.filter((p) => p.id !== id);
-      emitUrls(next);
       return next;
     });
   }
