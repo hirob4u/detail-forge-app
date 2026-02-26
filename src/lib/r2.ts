@@ -11,7 +11,6 @@ export const r2 = new S3Client({
 });
 
 const BUCKET = process.env.R2_BUCKET_NAME!;
-const PUBLIC_URL = process.env.R2_PUBLIC_URL!; // e.g. https://cdn.example.com
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -23,8 +22,8 @@ const ALLOWED_TYPES = new Set([
 
 /**
  * Generate a presigned PUT URL for uploading a photo to R2.
- * Returns both the presigned URL (for the client PUT) and the public URL
- * (for storing in the database after upload).
+ * Returns the presigned URL (for the client PUT) and the object key
+ * (for storing in the database as a reference).
  */
 export async function createPresignedUploadUrl(opts: {
   orgSlug: string;
@@ -49,7 +48,6 @@ export async function createPresignedUploadUrl(opts: {
   });
 
   const presignedUrl = await getSignedUrl(r2, command, { expiresIn: 600 });
-  const publicUrl = `${PUBLIC_URL}/${key}`;
 
-  return { presignedUrl, publicUrl, key };
+  return { presignedUrl, key };
 }

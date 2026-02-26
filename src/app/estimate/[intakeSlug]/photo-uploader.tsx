@@ -10,7 +10,7 @@ interface PhotoEntry {
   id: string;
   file: File;
   previewUrl: string;
-  publicUrl?: string;
+  r2Key?: string;
   status: PhotoStatus;
 }
 
@@ -39,8 +39,8 @@ export default function PhotoUploader({
   useEffect(() => {
     onPhotosChange(
       photos
-        .filter((p) => p.status === "done" && p.publicUrl)
-        .map((p) => p.publicUrl!)
+        .filter((p) => p.status === "done" && p.r2Key)
+        .map((p) => p.r2Key!)
     );
   }, [photos, onPhotosChange]);
 
@@ -61,7 +61,7 @@ export default function PhotoUploader({
         throw new Error("Failed to get upload URL");
       }
 
-      const { presignedUrl, publicUrl } = await presignRes.json();
+      const { presignedUrl, key } = await presignRes.json();
 
       // PUT file directly to R2
       const uploadRes = await fetch(presignedUrl, {
@@ -76,7 +76,7 @@ export default function PhotoUploader({
 
       setPhotos((prev) => {
         const next = prev.map((p) =>
-          p.id === entry.id ? { ...p, status: "done" as const, publicUrl } : p,
+          p.id === entry.id ? { ...p, status: "done" as const, r2Key: key } : p,
         );
         return next;
       });

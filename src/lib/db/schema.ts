@@ -157,7 +157,7 @@ export const jobs = pgTable(
       .notNull()
       .references(() => customers.id, { onDelete: "cascade" }),
     stage: jobStageEnum("stage").notNull().default("created"),
-    photos: jsonb("photos").$type<string[]>().default([]),
+    photos: jsonb("photos").$type<{ key: string; phase: string; area: string }[]>().default([]),
     aiAssessment: jsonb("ai_assessment"),
     detailerAdjustments: jsonb("detailer_adjustments"),
     estimateAmount: numeric("estimate_amount", { precision: 12, scale: 2 }),

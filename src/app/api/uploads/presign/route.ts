@@ -17,13 +17,13 @@ export async function POST(request: NextRequest) {
 
     const { orgSlug, fileName, contentType } = parsed.data;
 
-    const { presignedUrl, publicUrl } = await createPresignedUploadUrl({
+    const { presignedUrl, key } = await createPresignedUploadUrl({
       orgSlug,
       fileName,
       contentType,
     });
 
-    return NextResponse.json({ presignedUrl, publicUrl });
+    return NextResponse.json({ presignedUrl, key });
   } catch (err) {
     console.error("Presign error:", err);
     const message =

@@ -21,7 +21,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
   const [vehicleModel, setVehicleModel] = useState("");
   const [vehicleColor, setVehicleColor] = useState("");
   const [notes, setNotes] = useState("");
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [photoKeys, setPhotoKeys] = useState<string[]>([]);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,7 +53,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
           vehicleModel,
           vehicleColor,
           notes,
-          photoUrls,
+          photoKeys,
         }),
       });
 
@@ -241,7 +241,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
         >
           Vehicle Photos
         </legend>
-        <PhotoUploader orgSlug={orgSlug} onPhotosChange={setPhotoUrls} />
+        <PhotoUploader orgSlug={orgSlug} onPhotosChange={setPhotoKeys} />
       </fieldset>
 
       {/* Notes */}

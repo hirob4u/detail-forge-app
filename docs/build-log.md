@@ -110,4 +110,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-02-25 -- Blueprint F -- fix/photo-storage-and-r2-access
+
+**Built:** Converted entire photo storage model from public URLs to private R2 object keys. Updated presign route, photo uploader, intake submit, validation schema, and DB schema type.
+
+**Worked well:** The analyze route already fetched from R2 via SDK with credentials -- only the storage and upload paths needed fixing.
+
+**Corrected:** None -- this was the correction.
+
+**Root cause:** The R2 utility and presign route generated public URLs from an R2_PUBLIC_URL env var, treating the bucket as publicly accessible. Photos were stored as URLs instead of object keys, breaking the analyze route and exposing photos publicly.
+
+**Commit:** `fix: store R2 object keys instead of public URLs for photos`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

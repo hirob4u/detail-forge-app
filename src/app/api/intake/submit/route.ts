@@ -66,7 +66,11 @@ export async function POST(request: NextRequest) {
         orgId: org.id,
         customerId: customer.id,
         vehicleId: vehicle.id,
-        photos: data.photoUrls,
+        photos: data.photoKeys.map((key: string) => ({
+          key,
+          phase: "before",
+          area: "untagged",
+        })),
         notes: data.notes || null,
       })
       .returning({ id: jobs.id });

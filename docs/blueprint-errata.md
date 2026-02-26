@@ -124,4 +124,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint A / Blueprint D -- Photo Storage and R2 Access Model
+### Issue: Public URLs Stored Instead of Object Keys
+
+**Issue:** Presign route returned a publicUrl alongside the presignedUrl. The intake form stored these public URLs in the photos JSONB column. The analyze route received URLs instead of R2 object keys, making SDK-based fetching impossible. Photos were effectively public to anyone with the URL.
+
+**Root cause:** The R2 utility generated a publicUrl from an R2_PUBLIC_URL env var, treating the bucket as publicly accessible. The entire photo storage model was built around public access instead of private SDK-based access with presigned URLs.
+
+**Fix applied:** Removed publicUrl from the presign response and R2 utility. Presign route now returns `{ presignedUrl, key }`. PhotoUploader stores R2 object keys instead of URLs. Intake submit stores photos as structured objects `{ key, phase, area }`. Analyze route fetches photos from R2 via SDK using credentials. No public URLs exist anywhere in the codebase.
+
+**Add to Blueprint:** R2 buckets must be private. Never store public URLs -- store object keys only. The presign route returns a key for storage and a presigned URL for upload only. Displaying photos in the UI requires generating a presigned GET URL on demand. The analyze route fetches photos directly from R2 via the SDK using credentials.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
