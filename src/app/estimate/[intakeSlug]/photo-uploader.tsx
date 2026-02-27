@@ -2,7 +2,6 @@
 
 import { useRef, useState, useEffect } from "react";
 import { Upload, X, Loader2, CircleCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 type PhotoStatus = "uploading" | "done" | "error";
 
@@ -140,17 +139,23 @@ export default function PhotoUploader({
 
   return (
     <div
-      className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-4"
-      style={{ borderLeftWidth: "2px", borderLeftColor: accentColor }}
+      className="rounded-[var(--radius-card)] border border-[var(--color-border)] border-l-2 p-4"
+      style={{ borderLeftColor: accentColor }}
     >
-      <p className="text-sm font-semibold text-[var(--color-text)]">
-        {label}
-      </p>
-      <p className="mb-3 text-[13px] text-[var(--color-muted)]">
-        {helperText}
-      </p>
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-sm font-semibold text-[var(--color-text)]">
+          {label}
+        </span>
+        <span
+          className="text-xs text-[var(--color-muted)]"
+          style={{ fontFamily: "var(--font-data)" }}
+        >
+          {doneCount} of {maxPhotos}
+        </span>
+      </div>
+      <p className="mb-3 text-xs text-[var(--color-muted)]">{helperText}</p>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         {photos.map((photo) => (
           <div key={photo.id} className="group relative aspect-square">
             <img
@@ -200,14 +205,10 @@ export default function PhotoUploader({
               setTouched(true);
               inputRef.current?.click();
             }}
-            className={cn(
-              "flex aspect-square min-h-[44px] flex-col items-center justify-center gap-1",
-              "rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)]",
-              "text-[var(--color-muted)] transition-colors hover:border-[var(--color-purple-action)] hover:text-[var(--color-purple-text)]",
-            )}
+            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] text-[var(--color-muted)] transition-colors hover:border-[var(--color-purple-action)] hover:text-[var(--color-purple-text)]"
           >
             <Upload className="h-5 w-5" />
-            <span className="text-[10px]">Add photo</span>
+            <span className="text-[10px]">Add</span>
           </button>
         )}
       </div>
@@ -225,15 +226,8 @@ export default function PhotoUploader({
         }}
       />
 
-      <p
-        className="mt-2 text-xs text-[var(--color-muted)]"
-        style={{ fontFamily: "var(--font-data)" }}
-      >
-        {doneCount} of {maxPhotos}
-      </p>
-
       {touched && belowMinimum && (
-        <p className="mt-1 text-xs text-[var(--color-amber)]">
+        <p className="mt-2 text-[11px] text-[var(--color-amber)]">
           Add at least {minPhotos} photo{minPhotos > 1 ? "s" : ""} to continue.
         </p>
       )}
