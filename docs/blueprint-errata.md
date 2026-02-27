@@ -150,4 +150,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint A -- Customer Intake Form
+### Issue: Photo Upload Zone Layout Sparse Before Photos Added
+
+**Issue:** Photo upload sections rendered as large empty boxes with a full-card dashed border. Before any photos were added the sections looked sparse and unpolished, wasting vertical space.
+
+**Root cause:** The "Add photo" tile was styled as a full-width dashed border wrapper around the grid area rather than as an equal-sized grid tile alongside thumbnails. The counter sat below the grid instead of inline with the section label.
+
+**Fix applied:** Restructured the component so the "Add photo" tile is an equal-sized square in the same `grid-cols-3 gap-2 sm:grid-cols-4` grid as thumbnails. Dashed border is only on that tile. Counter moved inline with label at top-right in JetBrains Mono. Card wrapper uses `border-l-2` with accent color, no background elevation, and only `p-4` padding.
+
+**Add to Blueprint:** Upload zone UI should be grid-first: the "add" tile is the same size as thumbnails and sits in the photo grid. Never wrap the entire upload area in a dashed border -- dashed borders only go on the "add" tile. Counter text goes inline with the section label, not below the grid.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

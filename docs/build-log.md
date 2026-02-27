@@ -140,4 +140,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-02-27 -- Blueprint F -- fix/photo-uploader-visual-polish
+
+**Built:** Restructured PhotoUploader layout. "Add photo" tile is now an equal-sized grid tile alongside thumbnails in a `grid-cols-3 gap-2 sm:grid-cols-4` grid. Counter moved inline with section label at top-right. Card uses `border-l-2` accent with no background fill. Removed `cn` import (no longer needed).
+
+**Worked well:** Layout change was purely structural -- upload logic, props interface, and parent form were untouched.
+
+**Corrected:** None -- this was the correction.
+
+**Root cause:** Original layout used a large dashed-border wrapper around the entire grid, making the section look sparse before photos were added.
+
+**Commit:** `fix: compact photo uploader layout with grid-based add tile`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
