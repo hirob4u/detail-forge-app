@@ -125,4 +125,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-02-27 -- Blueprint F -- feat/intake-photo-sections
+
+**Built:** Split single photo upload zone into Exterior Photos (min 2, max 8) and Interior Photos (min 1, max 4) sections. Each section has its own label, helper text, counter in JetBrains Mono, minimum warning in amber, and colored left border accent (purple for exterior, cyan for interior). Submit button disabled until both minimums are met.
+
+**Worked well:** PhotoUploader component cleanly accepted new props (label, helperText, minPhotos, maxPhotos, accentColor) without structural changes to the upload logic. Two instances in the intake form maintain independent state and combine keys on submit.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `feat: split photo upload into exterior and interior sections`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

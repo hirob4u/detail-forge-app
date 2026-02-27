@@ -137,4 +137,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint A -- Customer Intake Form
+### Issue: Single Photo Upload Zone Produces Incomplete AI Assessments
+
+**Issue:** The intake form had a single generic photo upload zone. Customers uploaded whatever photos were convenient, often skipping interior shots entirely. This produced incomplete AI assessments because the model lacked interior photo coverage.
+
+**Root cause:** Blueprint A specified a single PhotoUploader component without distinguishing between exterior and interior photos. Users defaulted to the easiest shots (exterior front/rear) and skipped areas that require more effort to photograph (interior, wheels, close-ups).
+
+**Fix applied:** Split the photo upload section into two explicit zones -- Exterior Photos (min 2, max 8) and Interior Photos (min 1, max 4). Each zone has its own label, guidance text, minimum requirement, and visual accent. Submit button is disabled until both minimums are met.
+
+**Add to Blueprint:** Photo upload sections should always be split by context when the AI assessment depends on coverage of distinct areas. A single generic upload zone produces incomplete assessments because users default to the easiest shots. Explicit labeled sections with minimums and guidance text produce consistently better AI input.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
