@@ -14,7 +14,6 @@ interface PhotoEntry {
   status: PhotoStatus;
 }
 
-const MAX_PHOTOS = 10;
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED_TYPES = [
   "image/jpeg",
@@ -26,27 +25,40 @@ const ACCEPTED_TYPES = [
 
 interface PhotoUploaderProps {
   orgSlug: string;
-  onPhotosChange: (urls: string[]) => void;
+  label: string;
+  helperText: string;
+  minPhotos: number;
+  maxPhotos: number;
+  accentColor: string;
+  onPhotosChange: (keys: string[]) => void;
 }
 
 export default function PhotoUploader({
   orgSlug,
+  label,
+  helperText,
+  minPhotos,
+  maxPhotos,
+  accentColor,
   onPhotosChange,
 }: PhotoUploaderProps) {
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
+  const [touched, setTouched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const doneCount = photos.filter((p) => p.status === "done" && p.r2Key).length;
+  const belowMinimum = doneCount < minPhotos;
 
   useEffect(() => {
     onPhotosChange(
       photos
         .filter((p) => p.status === "done" && p.r2Key)
-        .map((p) => p.r2Key!)
+        .map((p) => p.r2Key!),
     );
   }, [photos, onPhotosChange]);
 
   async function uploadFile(entry: PhotoEntry) {
     try {
-      // Get presigned URL
       const presignRes = await fetch("/api/uploads/presign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -63,7 +75,6 @@ export default function PhotoUploader({
 
       const { presignedUrl, key } = await presignRes.json();
 
-      // PUT file directly to R2
       const uploadRes = await fetch(presignedUrl, {
         method: "PUT",
         headers: { "Content-Type": entry.file.type },
@@ -74,12 +85,11 @@ export default function PhotoUploader({
         throw new Error("Upload failed");
       }
 
-      setPhotos((prev) => {
-        const next = prev.map((p) =>
+      setPhotos((prev) =>
+        prev.map((p) =>
           p.id === entry.id ? { ...p, status: "done" as const, r2Key: key } : p,
-        );
-        return next;
-      });
+        ),
+      );
     } catch {
       setPhotos((prev) =>
         prev.map((p) =>
@@ -91,8 +101,9 @@ export default function PhotoUploader({
 
   function handleFiles(files: FileList | null) {
     if (!files) return;
+    setTouched(true);
 
-    const remaining = MAX_PHOTOS - photos.length;
+    const remaining = maxPhotos - photos.length;
     const toAdd = Array.from(files).slice(0, remaining);
 
     const newEntries: PhotoEntry[] = toAdd
@@ -105,17 +116,15 @@ export default function PhotoUploader({
       }));
 
     setPhotos((prev) => [...prev, ...newEntries]);
-
-    // Start uploads immediately
     newEntries.forEach((entry) => uploadFile(entry));
   }
 
   function removePhoto(id: string) {
+    setTouched(true);
     setPhotos((prev) => {
       const target = prev.find((p) => p.id === id);
       if (target) URL.revokeObjectURL(target.previewUrl);
-      const next = prev.filter((p) => p.id !== id);
-      return next;
+      return prev.filter((p) => p.id !== id);
     });
   }
 
@@ -130,8 +139,18 @@ export default function PhotoUploader({
   }
 
   return (
-    <div>
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+    <div
+      className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-4"
+      style={{ borderLeftWidth: "2px", borderLeftColor: accentColor }}
+    >
+      <p className="text-sm font-semibold text-[var(--color-text)]">
+        {label}
+      </p>
+      <p className="mb-3 text-[13px] text-[var(--color-muted)]">
+        {helperText}
+      </p>
+
+      <div className="grid grid-cols-3 gap-3">
         {photos.map((photo) => (
           <div key={photo.id} className="group relative aspect-square">
             <img
@@ -140,7 +159,6 @@ export default function PhotoUploader({
               className="h-full w-full rounded-[var(--radius-button)] object-cover"
             />
 
-            {/* Status overlay */}
             {photo.status === "uploading" && (
               <div className="absolute inset-0 flex items-center justify-center rounded-[var(--radius-button)] bg-black/50">
                 <Loader2 className="h-6 w-6 animate-spin text-[var(--color-purple-text)]" />
@@ -158,14 +176,13 @@ export default function PhotoUploader({
                 <button
                   type="button"
                   onClick={() => retryPhoto(photo.id)}
-                  className="rounded-[var(--radius-badge)] bg-[var(--color-elevated)] px-2 py-1 text-xs text-destructive"
+                  className="min-h-[44px] min-w-[44px] rounded-[var(--radius-badge)] bg-[var(--color-elevated)] px-2 py-1 text-xs text-destructive"
                 >
                   Retry
                 </button>
               </div>
             )}
 
-            {/* Remove button */}
             <button
               type="button"
               onClick={() => removePhoto(photo.id)}
@@ -176,13 +193,15 @@ export default function PhotoUploader({
           </div>
         ))}
 
-        {/* Add button */}
-        {photos.length < MAX_PHOTOS && (
+        {photos.length < maxPhotos && (
           <button
             type="button"
-            onClick={() => inputRef.current?.click()}
+            onClick={() => {
+              setTouched(true);
+              inputRef.current?.click();
+            }}
             className={cn(
-              "flex aspect-square flex-col items-center justify-center gap-1",
+              "flex aspect-square min-h-[44px] flex-col items-center justify-center gap-1",
               "rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)]",
               "text-[var(--color-muted)] transition-colors hover:border-[var(--color-purple-action)] hover:text-[var(--color-purple-text)]",
             )}
@@ -198,6 +217,7 @@ export default function PhotoUploader({
         type="file"
         accept={ACCEPTED_TYPES.join(",")}
         multiple
+        capture="environment"
         className="hidden"
         onChange={(e) => {
           handleFiles(e.target.files);
@@ -205,9 +225,18 @@ export default function PhotoUploader({
         }}
       />
 
-      <p className="mt-2 text-xs text-[var(--color-muted)]">
-        Up to {MAX_PHOTOS} photos, 10 MB each. JPEG, PNG, WebP, or HEIC.
+      <p
+        className="mt-2 text-xs text-[var(--color-muted)]"
+        style={{ fontFamily: "var(--font-data)" }}
+      >
+        {doneCount} of {maxPhotos}
       </p>
+
+      {touched && belowMinimum && (
+        <p className="mt-1 text-xs text-[var(--color-amber)]">
+          Add at least {minPhotos} photo{minPhotos > 1 ? "s" : ""} to continue.
+        </p>
+      )}
     </div>
   );
 }
