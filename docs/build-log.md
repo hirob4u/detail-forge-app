@@ -230,4 +230,20 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+
+### 2026-02-28 -- Product Decision -- Structured Photo Capture (REPLACES generic upload)
+
+**Built:** Nothing coded yet -- product decision documented before Blueprint is written.
+
+**Worked well:** N/A
+
+**Corrected:** The two-section photo uploader (Exterior / Interior) is being replaced entirely. Generic "upload some photos" guidance produces inconsistent photo coverage and lower AI assessment quality. The new approach is structured capture -- each required shot has a defined label, purpose, and area tag that gets passed to the AI prompt so the model knows exactly what it is analyzing.
+
+**Root cause:** Not a bug -- a product quality decision. A guided flow produces better AI input, better customer experience, and higher detailer trust. Every job will have the same baseline photo coverage instead of whatever the customer happened to grab.
+
+**Commit:** N/A -- decision only
+**Time to merge:** N/A
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
