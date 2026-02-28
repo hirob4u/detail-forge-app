@@ -155,4 +155,79 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-02-26 -- Blueprint D -- Claude Vision API Route (api/estimate-analyze)
+
+**Built:** POST route at `/api/estimates/analyze`. Accepts jobId, photoKeys, and vehicle info. Fetches photos from private R2 bucket via AWS SDK. Converts to base64. Calls Claude Sonnet via Anthropic SDK with detailing-specific assessment rubric. Returns structured `ConditionAssessment` JSON. Updates Job record in Neon with `aiAssessment`.
+
+**Worked well:** Route structure, R2 SDK fetch, base64 conversion, and Claude API call all worked correctly once credentials and model string were confirmed. JSON parsing and Job record update were clean.
+
+**Corrected:** Three correction rounds required. (1) Route was initially protected but curl has no session -- moved testing to browser console. (2) Model changed from `claude-opus-4-5` to `claude-sonnet-4-5` for cost efficiency. (3) Photo storage format was wrong -- stored full public URLs instead of object keys, requiring the full private R2 fix below.
+
+**Root cause:** Initial Blueprint did not enforce private R2 architecture explicitly enough. Agent stored public URLs because the presign route was returning them. Correct architecture -- private bucket, object keys only, presigned GET on demand -- was not specified with enough force in the original Blueprint.
+
+**Commit:** `feat: Claude vision API route with R2 photo fetching and condition assessment`
+**Time to merge:** ~3 hours including correction rounds
+
+---
+
+### 2026-02-26 -- Blueprint F -- Private R2 Storage and Object Key Architecture (fix/photo-storage-and-r2-access)
+
+**Built:** Corrected the full photo storage architecture. Presign route now returns `{ presignedUrl, key }` only -- no public URL. PhotoUploader stores keys not URLs. Intake submit route stores photos as `{ key, phase, area }` structured objects in JSONB. Analyze route fetches photos from private R2 via SDK using object keys.
+
+**Worked well:** Once the architecture was clearly specified the agent implemented it cleanly. R2 SDK streaming to Buffer to base64 worked correctly on first pass.
+
+**Corrected:** None in this Blueprint -- this was the correction.
+
+**Root cause:** Original presign route returned a publicUrl alongside the presignedUrl. Agent used the publicUrl path of least resistance throughout the intake and analyze flow. The bucket should have been private from day one with no public URL concept in the codebase.
+
+**Commit:** `fix: private R2 storage with object keys and SDK photo fetching`
+**Time to merge:** ~45 min
+
+---
+
+### 2026-02-26 -- Blueprint F -- Intake Form Photo Sections (feat/intake-photo-sections)
+
+**Built:** Split single generic photo uploader into two labeled sections -- Exterior Photos (min 2, max 8) and Interior Photos (min 1, max 4). Each section has its own guidance text, counter, and minimum warning. Submit button requires both minimums to be met. All keys combined into flat array on submit.
+
+**Worked well:** Component split was clean. Two PhotoUploader instances with different props worked correctly. Combined key array passed to submit route without issues.
+
+**Corrected:** Visual layout required a polish pass -- the upload zones rendered as large empty boxes. Restructured to compact grid layout where the Add Photo tile lives inline with thumbnails.
+
+**Root cause:** Blueprint specified the layout structure but the agent defaulted to a full-width dashed zone instead of a compact grid. Should have included a more explicit grid-first layout spec in the original Blueprint.
+
+**Commit:** `feat: split photo upload into exterior and interior sections`
+**Time to merge:** ~1 hour including visual polish
+
+---
+
+### 2026-02-26 -- Infrastructure -- R2 CORS and Endpoint Configuration
+
+**Built:** No code change. Resolved two infrastructure issues blocking photo uploads: (1) R2 S3 client was missing the explicit endpoint override causing requests to route to AWS S3 instead of Cloudflare R2. (2) CORS policy added to the `detail-forge-photos` bucket in Cloudflare dashboard to allow browser-side PUT requests from localhost:3000.
+
+**Worked well:** Once the endpoint was corrected the presigned URL pointed at the right bucket. CORS preflight confirmed working via curl OPTIONS test.
+
+**Corrected:** Bucket name mismatch -- env var had `detailforge-photos` but actual bucket was `detail-forge-photos`. Fixed in `.env.local`.
+
+**Root cause:** Blueprint did not specify the R2 endpoint override explicitly. Agent used default AWS SDK endpoint resolution which routes to amazonaws.com. R2 requires `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com` as an explicit endpoint override in the S3 client config.
+
+**Commit:** `fix: R2 endpoint config and CORS policy`
+**Time to merge:** ~2 hours including diagnosis
+
+---
+
+### 2026-02-27 -- Prompt Engineering -- Condition Assessment Quality Tuning (IN PROGRESS)
+
+**Built:** Initial `ConditionAssessment` JSON returning correctly from Claude Sonnet with all five score dimensions, recommended services, confidence score, and flags. Full 200 response confirmed in 23.9 seconds. `aiAssessment` column populated in Neon.
+
+**Worked well:** End-to-end chain confirmed working -- intake form, R2 upload, analyze route, Claude API call, Neon update all functioning correctly.
+
+**Corrected:** Assessment output quality needs tuning. Scores, descriptions, recommended services, and pricing require prompt engineering iteration to produce results a professional detailer would trust.
+
+**Root cause:** First-pass system prompts rarely produce production-quality output. Prompt tuning is iterative work, not a Blueprint task.
+
+**Commit:** Pending -- tuning in progress
+**Time to merge:** TBD
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
