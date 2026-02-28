@@ -163,4 +163,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint A -- New Screen (Customer Intake)
+### Issue: Generic Photo Upload Produces Inconsistent AI Assessment Quality
+
+**Issue:** A single upload zone or two-section upload zone (Exterior/Interior) gives the customer no guidance on what shots to take. Coverage is unpredictable. The AI receives unlabeled photos and has to guess what it is looking at, reducing assessment accuracy and confidence scores.
+
+**Root cause:** The original Blueprint treated photo upload as a file collection problem rather than a data quality problem. The AI assessment is only as good as the photo input. Without structured, labeled shots the model cannot apply area-specific assessment criteria.
+
+**Fix applied:** Replace generic upload with structured photo capture. Each required shot has a defined label, purpose, guidance text, and area tag. The area tag is stored with the photo key in the JSONB column and passed to the AI prompt so the model knows exactly what it is analyzing for each photo. Required shots: driver side, passenger side, front, rear, hood, driver seat / interior forward, rear seat, dashboard. Optional shots: specific damage area, wheel close-up, trunk/cargo, headliner, engine bay.
+
+**Add to Blueprint:** Any Blueprint involving photo upload for AI analysis must use structured capture with labeled shots and area tags. Never use a generic upload zone when the AI needs to assess specific areas. The photo storage schema must include an area field. The AI prompt must receive photo area labels and apply area-specific assessment criteria per shot.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
