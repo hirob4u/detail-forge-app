@@ -202,4 +202,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Cloudflare Pages Deployment Adapter
+### Issue: Wrong Adapter -- next-on-pages Requires Edge Runtime
+
+**Issue:** `@cloudflare/next-on-pages` requires `export const runtime = 'edge'` on every non-static route. Edge Runtime breaks the AWS SDK (`@aws-sdk/client-s3`), Node.js stream APIs, and many Next.js features. The project was not deployable to Cloudflare Pages with this adapter.
+
+**Root cause:** `@cloudflare/next-on-pages` was chosen without verifying Edge Runtime compatibility with the project's dependencies (AWS SDK, Anthropic SDK, Node.js Buffer/streams). The correct adapter is `@opennextjs/cloudflare` which runs on Node.js runtime with the `nodejs_compat` compatibility flag.
+
+**Fix applied:** Replaced `@cloudflare/next-on-pages` with `@opennextjs/cloudflare` and `wrangler`. Created `wrangler.jsonc` with `nodejs_compat` flag, `open-next.config.ts`, and `public/_headers`. Removed all `export const runtime = 'edge'` exports. Added `optimizePackageImports` to `next.config.ts` for bundle size. Converted DB to factory function for Workers request isolation.
+
+**Add to Blueprint:** Cloudflare Pages Next.js deployment requires `@opennextjs/cloudflare` not `@cloudflare/next-on-pages`. The next-on-pages adapter requires Edge Runtime which breaks the AWS SDK and many Next.js features. The opennextjs adapter uses Node.js runtime with `nodejs_compat` flag which supports the full stack. Never add `export const runtime = 'edge'` to any route when using `@opennextjs/cloudflare`. Bundle size must stay under 25MB -- use `optimizePackageImports` for heavy packages like the AWS SDK and Anthropic SDK.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

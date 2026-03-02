@@ -276,4 +276,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-02 -- Blueprint F -- fix/cloudflare-opennext-deployment
+
+**Built:** Switched Cloudflare Pages adapter from `@cloudflare/next-on-pages` (Edge Runtime) to `@opennextjs/cloudflare` (Node.js runtime with `nodejs_compat`). Created `wrangler.jsonc`, `open-next.config.ts`, and `public/_headers`. Added `preview` and `deploy` scripts. Updated `next.config.ts` with `optimizePackageImports` for bundle size and server-side minimize. Converted DB connection to factory function (`getDb()`) for Workers request isolation. Removed all `export const runtime = 'edge'` exports. Added `.open-next` to `.gitignore`.
+
+**Worked well:** DB was already on `@neondatabase/serverless` with `neon()` HTTP driver. No API route logic needed changes. The `getDb()` factory with `export const db = getDb()` maintains backwards compatibility so no import changes were needed across the codebase.
+
+**Corrected:** The previous `fix/edge-runtime-config` branch added `export const runtime = 'edge'` to all routes. This was the wrong approach -- the correct adapter (`@opennextjs/cloudflare`) uses Node.js runtime and does not need or want Edge Runtime exports. All edge runtime exports were removed.
+
+**Root cause:** `@cloudflare/next-on-pages` requires Edge Runtime on every route, which breaks the AWS SDK, Node.js streams, and many Next.js features. `@opennextjs/cloudflare` runs on Node.js runtime with the `nodejs_compat` compatibility flag, supporting the full stack without modifications.
+
+**Commit:** `fix: switch to @opennextjs/cloudflare for Cloudflare Pages deployment`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
