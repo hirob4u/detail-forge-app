@@ -33,7 +33,15 @@ export const intakeSubmitSchema = z.object({
   vehicleModel: z.string().min(1, "Vehicle model is required"),
   vehicleColor: z.string().min(1, "Vehicle color is required"),
   notes: z.string().optional().default(""),
-  photoKeys: z.array(z.string().min(1)).max(10).default([]),
+  photoKeys: z
+    .array(
+      z.object({
+        key: z.string().min(1),
+        area: z.string().min(1),
+        phase: z.string().min(1),
+      }),
+    )
+    .default([]),
 });
 
 export type IntakeSubmit = z.infer<typeof intakeSubmitSchema>;

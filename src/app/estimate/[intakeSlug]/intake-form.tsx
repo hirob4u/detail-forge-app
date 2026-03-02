@@ -2,7 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import PhotoUploader from "./photo-uploader";
+import StructuredPhotoCapture, {
+  REQUIRED_SHOT_AREAS,
+  type ShotArea,
+} from "./structured-photo-capture";
 
 interface IntakeFormProps {
   orgSlug: string;
@@ -21,10 +24,13 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
   const [vehicleModel, setVehicleModel] = useState("");
   const [vehicleColor, setVehicleColor] = useState("");
   const [notes, setNotes] = useState("");
-  const [exteriorKeys, setExteriorKeys] = useState<string[]>([]);
-  const [interiorKeys, setInteriorKeys] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<
+    Array<{ key: string; area: ShotArea; phase: "before" }>
+  >([]);
 
-  const photosValid = exteriorKeys.length >= 2 && interiorKeys.length >= 1;
+  const requiredComplete = REQUIRED_SHOT_AREAS.every((area) =>
+    photos.some((p) => p.area === area),
+  );
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,7 +62,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
           vehicleModel,
           vehicleColor,
           notes,
-          photoKeys: [...exteriorKeys, ...interiorKeys],
+          photoKeys: photos,
         }),
       });
 
@@ -244,26 +250,10 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
         >
           Vehicle Photos
         </legend>
-        <div className="space-y-4">
-          <PhotoUploader
-            orgSlug={orgSlug}
-            label="Exterior Photos"
-            helperText="Front, rear, driver side, passenger side. Close-ups of any scratches, chips, or problem areas."
-            minPhotos={2}
-            maxPhotos={8}
-            accentColor="var(--color-purple-action)"
-            onPhotosChange={setExteriorKeys}
-          />
-          <PhotoUploader
-            orgSlug={orgSlug}
-            label="Interior Photos"
-            helperText="Front seats, rear seats, carpet, dashboard, door panels."
-            minPhotos={1}
-            maxPhotos={4}
-            accentColor="var(--color-cyan)"
-            onPhotosChange={setInteriorKeys}
-          />
-        </div>
+        <StructuredPhotoCapture
+          orgSlug={orgSlug}
+          onPhotosChange={setPhotos}
+        />
       </fieldset>
 
       {/* Notes */}
@@ -285,7 +275,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
 
       <button
         type="submit"
-        disabled={loading || !photosValid}
+        disabled={loading || !requiredComplete}
         className="w-full rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-purple-deep)] disabled:opacity-50"
       >
         {loading ? "Submitting..." : "Request Estimate"}
