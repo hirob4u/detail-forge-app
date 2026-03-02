@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, Fragment } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   Car,
   ArrowUp,
@@ -15,10 +15,11 @@ import {
   Layers,
   Wrench,
   Loader2,
-  CircleCheck,
-  X,
+  Check,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -184,149 +185,8 @@ const ACCEPTED_TYPES = new Set([
   "image/heic",
   "image/heif",
 ]);
-const DAMAGE_MAX = 4;
 
-/* ------------------------------------------------------------------ */
-/*  ShotTile                                                           */
-/* ------------------------------------------------------------------ */
-
-function ShotTile({
-  shot,
-  photo,
-  accentColor,
-  onFileSelect,
-  onRetry,
-  showRemove,
-  onRemove,
-  allowReupload,
-}: {
-  shot: ShotDefinition;
-  photo: CapturedPhoto | undefined;
-  accentColor: string;
-  onFileSelect: (file: File) => void;
-  onRetry: (id: string) => void;
-  showRemove: boolean;
-  onRemove?: (id: string) => void;
-  allowReupload: boolean;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const Icon = shot.Icon;
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file && ACCEPTED_TYPES.has(file.type) && file.size <= MAX_SIZE) {
-      onFileSelect(file);
-    }
-    e.target.value = "";
-  }
-
-  /* Empty state */
-  if (!photo) {
-    return (
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="flex aspect-square w-full flex-col items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-2 text-center transition-colors hover:border-[var(--color-border)]"
-        >
-          <Icon className="h-6 w-6 text-[var(--color-muted)]" />
-          <span className="mt-1.5 text-xs font-semibold leading-tight text-[var(--color-text)]">
-            {shot.label}
-          </span>
-          <span className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-[var(--color-muted)]">
-            {shot.guidance}
-          </span>
-          <span className="mt-1.5 text-[10px]" style={{ color: accentColor }}>
-            Tap to upload
-          </span>
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={handleChange}
-        />
-      </div>
-    );
-  }
-
-  /* Uploading / Done / Error states */
-  return (
-    <div className="group relative aspect-square">
-      <img
-        src={photo.previewUrl}
-        alt={shot.label}
-        className="h-full w-full rounded-[var(--radius-card)] object-cover"
-      />
-
-      {photo.status === "uploading" && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-[var(--radius-card)] bg-black/50">
-          <Loader2
-            className="h-6 w-6 animate-spin"
-            style={{ color: "var(--color-purple-action)" }}
-          />
-        </div>
-      )}
-
-      {photo.status === "done" && (
-        <>
-          <div className="absolute bottom-0 left-0 right-0 rounded-b-[var(--radius-card)] bg-gradient-to-t from-black/70 to-transparent px-2 pb-1.5 pt-4">
-            <span className="text-[10px] font-semibold text-white">
-              {shot.label}
-            </span>
-          </div>
-          <div className="absolute bottom-1 right-1">
-            <CircleCheck className="h-4 w-4 text-[var(--color-green)]" />
-          </div>
-          {allowReupload && (
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="absolute inset-0 z-10 cursor-pointer rounded-[var(--radius-card)]"
-              aria-label={`Re-upload ${shot.label}`}
-            />
-          )}
-        </>
-      )}
-
-      {photo.status === "error" && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-[var(--radius-card)] bg-red-900/50">
-          <button
-            type="button"
-            onClick={() => onRetry(photo.id)}
-            className="min-h-[44px] min-w-[44px] text-[11px] font-medium text-white"
-          >
-            Failed — tap to retry
-          </button>
-        </div>
-      )}
-
-      {showRemove && photo.status === "done" && onRemove && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(photo.id);
-          }}
-          className="absolute -right-1.5 -top-1.5 z-20 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-elevated)] opacity-0 transition-opacity group-hover:opacity-100"
-        >
-          <X className="h-3 w-3 text-[var(--color-text)]" />
-        </button>
-      )}
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleChange}
-      />
-    </div>
-  );
-}
+const ALL_SHOTS = [...REQUIRED_SHOTS, ...OPTIONAL_SHOTS];
 
 /* ------------------------------------------------------------------ */
 /*  StructuredPhotoCapture                                             */
@@ -344,6 +204,9 @@ export default function StructuredPhotoCapture({
   onPhotosChange,
 }: StructuredPhotoCaptureProps) {
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
+  const [mode, setMode] = useState<"guided" | "batch">("guided");
+  const [currentStep, setCurrentStep] = useState(0);
+  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     const donePhotos = photos
@@ -422,14 +285,6 @@ export default function StructuredPhotoCapture({
     uploadFile(newEntry);
   }
 
-  function removePhoto(id: string) {
-    setPhotos((prev) => {
-      const target = prev.find((p) => p.id === id);
-      if (target) URL.revokeObjectURL(target.previewUrl);
-      return prev.filter((p) => p.id !== id);
-    });
-  }
-
   function retryPhoto(id: string) {
     const entry = photos.find((p) => p.id === id);
     if (!entry) return;
@@ -441,169 +296,399 @@ export default function StructuredPhotoCapture({
     uploadFile(entry);
   }
 
-  function getPhotoForArea(area: ShotArea): CapturedPhoto | undefined {
-    return photos.find((p) => p.shotArea === area);
+  function handleInputChange(
+    area: ShotArea,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    if (file && ACCEPTED_TYPES.has(file.type) && file.size <= MAX_SIZE) {
+      const existing = photos.find(
+        (p) => p.shotArea === area && p.status === "done",
+      );
+      handleFileForShot(area, file, existing?.id);
+    }
+    e.target.value = "";
   }
 
-  function getDamagePhotos(): CapturedPhoto[] {
-    return photos.filter((p) => p.shotArea === "damage-area");
-  }
+  /* ---- Derived values used by both modes ---- */
 
-  const requiredDoneCount = REQUIRED_SHOTS.filter(
-    (s) => getPhotoForArea(s.area)?.status === "done",
+  const completedRequired = REQUIRED_SHOTS.filter((s) =>
+    photos.some((p) => p.shotArea === s.area && p.status === "done"),
   ).length;
 
-  const damageAddRef = useRef<HTMLInputElement>(null);
+  const shot = ALL_SHOTS[currentStep];
+  const currentPhoto = photos.find(
+    (p) => p.shotArea === shot.area && p.status !== "error",
+  );
+
+  /* ---- Render ---- */
 
   return (
     <div className="space-y-6">
-      {/* Required Shots */}
-      <div
-        className="rounded-[var(--radius-card)] border border-[var(--color-border)] border-l-2 p-4"
-        style={{ borderLeftColor: "var(--color-purple-action)" }}
-      >
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-sm font-semibold text-[var(--color-text)]">
-            Required Photos
-          </span>
-          <span
-            className={`flex items-center gap-1 text-xs ${
-              requiredDoneCount === 8
-                ? "text-[var(--color-green)]"
-                : "text-[var(--color-muted)]"
-            }`}
-            style={{ fontFamily: "var(--font-data)" }}
-          >
-            {requiredDoneCount === 8 && (
-              <CircleCheck className="h-3.5 w-3.5" />
+      {/* Mode toggle */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setMode("guided")}
+          className={cn(
+            "flex items-center gap-2 rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors",
+            mode === "guided"
+              ? "bg-[var(--color-purple-action)] text-white"
+              : "bg-[var(--color-elevated)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
+          )}
+        >
+          Step-by-step
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("batch")}
+          className={cn(
+            "flex items-center gap-2 rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors",
+            mode === "batch"
+              ? "bg-[var(--color-purple-action)] text-white"
+              : "bg-[var(--color-elevated)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
+          )}
+        >
+          Upload all at once
+        </button>
+      </div>
+
+      {/* Guided Mode */}
+      {mode === "guided" && (
+        <div className="space-y-4">
+          {/* Progress */}
+          <div>
+            <div className="mb-2 flex justify-between">
+              <span className="text-sm font-medium text-[var(--color-text)]">
+                {completedRequired} of 8 required shots
+              </span>
+              <span
+                className="text-xs text-[var(--color-muted)]"
+                style={{ fontFamily: "var(--font-data)" }}
+              >
+                {currentStep + 1} / {ALL_SHOTS.length}
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-elevated)]">
+              <div
+                className="h-full rounded-full bg-[var(--color-purple-action)] transition-all"
+                style={{ width: `${(completedRequired / 8) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Current shot card */}
+          <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-5">
+            <div className="mb-4">
+              <div className="mb-1 flex items-center gap-2">
+                <span className="text-base font-semibold text-[var(--color-text)]">
+                  {shot.label}
+                </span>
+                {shot.required ? (
+                  <span
+                    className="rounded-[var(--radius-badge)] bg-[var(--color-purple-deep)] px-2 py-0.5 text-[10px] uppercase text-[var(--color-purple-text)]"
+                    style={{ fontFamily: "var(--font-data)" }}
+                  >
+                    Required
+                  </span>
+                ) : (
+                  <span
+                    className="rounded-[var(--radius-badge)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-2 py-0.5 text-[10px] uppercase text-[var(--color-muted)]"
+                    style={{ fontFamily: "var(--font-data)" }}
+                  >
+                    Optional
+                  </span>
+                )}
+              </div>
+              <p className="text-sm leading-relaxed text-[var(--color-muted)]">
+                {shot.guidance}
+              </p>
+            </div>
+
+            {/* Upload zone */}
+            {currentPhoto?.status === "done" ? (
+              <div className="relative overflow-hidden rounded-[var(--radius-button)]">
+                <img
+                  src={currentPhoto.previewUrl}
+                  alt={shot.label}
+                  className="w-full rounded-[var(--radius-button)] object-cover"
+                  style={{ maxHeight: "260px" }}
+                />
+                <div className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-green)]">
+                  <Check className="h-4 w-4 text-black" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => inputRefs.current[shot.area]?.click()}
+                  className="absolute bottom-3 right-3 rounded-[var(--radius-badge)] bg-black/60 px-3 py-1.5 text-xs text-white"
+                >
+                  Replace
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => inputRefs.current[shot.area]?.click()}
+                className="flex w-full flex-col items-center justify-center gap-3 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] py-12 transition-colors hover:border-[var(--color-purple-action)]"
+              >
+                {currentPhoto?.status === "uploading" ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-[var(--color-purple-action)]" />
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-[var(--color-muted)]" />
+                    <span className="text-sm font-medium text-[var(--color-purple-text)]">
+                      Tap to upload
+                    </span>
+                    <span className="text-xs text-[var(--color-muted)]">
+                      JPEG, PNG, WebP, or HEIC · max 10MB
+                    </span>
+                  </>
+                )}
+              </button>
             )}
-            {requiredDoneCount} of 8 complete
-          </span>
-        </div>
-        <p className="mb-4 text-[13px] text-[var(--color-muted)]">
-          We need these 8 shots to build your estimate. Tap each one to upload.
-        </p>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {REQUIRED_SHOTS.map((shot) => {
-            const photo = getPhotoForArea(shot.area);
-            return (
-              <ShotTile
-                key={shot.area}
-                shot={shot}
-                photo={photo}
-                accentColor="var(--color-purple-action)"
-                onFileSelect={(file) =>
-                  handleFileForShot(shot.area, file, photo?.id)
-                }
-                onRetry={retryPhoto}
-                showRemove={false}
-                allowReupload={true}
-              />
-            );
-          })}
-        </div>
-      </div>
+            {/* Error state inline */}
+            {currentPhoto?.status === "error" && (
+              <button
+                type="button"
+                onClick={() => retryPhoto(currentPhoto.id)}
+                className="mt-2 w-full rounded-[var(--radius-button)] bg-red-900/30 px-4 py-2 text-sm text-white transition-colors hover:bg-red-900/50"
+              >
+                Upload failed — tap to retry
+              </button>
+            )}
+          </div>
 
-      {/* Optional Shots */}
-      <div
-        className="rounded-[var(--radius-card)] border border-[var(--color-border)] border-l-2 p-4"
-        style={{ borderLeftColor: "var(--color-cyan)" }}
-      >
-        <div className="mb-1">
-          <span className="text-sm font-semibold text-[var(--color-text)]">
-            Optional — Add More Detail
-          </span>
-        </div>
-        <p className="mb-4 text-[13px] text-[var(--color-muted)]">
-          Got a specific scratch, stained seat, or other area of concern? Add
-          photos here to help us quote it accurately.
-        </p>
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
+              disabled={currentStep === 0}
+              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] disabled:opacity-30"
+            >
+              Previous
+            </button>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {OPTIONAL_SHOTS.map((shot) => {
-            /* damage-area: multiple photos allowed */
-            if (shot.area === "damage-area") {
-              const damagePhotos = getDamagePhotos();
-              return (
-                <Fragment key="damage-area">
-                  {damagePhotos.map((photo) => (
-                    <ShotTile
-                      key={photo.id}
-                      shot={shot}
-                      photo={photo}
-                      accentColor="var(--color-cyan)"
-                      onFileSelect={() => {}}
-                      onRetry={retryPhoto}
-                      showRemove={true}
-                      onRemove={removePhoto}
-                      allowReupload={false}
-                    />
-                  ))}
-                  {damagePhotos.length < DAMAGE_MAX && (
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => damageAddRef.current?.click()}
-                        className="flex aspect-square w-full flex-col items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-2 text-center transition-colors hover:border-[var(--color-border)]"
-                      >
-                        <CircleAlert className="h-6 w-6 text-[var(--color-muted)]" />
-                        <span className="mt-1.5 text-xs font-semibold leading-tight text-[var(--color-text)]">
-                          {damagePhotos.length === 0
-                            ? shot.label
-                            : "Add Another"}
-                        </span>
-                        <span className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-[var(--color-muted)]">
-                          {shot.guidance}
-                        </span>
-                        <span className="mt-1.5 text-[10px] text-[var(--color-cyan)]">
-                          Tap to upload
-                        </span>
-                      </button>
-                      <input
-                        ref={damageAddRef}
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (
-                            file &&
-                            ACCEPTED_TYPES.has(file.type) &&
-                            file.size <= MAX_SIZE
-                          ) {
-                            handleFileForShot("damage-area", file);
-                          }
-                          e.target.value = "";
-                        }}
+            {/* Thumbnail strip */}
+            <div className="flex max-w-[180px] gap-1.5 overflow-x-auto">
+              {ALL_SHOTS.map((s, i) => {
+                const p = photos.find(
+                  (ph) => ph.shotArea === s.area && ph.status === "done",
+                );
+                return (
+                  <button
+                    key={s.area}
+                    type="button"
+                    onClick={() => setCurrentStep(i)}
+                    className={cn(
+                      "h-8 w-8 flex-shrink-0 overflow-hidden rounded-[var(--radius-badge)] border-2 transition-all",
+                      i === currentStep
+                        ? "border-[var(--color-purple-action)]"
+                        : "border-transparent opacity-50 hover:opacity-100",
+                    )}
+                  >
+                    {p ? (
+                      <img
+                        src={p.previewUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
                       />
-                    </div>
-                  )}
-                </Fragment>
-              );
-            }
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-[var(--color-elevated)]">
+                        <span
+                          className="text-[8px] text-[var(--color-muted)]"
+                          style={{ fontFamily: "var(--font-data)" }}
+                        >
+                          {i + 1}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
 
-            /* All other optional shots: single photo */
-            const photo = getPhotoForArea(shot.area);
-            return (
-              <ShotTile
-                key={shot.area}
-                shot={shot}
-                photo={photo}
-                accentColor="var(--color-cyan)"
-                onFileSelect={(file) =>
-                  handleFileForShot(shot.area, file, photo?.id)
-                }
-                onRetry={retryPhoto}
-                showRemove={true}
-                onRemove={removePhoto}
-                allowReupload={true}
-              />
-            );
-          })}
+            <button
+              type="button"
+              onClick={() =>
+                setCurrentStep((s) =>
+                  Math.min(ALL_SHOTS.length - 1, s + 1),
+                )
+              }
+              disabled={currentStep === ALL_SHOTS.length - 1}
+              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-purple-text)] transition-colors disabled:opacity-30"
+            >
+              {currentPhoto?.status === "done" ? "Next" : "Skip"}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Batch Mode */}
+      {mode === "batch" && (
+        <div className="space-y-6">
+          {/* Required shots */}
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-sm font-semibold text-[var(--color-text)]">
+                Required Photos
+              </span>
+              <span
+                className={cn(
+                  "text-xs transition-colors",
+                  completedRequired === 8
+                    ? "text-[var(--color-green)]"
+                    : "text-[var(--color-muted)]",
+                )}
+                style={{ fontFamily: "var(--font-data)" }}
+              >
+                {completedRequired} of 8
+              </span>
+            </div>
+            <div className="space-y-2">
+              {REQUIRED_SHOTS.map((s) => {
+                const photo = photos.find(
+                  (p) => p.shotArea === s.area && p.status === "done",
+                );
+                const uploading = photos.find(
+                  (p) => p.shotArea === s.area && p.status === "uploading",
+                );
+                return (
+                  <div
+                    key={s.area}
+                    className="flex items-center gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-4"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm font-semibold text-[var(--color-text)]">
+                        {s.label}
+                      </span>
+                      <p className="mt-0.5 text-xs leading-relaxed text-[var(--color-muted)]">
+                        {s.guidance}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      {photo ? (
+                        <div className="relative h-16 w-16">
+                          <img
+                            src={photo.previewUrl}
+                            alt={s.label}
+                            className="h-full w-full rounded-[var(--radius-button)] object-cover"
+                          />
+                          <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-green)]">
+                            <Check className="h-3 w-3 text-black" />
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => inputRefs.current[s.area]?.click()}
+                          className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-purple-action)]"
+                        >
+                          {uploading ? (
+                            <Loader2 className="h-5 w-5 animate-spin text-[var(--color-purple-action)]" />
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 text-[var(--color-muted)]" />
+                              <span className="text-[9px] text-[var(--color-muted)]">
+                                Add
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Optional shots */}
+          <div>
+            <div className="mb-3">
+              <span className="text-sm font-semibold text-[var(--color-text)]">
+                Optional — Add More Detail
+              </span>
+              <p className="mt-0.5 text-xs text-[var(--color-muted)]">
+                Got a specific scratch, stain, or area of concern? Add photos
+                here.
+              </p>
+            </div>
+            <div className="space-y-2">
+              {OPTIONAL_SHOTS.map((s) => {
+                const photo = photos.find(
+                  (p) => p.shotArea === s.area && p.status === "done",
+                );
+                const uploading = photos.find(
+                  (p) => p.shotArea === s.area && p.status === "uploading",
+                );
+                return (
+                  <div
+                    key={s.area}
+                    className="flex items-center gap-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-4"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <span className="text-sm font-semibold text-[var(--color-text)]">
+                        {s.label}
+                      </span>
+                      <p className="mt-0.5 text-xs leading-relaxed text-[var(--color-muted)]">
+                        {s.guidance}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      {photo ? (
+                        <div className="relative h-16 w-16">
+                          <img
+                            src={photo.previewUrl}
+                            alt={s.label}
+                            className="h-full w-full rounded-[var(--radius-button)] object-cover"
+                          />
+                          <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-green)]">
+                            <Check className="h-3 w-3 text-black" />
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => inputRefs.current[s.area]?.click()}
+                          className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-purple-action)]"
+                        >
+                          {uploading ? (
+                            <Loader2 className="h-5 w-5 animate-spin text-[var(--color-purple-action)]" />
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 text-[var(--color-muted)]" />
+                              <span className="text-[9px] text-[var(--color-muted)]">
+                                Add
+                              </span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden file inputs for all shots */}
+      {ALL_SHOTS.map((s) => (
+        <input
+          key={s.area}
+          ref={(el) => {
+            inputRefs.current[s.area] = el;
+          }}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => handleInputChange(s.area, e)}
+        />
+      ))}
     </div>
   );
 }
