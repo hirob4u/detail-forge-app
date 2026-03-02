@@ -246,4 +246,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-02-28 -- Blueprint A -- feat/structured-photo-capture
+
+**Built:** Replaced the two-section generic photo uploader (Exterior / Interior) with a structured capture component (`StructuredPhotoCapture`). Eight required shots (driver-side, passenger-side, front, rear, hood, driver-seat, rear-seat, dashboard) and five optional shots (damage-area up to 4, wheel, trunk, headliner, engine-bay). Each shot tile shows label, icon, guidance text, and area tag. Photos upload immediately on selection via presigned URLs. Parent receives `{ key, area, phase }` structured objects for storage. Validation schema and submit route updated to accept structured photo objects instead of raw key strings. Old `photo-uploader.tsx` deleted.
+
+**Worked well:** Component architecture cleanly separated internal `CapturedPhoto` state from the parent-facing `{ key, area, phase }` interface via `useEffect`. Shot definitions as constants made the grid rendering straightforward. Reusing `ShotTile` for both required and optional shots avoided duplication. Damage-area multi-photo expansion using React Fragment worked correctly in CSS Grid.
+
+**Corrected:** Validation schema and submit route required a minimal update to accept `{ key, area, phase }` objects instead of plain strings, despite the blueprint specifying no submit route changes. The blueprint's own instructions to pass structured objects to the route required this change.
+
+**Root cause:** Blueprint specified both "do not change the intake submit route" and "pass photos directly as the photoKeys field -- it already has the { key, area, phase } structure." These were contradictory since the route previously mapped string keys to structured objects. The correct interpretation was to update the validation and route minimally to accept the new format.
+
+**Commit:** `feat: structured photo capture with labeled shots and area tags`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

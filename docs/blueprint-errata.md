@@ -176,4 +176,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint A -- Structured Photo Capture
+### Issue: Validation Schema Must Match New Data Format
+
+**Issue:** Blueprint specified "do not change the intake submit route" but also instructed the parent form to pass `{ key, area, phase }` structured objects as the `photoKeys` field. The existing Zod schema validated `photoKeys` as `z.array(z.string())`, which rejects objects.
+
+**Root cause:** Blueprint assumed the route "already has the { key, area, phase } structure" when in fact the route was mapping plain string keys to structured objects. When the input format changes, the validation layer must change with it.
+
+**Fix applied:** Updated `intakeSubmitSchema` to validate `photoKeys` as `z.array(z.object({ key, area, phase }))`. Updated submit route to pass `data.photoKeys` directly to the photos column instead of mapping strings.
+
+**Add to Blueprint:** When a Blueprint changes the data format sent from a client component to an API route, the validation schema and route handler must be listed as affected files even if the route's core logic (transaction pattern, org lookup, error handling) stays the same. "Do not change the route" should mean "do not change the route's architecture" not "do not update the validation to match the new payload shape."
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
