@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { organizations, customers, vehicles, jobs } from "@/lib/db/schema";
 import { intakeSubmitSchema } from "@/lib/validations/intake";
 
+export const runtime = "edge";
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

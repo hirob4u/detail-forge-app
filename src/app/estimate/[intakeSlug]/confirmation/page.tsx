@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
 import { CircleCheck } from "lucide-react";
 
+export const runtime = "edge";
+
 export default async function ConfirmationPage({
   params,
 }: {

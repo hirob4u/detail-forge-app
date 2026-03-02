@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
 import IntakeForm from "./intake-form";
 
+export const runtime = "edge";
+
 export default async function EstimatePage({
   params,
 }: {

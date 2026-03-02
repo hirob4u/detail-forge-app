@@ -276,4 +276,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-02 -- Blueprint F -- fix/edge-runtime-config
+
+**Built:** Added `export const runtime = 'edge'` to all non-static routes: proxy.ts, auth catch-all, analyze route, intake submit, presign, estimate page, and confirmation page. Verified Neon DB already uses HTTP driver (`@neondatabase/serverless` with `neon()`). Verified analyze route already uses `transformToByteArray()` instead of Node.js stream iteration.
+
+**Worked well:** DB connection and R2 response reading were already Edge-compatible from earlier Blueprint work. Only the `runtime` export was missing.
+
+**Corrected:** None.
+
+**Root cause:** Cloudflare Pages requires `export const runtime = 'edge'` on every non-static route. This was not included in any previous Blueprint. The project also uses `src/proxy.ts` (Next.js 16) instead of `src/middleware.ts`, so the runtime export was added there.
+
+**Commit:** `fix: add edge runtime config to all non-static routes`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

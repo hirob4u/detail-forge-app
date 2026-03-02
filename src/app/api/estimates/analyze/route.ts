@@ -5,6 +5,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobs } from "@/lib/db/schema";
 
+export const runtime = "edge";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------

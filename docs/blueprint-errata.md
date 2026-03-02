@@ -202,4 +202,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- API Routes and Server Pages
+### Issue: Missing Edge Runtime Export for Cloudflare Pages
+
+**Issue:** Cloudflare Pages requires `export const runtime = 'edge'` on every non-static route (API routes, server component pages, proxy/middleware). Without it, `@cloudflare/next-on-pages` build fails.
+
+**Root cause:** No previous Blueprint specified the Edge Runtime requirement. Routes were written for Node.js runtime by default.
+
+**Fix applied:** Added `export const runtime = 'edge'` to all 7 non-static route files. Verified Neon DB uses HTTP driver and analyze route uses `transformToByteArray()` (both already correct).
+
+**Add to Blueprint:** Cloudflare Pages requires `export const runtime = 'edge'` on every non-static route. Node.js stream APIs do not work on the Edge Runtime -- use `transformToByteArray()` for R2 response body reading. Neon requires the HTTP driver (`@neondatabase/serverless` with `neon()`) not the WebSocket driver on Edge Runtime. These three constraints must be included in every Blueprint that touches API routes intended for Cloudflare Pages deployment.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

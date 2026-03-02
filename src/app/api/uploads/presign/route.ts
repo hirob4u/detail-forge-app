@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { presignRequestSchema } from "@/lib/validations/intake";
 import { createPresignedUploadUrl } from "@/lib/r2";
 
+export const runtime = "edge";
+
 // TODO: add rate limiting on this endpoint
 export async function POST(request: NextRequest) {
   try {
