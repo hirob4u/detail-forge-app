@@ -1,8 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-export const runtime = "edge";
-
 const publicPaths = ["/", "/sign-in", "/sign-up"];
 
 export function proxy(request: NextRequest) {
