@@ -189,4 +189,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint A -- Structured Photo Capture
+### Issue: Grid Tiles Unreadable on Mobile -- Guided and Batch Modes Required
+
+**Issue:** Structured photo capture rendered all 13 shots as small square tiles in a grid. Labels and guidance text were truncated or unreadable at 375px. The Blueprint specified two modes (guided step-by-step and batch upload) but the initial implementation used only the grid layout.
+
+**Root cause:** The grid layout was the simplest implementation path and was chosen over the specified two-mode design. Small square tiles cannot fit a label, guidance text, and upload zone at mobile widths. The guided mode was the correct default for mobile-first customers uploading photos from a phone camera.
+
+**Fix applied:** Replaced the grid layout with a mode toggle. Guided mode shows one full-width shot card at a time with large upload zone, progress bar, navigation buttons, and thumbnail strip. Batch mode shows a vertical card list with horizontal layout (text left, upload zone right). Both modes share the same state so switching preserves uploads.
+
+**Add to Blueprint:** Any Blueprint involving structured photo capture must specify the render mode. Grid layouts work for desktop dashboards where tiles are 150px+ but not for mobile-first intake forms. For customer-facing photo capture on mobile devices, use guided mode (one shot at a time, full width) as the default. Always provide a batch mode alternative for power users. Hidden file inputs should be shared via a ref map and rendered once, not per-tile.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

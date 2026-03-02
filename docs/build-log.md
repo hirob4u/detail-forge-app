@@ -261,4 +261,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-02 -- Blueprint F -- fix/structured-photo-capture-modes
+
+**Built:** Added two-mode interface to StructuredPhotoCapture component. Guided mode shows one full-width shot card at a time with progress bar, Previous/Next/Skip navigation, and thumbnail strip. Batch mode shows a vertical card list with label and guidance text on the left, upload zone on the right. Mode toggle at the top with "Step-by-step" (default, purple) and "Upload all at once" buttons. Switched from per-tile hidden inputs to a shared `inputRefs` map with hidden inputs rendered once for all 13 shot areas. Removed the old grid-based `ShotTile` component entirely.
+
+**Worked well:** Shared `inputRefs` pattern cleanly decoupled file inputs from render mode. Both modes read the same `photos` state so switching modes preserves all uploaded photos. Progress bar and thumbnail strip in guided mode give clear feedback without taking space from the shot card.
+
+**Corrected:** None.
+
+**Root cause:** Original implementation rendered all shots as small square tiles in a 2×4 grid. Labels and guidance text were unreadable at mobile sizes. The Blueprint spec included guided and batch modes but the initial implementation ignored them in favor of the simpler grid layout.
+
+**Commit:** `fix: add guided and batch modes to structured photo capture`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
