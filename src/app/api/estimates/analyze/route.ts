@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import Anthropic from "@anthropic-ai/sdk";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { jobs } from "@/lib/db/schema";
+import { jobs, prompts } from "@/lib/db/schema";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -57,51 +57,6 @@ const anthropic = new Anthropic();
 const MAX_PHOTOS = 8;
 
 // ---------------------------------------------------------------------------
-// System prompt
-// ---------------------------------------------------------------------------
-
-const SYSTEM_PROMPT = `You are an expert automotive detailing assessment tool. You analyze photos of vehicles and produce a structured condition assessment for professional detailers to use when building estimates.
-
-Your output must be valid JSON only. No markdown fences, no preamble, no explanation outside the JSON object. Output the raw JSON object and nothing else.
-
-The JSON must match this exact schema:
-
-{
-  "scores": {
-    "paintCondition": { "score": <number 1-10>, "description": "<string>", "recommendedService": "<string>" },
-    "scratchSeverity": { "score": <number 1-10>, "description": "<string>", "recommendedService": "<string>" },
-    "contamination": { "score": <number 1-10>, "description": "<string>", "recommendedService": "<string>" },
-    "interior": { "score": <number 1-10>, "description": "<string>", "recommendedService": "<string>" },
-    "wheelsTrim": { "score": <number 1-10>, "description": "<string>", "recommendedService": "<string>" }
-  },
-  "recommendedServices": [
-    { "name": "<string>", "note": "<string or omit>", "basePrice": <number>, "adjustedPrice": <number> }
-  ],
-  "confidence": <number 0-100>,
-  "flags": ["<string>"]
-}
-
-Scoring rubric for each dimension (1 = worst, 10 = best):
-
-- Paint Condition: Evaluate swirl marks, oxidation, water spots, clear coat health, and surface contamination. 1 = severe damage requiring full paint restoration. 10 = perfect showroom condition with no visible defects.
-
-- Scratch Severity: Evaluate depth and extent of scratches and marring across all panels. 1 = deep paint scratches through to primer or bare metal. 10 = no scratches or marring visible.
-
-- Contamination: Evaluate industrial fallout, water spot etching, tar deposits, tree sap, and embedded debris. 1 = heavily contaminated surfaces requiring aggressive chemical decontamination. 10 = clean surfaces with no embedded contaminants.
-
-- Interior: Evaluate staining, wear, and soiling on seats, carpet, dashboard, headliner, and door panels. 1 = heavily soiled with damage, stains, and wear. 10 = pristine interior with no visible wear or soiling.
-
-- Wheels/Trim: Evaluate brake dust buildup, exterior trim condition, and wheel finish condition. 1 = heavily corroded wheels, damaged trim, severe brake dust etching. 10 = perfect wheel finish and trim condition.
-
-For each dimension, provide a concise description of what you observe and recommend a specific detailing service to address the condition.
-
-For recommendedServices: provide realistic professional detailing prices. Use the vehicle information (year, make, model) to adjust pricing -- luxury, exotic, and larger vehicles command higher prices than economy vehicles. Each service should have a basePrice (standard rate) and an adjustedPrice (adjusted for this specific vehicle).
-
-Set confidence (0-100) based on photo quality and coverage. If photos are blurry, poorly lit, or don't cover all areas of the vehicle, lower the confidence. If confidence is below 60, include a flag explaining what additional photos or information would help.
-
-Populate flags with any specific concerns worth verifying in person before finalizing the quote. For example: "Driver door scratch appears to extend into primer -- verify depth before quoting correction." or "Photos do not show interior -- interior score is estimated." Flags should be actionable for the detailer.`;
-
-// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -130,6 +85,20 @@ function stripMarkdownFences(text: string): string {
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
+  // Fetch active assessment prompt
+  const [promptRecord] = await db
+    .select({ content: prompts.content })
+    .from(prompts)
+    .where(and(eq(prompts.name, "condition-assessment"), eq(prompts.active, true)))
+    .limit(1);
+
+  if (!promptRecord) {
+    return NextResponse.json(
+      { error: "No active assessment prompt configured" },
+      { status: 500 },
+    );
+  }
+
   // Parse request body
   const body = await request.json().catch(() => null);
   if (!body) {
@@ -211,7 +180,7 @@ export async function POST(request: NextRequest) {
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
       max_tokens: 2000,
-      system: SYSTEM_PROMPT,
+      system: promptRecord.content,
       messages: [{ role: "user", content: userContent }],
     });
 

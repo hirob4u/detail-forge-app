@@ -228,4 +228,30 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint D -- API Route (Analyze)
+### Issue: Hardcoded System Prompt Prevents Iteration Without Deploys
+
+**Issue:** The condition assessment system prompt was hardcoded as a `SYSTEM_PROMPT` constant in the analyze route. Every prompt change required a code change and redeployment.
+
+**Root cause:** The original Blueprint D treated the system prompt as code rather than data. Prompt engineering is iterative and the prompt will change frequently as assessment quality is tuned. Embedding it in the route handler couples prompt changes to the deploy cycle.
+
+**Fix applied:** Created a `prompts` table in the database with name, version, content, and active flag. The analyze route fetches the active prompt by name at request time. A seed script (`scripts/seed-prompt.ts`) reads from `scripts/prompt-content.txt` and inserts a new versioned row, deactivating previous versions. Prompt updates are now: edit the text file, run `npm run seed:prompt`, done.
+
+**Add to Blueprint:** Any Blueprint that involves an LLM system prompt must store the prompt in the database, not in code. Create a `prompts` table with name, version, content, and active columns. The API route fetches the active prompt by name at request time. Provide a seed script that reads from a plain text file and inserts a new version. Never hardcode LLM prompts in route handlers or constants.
+
+---
+
+### All Blueprints -- Scripts
+### Issue: ES Module Import Hoisting Breaks dotenv in Seed Scripts
+
+**Issue:** Seed script using `import { db } from "../src/lib/db"` at the top level failed with "No database connection string" even though `dotenv.config({ path: ".env.local" })` was called before the DB was used.
+
+**Root cause:** ES module static imports are hoisted -- they execute before any imperative code in the file. The DB module reads `process.env.DATABASE_URL` at import time. `dotenv.config()` runs after all static imports have resolved, so the env var is not set yet when the DB module initializes.
+
+**Fix applied:** Restructured seed script to use `await import()` dynamic imports inside the async function body. Only `dotenv` itself is a static import (it has no env dependencies). All other imports (`db`, `schema`, `drizzle-orm`) are dynamically imported after `dotenv.config()` has run.
+
+**Add to Blueprint:** Any Blueprint that includes a standalone script (seed, migration, utility) must use dynamic `await import()` for any module that reads environment variables at initialization time. Static `import` is only safe for modules with no env dependencies (like `dotenv` itself, `fs`, `path`). Pattern: `import dotenv from "dotenv"; dotenv.config({ path: ".env.local" }); async function main() { const { db } = await import("../src/lib/db"); ... }`.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

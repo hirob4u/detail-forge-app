@@ -240,6 +240,20 @@ export const usageLogs = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Prompts -- AI prompt version management
+// ---------------------------------------------------------------------------
+
+export const prompts = pgTable("prompts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  version: integer("version").notNull().default(1),
+  content: text("content").notNull(),
+  active: boolean("active").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
 // Better Auth -- user, session, account, verification
 // ---------------------------------------------------------------------------
 
