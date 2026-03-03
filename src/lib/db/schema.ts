@@ -13,6 +13,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+import type { FinalQuote } from "@/lib/types/quote";
 
 // ---------------------------------------------------------------------------
 // Enums
@@ -26,6 +27,7 @@ export const subscriptionStatusEnum = pgEnum("subscription_status", [
 
 export const jobStageEnum = pgEnum("job_stage", [
   "created",
+  "quoted",
   "sent",
   "approved",
   "inProgress",
@@ -160,6 +162,10 @@ export const jobs = pgTable(
     photos: jsonb("photos").$type<{ key: string; phase: string; area: string }[]>().default([]),
     aiAssessment: jsonb("ai_assessment"),
     detailerAdjustments: jsonb("detailer_adjustments"),
+    assessmentFeedback: text("assessment_feedback"),
+    assessmentFeedbackRating: text("assessment_feedback_rating"),
+    finalQuote: jsonb("final_quote").$type<FinalQuote>(),
+    quotedAt: timestamp("quoted_at", { withTimezone: true }),
     estimateAmount: numeric("estimate_amount", { precision: 12, scale: 2 }),
     finalAmount: numeric("final_amount", { precision: 12, scale: 2 }),
     notes: text("notes"),

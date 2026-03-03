@@ -36,6 +36,13 @@
       "when": 1772574734340,
       "tag": "0004_nebulous_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772577209754,
+      "tag": "0005_luxuriant_scourge",
+      "breakpoints": true
     }
   ]
 }
