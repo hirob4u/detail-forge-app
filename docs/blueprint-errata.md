@@ -215,4 +215,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Deployment Infrastructure
+### Issue: Premature Deployment Adapter Configuration
+
+**Issue:** Cloudflare deployment infrastructure (`@opennextjs/cloudflare`, `wrangler`, `wrangler.jsonc`, `open-next.config.ts`, `optimizePackageImports`, Cloudflare-specific scripts) was added before the deployment target was finalized. This added complexity and config files without being needed.
+
+**Root cause:** Deployment adapter was treated as a Blueprint F fix when it should have been a dedicated deployment Blueprint with its own acceptance criteria including a successful deploy.
+
+**Fix applied:** Removed all Cloudflare-specific packages, config files, and scripts. Reverted `next.config.ts` to minimal config. Codebase is deployment-target-neutral.
+
+**Add to Blueprint:** Do not add deployment adapter infrastructure until the deployment target is finalized and a full deploy test is part of the acceptance criteria. Deployment config should be its own Blueprint task, not a bug fix. Keep the codebase deployment-target-neutral until ready to deploy.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
