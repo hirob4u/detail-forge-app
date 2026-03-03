@@ -306,4 +306,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-03 -- Blueprint -- schema/prompt-management
+
+**Built:** Added `prompts` table to Drizzle schema (id, name, version, content, active, timestamps). Created `scripts/prompt-content.txt` with a comprehensive ~280-line detailing assessment prompt covering vehicle verification, age calibration, paint type identification, panel repaint detection, water spots/etching, piano black surfaces, glass assessment, interior material assessment, headliner assessment, staining/pet hair/clutter/odor, scoring rubric, critical rules, professional writing standard, and structured JSON output schema. Created `scripts/seed-prompt.ts` with version-incrementing idempotent seeding. Updated `/api/estimates/analyze` route to fetch the active prompt from the database instead of using a hardcoded constant. Added `seed:prompt` npm script.
+
+**Worked well:** Migration generated and applied cleanly. Analyze route update was minimal -- replaced the hardcoded `SYSTEM_PROMPT` constant with a DB query at the top of the handler. Output schema in the prompt now includes `vehicleVerification` field for vehicle mismatch detection.
+
+**Corrected:** Seed script initially used static ES module imports (`import { db } from "../src/lib/db"`). Static imports are hoisted and execute before any code, so `dotenv.config()` had not loaded `DATABASE_URL` yet when the DB module initialized. Restructured to use dynamic `await import()` calls inside the async function body so dotenv loads first.
+
+**Root cause:** ES module import hoisting. When a script needs environment variables loaded before a module initializes (e.g., the DB client reads `DATABASE_URL` at import time), all dependent imports must be dynamic `await import()` calls placed after `dotenv.config()`.
+
+**Commit:** `schema: add prompts table, seed script, and DB-driven assessment prompt`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
