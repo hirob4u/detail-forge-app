@@ -291,4 +291,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-03 -- Blueprint F -- fix/remove-cloudflare-config
+
+**Built:** Removed all Cloudflare deployment infrastructure. Uninstalled `@opennextjs/cloudflare` and `wrangler`. Deleted `wrangler.jsonc` and `open-next.config.ts`. Removed `preview` and `deploy` scripts from `package.json`. Reverted `next.config.ts` to minimal clean config. Kept `public/_headers` (valid for any CDN) and `.open-next` in `.gitignore`. No `export const runtime = 'edge'` exists anywhere in source.
+
+**Worked well:** Cleanup was straightforward. `npm run build` passes clean with all routes rendering correctly.
+
+**Corrected:** None -- this was the correction, reverting the previous `fix/cloudflare-opennext-deployment` changes.
+
+**Root cause:** Cloudflare deployment adapter was added prematurely before the deployment target was finalized. The adapter and its configuration added complexity without being needed yet.
+
+**Commit:** `fix: remove Cloudflare deployment config and restore clean state`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
