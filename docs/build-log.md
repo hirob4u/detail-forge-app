@@ -321,4 +321,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-03 -- Blueprint -- feat/detailer-review-screen
+
+**Built:** Detailer review screen at `/dashboard/jobs/[jobId]/review`. AI assessment flags surfaced for in-person verification with amber alert icons. Vehicle mismatch warning renders in red when `appearsToMatch` is false. Feedback mechanism (helpful / needs work toggle + notes textarea) added for prompt improvement data collection. Quote builder pre-populated from AI recommended services with editable prices, toggle per line item, and "Add service" for manual additions. Total updates in real time. Finalize Quote POSTs to `/api/jobs/[jobId]/finalize`, transitions job stage to `quoted`, stores `finalQuote`, `assessmentFeedbackRating`, and `assessmentFeedback` on the job record. Job detail page created at `/dashboard/jobs/[jobId]` with conditional "Review Assessment" / "View Quote" button. Review page renders read-only when job is already quoted. Schema updated: `quoted` added to `jobStageEnum`, new columns `assessmentFeedback`, `assessmentFeedbackRating`, `finalQuote`, `quotedAt` on jobs table. `QuoteLineItem` and `FinalQuote` types defined in `src/lib/types/quote.ts`.
+
+**Worked well:** Two-column layout (flags left, quote right) collapses cleanly to stacked vertical on mobile. Pre-populating quote line items from `aiAssessment.recommendedServices` with `included: true` gives the detailer a starting point that requires minimal adjustment. The feedback mechanism is lightweight -- two buttons and a textarea, no friction.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `feat: detailer review screen with AI flags, feedback, and quote builder`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

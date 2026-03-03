@@ -254,4 +254,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint -- Detailer Review Screen
+### Decision: AI Scores Not Displayed in Review UI
+
+**Issue:** Not a bug -- a deliberate product decision documented here to prevent future Blueprints from adding score display to the review screen.
+
+**Root cause:** N/A -- intentional design.
+
+**Fix applied:** The review screen displays AI flags and recommended services but does not display raw numerical scores (paintCondition, scratchSeverity, contamination, interior, wheelsTrim). Detailers need actionable flags and service recommendations, not abstract 1-10 numbers. Scores are stored in `aiAssessment` for future analytics use (trend analysis, prompt quality tracking) but are not surfaced in the detailer-facing review UI.
+
+**Add to Blueprint:** The review screen intentionally does not display raw AI scores -- detailers need actionable flags, not numerical scores. Scores are stored in `aiAssessment` for future analytics use but are not surfaced in the review UI. This is a deliberate product decision. Do not add score display to the review screen without explicit product approval.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
