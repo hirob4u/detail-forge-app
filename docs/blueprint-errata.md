@@ -280,4 +280,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint D -- API Route (Analyze)
+### Issue: iPhone Photos Exceed Claude Vision API Size Limit and photoKeys Type Mismatch
+
+**Issue:** Two bugs. (1) Raw iPhone photos at 12MP are 4-8MB each. Claude Vision API has a 5MB per image hard limit — requests with large photos fail silently or error. (2) The intake submit route sends `photoKeys` as `{ key, area, phase }[]` structured objects, but the analyze route typed them as `string[]`. Without explicit key extraction, JS coerces the object to the string `[object Object]` when used as an R2 key, causing all photo fetches to fail.
+
+**Root cause:** (1) No image processing step existed between R2 fetch and Claude API submission. Photos were base64-encoded at full resolution. (2) The analyze route was written before the structured photo capture format existed. The `photoKeys` type was never updated to match the new `{ key, area, phase }` format.
+
+**Fix applied:** (1) Added `sharp` to resize all photos to 800px wide at 75% JPEG quality before base64 encoding. Reduces a 6MB photo to ~150KB while retaining sufficient detail for visual assessment. `sharp` handles HEIC, PNG, and JPEG inputs transparently. (2) Updated `photoKeys` type to `Array<string | { key, area, phase }>` and added defensive extraction: `typeof k === 'string' ? k : k.key`.
+
+**Add to Blueprint:** iPhone photos from R2 must be resized with `sharp` before base64 encoding for Claude Vision API. Raw iPhone photos exceed Claude's 5MB per image hard limit. Resize to 800px wide at 75% JPEG quality — reduces a 6MB photo to roughly 150KB while retaining sufficient detail for visual assessment. The analyze route must also handle `photoKeys` as both `string[]` and `{ key, area, phase }[]` since the intake form stores structured objects but manual triggers may pass plain strings. Always extract the key property defensively.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

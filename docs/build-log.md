@@ -351,4 +351,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-03 -- Blueprint F -- fix/analyze-photo-resize-and-key-extraction
+
+**Built:** Added `sharp` image processing to the analyze route. iPhone photos from R2 are resized to 800px wide at 75% JPEG quality before base64 encoding for Claude Vision API — reduces a 6MB+ raw photo to ~150KB. Hardened `photoKeys` extraction to accept both `string[]` (manual triggers) and `{ key, area, phase }[]` (structured intake objects), preventing the `[object Object]` key error. Updated `fetchPhotoAsBase64` to return typed `{ base64, mediaType }` objects instead of raw strings. Updated Claude image blocks to use the typed properties.
+
+**Worked well:** `sharp` handles HEIC, PNG, and JPEG inputs transparently — the `.jpeg()` output call converts any input format to JPEG. The defensive `typeof k === 'string' ? k : k.key` extraction is simple and handles both caller formats without schema changes.
+
+**Corrected:** None — this was the correction. Two bugs fixed: (1) raw iPhone photos exceeded Claude's 5MB per image limit, (2) structured `{ key, area, phase }` objects were being stringified to `[object Object]` as R2 keys when passed directly from the intake submit route.
+
+**Root cause:** (1) Photos were passed to Claude as raw base64 without any resizing. iPhone photos at 12MP are 4-8MB each — well over Claude's 5MB per image hard limit. (2) The `photoKeys` type was `string[]` but the intake submit route sends `{ key, area, phase }[]` objects. Without explicit key extraction, JS coerces the object to the string `[object Object]` when used as an R2 key.
+
+**Commit:** `fix: resize photos with sharp and extract keys from structured objects`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
