@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import Anthropic from "@anthropic-ai/sdk";
+import sharp from "sharp";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobs, prompts } from "@/lib/db/schema";
@@ -60,12 +61,24 @@ const MAX_PHOTOS = 8;
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function fetchPhotoAsBase64(key: string): Promise<string | null> {
+async function fetchPhotoAsBase64(
+  key: string,
+): Promise<{ base64: string; mediaType: "image/jpeg" } | null> {
   try {
     const command = new GetObjectCommand({ Bucket: R2_BUCKET, Key: key });
     const response = await r2Client.send(command);
-    const bytes = await response.Body!.transformToByteArray();
-    return Buffer.from(bytes).toString("base64");
+    const bytes = await response.Body?.transformToByteArray();
+    if (!bytes) return null;
+
+    const resized = await sharp(Buffer.from(bytes))
+      .resize({ width: 800, withoutEnlargement: true })
+      .jpeg({ quality: 75 })
+      .toBuffer();
+
+    return {
+      base64: resized.toString("base64"),
+      mediaType: "image/jpeg",
+    };
   } catch (err) {
     console.error(`Failed to fetch photo from R2 (key: ${key}):`, err);
     return null;
@@ -100,11 +113,11 @@ export async function POST(request: NextRequest) {
     vehicleColor,
   } = body as {
     jobId: string;
-    photoKeys: string[];
-    vehicleYear: number;
-    vehicleMake: string;
-    vehicleModel: string;
-    vehicleColor: string;
+    photoKeys: Array<string | { key: string; area: string; phase: string }>;
+    vehicleYear?: number;
+    vehicleMake?: string;
+    vehicleModel?: string;
+    vehicleColor?: string;
   };
 
   // Validate required fields
@@ -156,11 +169,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch photos from R2 (max 8)
-    const keysToFetch = photoKeys.slice(0, MAX_PHOTOS);
-    const base64Results = await Promise.all(keysToFetch.map(fetchPhotoAsBase64));
-    const photos = base64Results.filter((b): b is string => b !== null);
+    const keysToFetch = photoKeys
+      .slice(0, MAX_PHOTOS)
+      .map((k) => (typeof k === "string" ? k : k.key));
+    const photoResults = await Promise.all(keysToFetch.map(fetchPhotoAsBase64));
+    const validPhotos = photoResults.filter(
+      (p): p is { base64: string; mediaType: "image/jpeg" } => p !== null,
+    );
 
-    if (photos.length === 0) {
+    if (validPhotos.length === 0) {
       await db
         .update(jobs)
         .set({ analysisStatus: "failed" })
@@ -172,12 +189,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Build Claude API message content
-    const imageBlocks: Anthropic.ImageBlockParam[] = photos.map((data) => ({
-      type: "image",
+    const imageBlocks: Anthropic.ImageBlockParam[] = validPhotos.map((photo) => ({
+      type: "image" as const,
       source: {
-        type: "base64",
-        media_type: "image/jpeg",
-        data,
+        type: "base64" as const,
+        media_type: photo.mediaType,
+        data: photo.base64,
       },
     }));
 
