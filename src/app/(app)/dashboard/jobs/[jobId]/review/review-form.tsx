@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { QuoteLineItem, FinalQuote } from "@/lib/types/quote";
@@ -12,6 +12,9 @@ import {
   Circle,
   Plus,
   Loader2,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -40,6 +43,13 @@ interface ConditionAssessment {
   flags: string[];
 }
 
+interface PhotoWithUrl {
+  key: string;
+  area: string;
+  phase: string;
+  url: string;
+}
+
 interface ReviewFormProps {
   jobId: string;
   assessment: ConditionAssessment;
@@ -49,6 +59,7 @@ interface ReviewFormProps {
   stage: string;
   isQuoted: boolean;
   existingQuote: FinalQuote | null;
+  hasPhotos: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -64,8 +75,42 @@ export default function ReviewForm({
   stage,
   isQuoted,
   existingQuote,
+  hasPhotos,
 }: ReviewFormProps) {
   const router = useRouter();
+
+  // Photo viewer state
+  const [photos, setPhotos] = useState<PhotoWithUrl[]>([]);
+  const [photosLoading, setPhotosLoading] = useState(hasPhotos);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!hasPhotos) return;
+    fetch(`/api/jobs/${jobId}/photos`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: PhotoWithUrl[]) => setPhotos(data))
+      .catch(() => setPhotos([]))
+      .finally(() => setPhotosLoading(false));
+  }, [jobId, hasPhotos]);
+
+  const handleLightboxKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (lightboxIndex === null) return;
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowRight" && lightboxIndex < photos.length - 1)
+        setLightboxIndex(lightboxIndex + 1);
+      if (e.key === "ArrowLeft" && lightboxIndex > 0)
+        setLightboxIndex(lightboxIndex - 1);
+    },
+    [lightboxIndex, photos.length],
+  );
+
+  useEffect(() => {
+    if (lightboxIndex !== null) {
+      document.addEventListener("keydown", handleLightboxKeyDown);
+      return () => document.removeEventListener("keydown", handleLightboxKeyDown);
+    }
+  }, [lightboxIndex, handleLightboxKeyDown]);
 
   // Feedback state
   const [feedbackRating, setFeedbackRating] = useState<"helpful" | "needs_work" | null>(null);
@@ -208,6 +253,114 @@ export default function ReviewForm({
           </div>
         </div>
       </div>
+
+      {/* SECTION -- Customer photos */}
+      {hasPhotos && (
+        <div>
+          <h2 className="text-lg font-semibold text-[var(--color-text)]">
+            Customer Photos
+          </h2>
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            Photos submitted with the intake form. Click to enlarge.
+          </p>
+
+          {photosLoading ? (
+            <div className="mt-4 flex items-center gap-2 text-sm text-[var(--color-muted)]">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading photos...
+            </div>
+          ) : photos.length > 0 ? (
+            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+              {photos.map((photo, i) => (
+                <button
+                  key={photo.key}
+                  type="button"
+                  onClick={() => setLightboxIndex(i)}
+                  className="group relative aspect-square overflow-hidden rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.url}
+                    alt={photo.area}
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                  />
+                  <span
+                    className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white"
+                    style={{ fontFamily: "var(--font-data)" }}
+                  >
+                    {photo.area.replace(/-/g, " ")}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {lightboxIndex !== null && photos[lightboxIndex] && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxIndex(null)}
+            className="absolute right-4 top-4 rounded-full p-2 text-white/70 transition-colors hover:text-white"
+          >
+            <X className="h-6 w-6" />
+          </button>
+
+          {lightboxIndex > 0 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIndex(lightboxIndex - 1);
+              }}
+              className="absolute left-4 rounded-full p-2 text-white/70 transition-colors hover:text-white"
+            >
+              <ChevronLeft className="h-8 w-8" />
+            </button>
+          )}
+
+          {lightboxIndex < photos.length - 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIndex(lightboxIndex + 1);
+              }}
+              className="absolute right-4 rounded-full p-2 text-white/70 transition-colors hover:text-white"
+            >
+              <ChevronRight className="h-8 w-8" />
+            </button>
+          )}
+
+          <div
+            className="max-h-[85vh] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photos[lightboxIndex].url}
+              alt={photos[lightboxIndex].area}
+              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain"
+            />
+            <p
+              className="mt-2 text-center text-xs font-medium uppercase tracking-wider text-white/70"
+              style={{ fontFamily: "var(--font-data)" }}
+            >
+              {photos[lightboxIndex].area.replace(/-/g, " ")}
+              {photos[lightboxIndex].phase && (
+                <span className="ml-2 text-white/40">
+                  {photos[lightboxIndex].phase}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Two-column layout on desktop */}
       <div className="grid gap-6 lg:grid-cols-2">

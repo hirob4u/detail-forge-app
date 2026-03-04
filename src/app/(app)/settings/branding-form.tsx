@@ -27,6 +27,16 @@ const FONT_OPTIONS = [
   { value: "Space Grotesk", label: "Space Grotesk" },
 ] as const;
 
+const ACCENT_COLORS = [
+  { value: "#7C4DFF", label: "Purple" },
+  { value: "#2979FF", label: "Blue" },
+  { value: "#00BFA5", label: "Teal" },
+  { value: "#FF6D00", label: "Orange" },
+  { value: "#F50057", label: "Pink" },
+  { value: "#FFD600", label: "Gold" },
+  { value: "#76FF03", label: "Lime" },
+] as const;
+
 export default function BrandingForm({ org }: { org: OrgData }) {
   // Business profile fields
   const [name, setName] = useState(org.name);
@@ -433,7 +443,6 @@ export default function BrandingForm({ org }: { org: OrgData }) {
         <div className="space-y-4">
           <div>
             <label
-              htmlFor="accentColor"
               className="mb-1.5 block text-sm font-medium text-[var(--color-text)]"
             >
               Accent Color
@@ -441,27 +450,21 @@ export default function BrandingForm({ org }: { org: OrgData }) {
             <p className="mb-1.5 text-xs text-[var(--color-muted)]">
               Used for buttons and highlights on the intake form
             </p>
-            <div className="flex items-center gap-3">
-              <input
-                id="accentColor"
-                type="color"
-                value={accentColor}
-                onChange={(e) => setAccentColor(e.target.value)}
-                className="h-10 w-10 cursor-pointer rounded-[var(--radius-button)] border border-[var(--color-border)] bg-transparent p-0.5"
-              />
-              <input
-                type="text"
-                value={accentColor}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (/^#[0-9A-Fa-f]{0,6}$/.test(val)) {
-                    setAccentColor(val);
-                  }
-                }}
-                className="w-28 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-purple-action)] focus:outline-none"
-                style={{ fontFamily: "var(--font-data)" }}
-                placeholder="#7C4DFF"
-              />
+            <div className="flex flex-wrap gap-2">
+              {ACCENT_COLORS.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  onClick={() => setAccentColor(color.value)}
+                  title={color.label}
+                  className={`h-9 w-9 rounded-full border-2 transition-transform hover:scale-110 ${
+                    accentColor === color.value
+                      ? "border-white scale-110"
+                      : "border-transparent"
+                  }`}
+                  style={{ backgroundColor: color.value }}
+                />
+              ))}
             </div>
           </div>
 

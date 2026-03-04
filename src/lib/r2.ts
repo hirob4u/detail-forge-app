@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const r2 = new S3Client({
@@ -50,4 +50,17 @@ export async function createPresignedUploadUrl(opts: {
   const presignedUrl = await getSignedUrl(r2, command, { expiresIn: 600 });
 
   return { presignedUrl, key };
+}
+
+/**
+ * Generate a presigned GET URL for viewing a photo from R2.
+ * URLs expire after 1 hour by default.
+ */
+export async function createPresignedGetUrl(key: string, expiresIn = 3600) {
+  const command = new GetObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+  });
+
+  return getSignedUrl(r2, command, { expiresIn });
 }

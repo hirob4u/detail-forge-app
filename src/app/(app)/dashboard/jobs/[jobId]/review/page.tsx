@@ -93,6 +93,7 @@ export default async function ReviewPage({
         stage={job.stage}
         isQuoted={isQuoted}
         existingQuote={isQuoted ? (job.finalQuote as FinalQuote | null) : null}
+        hasPhotos={Array.isArray(job.photos) && job.photos.length > 0}
       />
     </div>
   );
