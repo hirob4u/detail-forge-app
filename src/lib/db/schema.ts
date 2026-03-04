@@ -61,6 +61,12 @@ export const organizations = pgTable("organizations", {
   website: varchar("website", { length: 500 }),
   city: varchar("city", { length: 255 }).notNull(),
   state: varchar("state", { length: 100 }).notNull(),
+  shopName: text("shop_name"),
+  shopTagline: text("shop_tagline"),
+  logoKey: text("logo_key"),
+  logoUrl: text("logo_url"),
+  accentColor: text("accent_color").default("#7C4DFF"),
+  nameFont: text("name_font").default("DM Sans"),
   subscriptionStatus: subscriptionStatusEnum("subscription_status")
     .notNull()
     .default("trial"),

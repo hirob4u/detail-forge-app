@@ -50,6 +50,13 @@
       "when": 1772587455756,
       "tag": "0006_narrow_the_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1772642499275,
+      "tag": "0007_stiff_corsair",
+      "breakpoints": true
     }
   ]
 }

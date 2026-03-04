@@ -306,4 +306,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint -- Organization Branding Settings
+### Decision: R2_PUBLIC_URL for Logo Display
+
+**Issue:** Not a bug — a design decision. Logo URLs are constructed server-side from `R2_PUBLIC_URL` + logo key when the PATCH is saved. This assumes the R2 bucket has a public custom domain configured for logo display on the intake form. If the bucket remains private, logos would need presigned GET URLs generated on demand instead.
+
+**Root cause:** N/A — architecture note for future reference.
+
+**Fix applied:** The PATCH route constructs `logoUrl = R2_PUBLIC_URL/key` when a `logoKey` is set. If `R2_PUBLIC_URL` is not configured, the `logoUrl` will not be set. The intake form should use `logoUrl` when available, falling back to the org name as text.
+
+**Add to Blueprint:** When a Blueprint stores files in R2 that need to be displayed publicly (logos, branding assets), document whether the bucket requires a public domain. Photo storage for AI analysis should always remain private (presigned GET on demand). Logo/branding assets can use a public URL if configured.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
