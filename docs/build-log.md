@@ -426,4 +426,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint F -- fix/branding-photos-org-bridge
+
+**Built:** Three changes shipped together. (1) Replaced free-form color picker in branding settings with 7 curated accent color swatches -- no hex input, no native color picker. (2) Created `/api/jobs/[jobId]/photos` GET route that generates presigned R2 GET URLs for a job's photos, with auth + org ownership verification. Added `createPresignedGetUrl` helper to `src/lib/r2.ts`. (3) Added photo viewer to the detailer review screen -- grid of labeled thumbnails with a keyboard-navigable lightbox overlay. Photos load on mount via the new API route.
+
+**Worked well:** The curated swatch approach is simpler than the color picker + hex input and prevents invalid colors. The photo viewer lightbox uses keyboard navigation (arrow keys + escape) via a `useEffect` event listener with proper cleanup. Initializing `photosLoading` from the `hasPhotos` prop avoids a synchronous `setState` inside `useEffect`.
+
+**Corrected:** ESLint flagged `setPhotosLoading(true)` called synchronously in a `useEffect` body. Fixed by initializing the state from the `hasPhotos` prop instead.
+
+**Root cause:** React strict mode ESLint rules prohibit synchronous `setState` in effect bodies to prevent cascading renders.
+
+**Commit:** `fix: curated color swatches, photo viewer, and presigned GET URLs`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

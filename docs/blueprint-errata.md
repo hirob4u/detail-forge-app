@@ -358,4 +358,30 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint -- Organization Branding Settings
+### Issue: Free-Form Color Picker Produces Inaccessible Colors
+
+**Issue:** The color picker used `<input type="color">` with a hex text input. Users could select any color, including colors with poor contrast on dark backgrounds (e.g. dark gray, pure black) or colors that conflict with status indicator colors (amber, green, red) already used in the UI.
+
+**Root cause:** Free-form color selection is a power-user feature that creates more problems than it solves for a business tool. Most detailers want to pick a brand color quickly, not fine-tune hex values.
+
+**Fix applied:** Replaced with 7 curated accent color swatches: Purple (#7C4DFF), Blue (#2979FF), Teal (#00BFA5), Orange (#FF6D00), Pink (#F50057), Gold (#FFD600), Lime (#76FF03). All selected for visibility on dark backgrounds and contrast with existing UI status colors.
+
+**Add to Blueprint:** When a Blueprint provides color customization, use curated swatches instead of free-form color input. Curated swatches prevent inaccessible color choices, simplify the UI, and ensure all selected colors work with the existing design system. Each swatch should be tested for contrast on the app's dark background.
+
+---
+
+### Blueprint -- Detailer Review Screen
+### Issue: No Photo Viewer in Review Screen
+
+**Issue:** The detailer review screen showed AI flags and the quote builder but did not display the customer's submitted photos. Detailers had no visual reference when reviewing the AI assessment, making it impossible to verify flags against the actual photos.
+
+**Root cause:** The original review screen Blueprint focused on AI assessment display and quote building without considering that the detailer needs to see the photos the AI analyzed.
+
+**Fix applied:** Added a photo viewer section between the vehicle header and the two-column layout. Photos are fetched via `/api/jobs/[jobId]/photos` which generates presigned R2 GET URLs. Grid layout with labeled area tags. Clicking a thumbnail opens a lightbox overlay with keyboard navigation (arrow keys, escape). The lightbox prevents background scrolling and uses `stopPropagation` to prevent close-on-click when interacting with the image.
+
+**Add to Blueprint:** Any review screen where the user evaluates AI output based on uploaded media must display that media alongside the AI output. The reviewer needs to compare the AI's assessment against the source material. Photo display requires presigned GET URLs for private R2 storage -- create a dedicated API route that verifies auth and org ownership before generating URLs.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
