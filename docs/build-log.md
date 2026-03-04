@@ -396,4 +396,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint -- feat/apply-org-branding
+
+**Built:** Applied org branding to the customer intake page and dashboard sidebar. Intake page header renders org logo when set, falling back to shop name (or org name) in the selected font with tagline. Accent color applied via `--color-brand` CSS custom property on the intake page wrapper, replacing all `--color-purple-action` references across the intake form and structured photo capture components. Hover states use `--color-brand-hover` computed via `color-mix()`. Google Fonts loaded dynamically via `<link>` when the selected `nameFont` is not DM Sans or JetBrains Mono (both already in the global stack). "Powered by DetailForge.io" badge added to the intake page footer — non-removable, low opacity, links to marketing site in a new tab. Dashboard sidebar wordmark replaced with org logo when set via a server component (`SidebarWordmark`) wrapped in `Suspense` with the DetailForge text as the fallback. Layout refactored: `layout.tsx` converted to a server component, interactive shell extracted to `AppShell` client component, wordmark passed through as a React node prop.
+
+**Worked well:** The server/client component split for the sidebar was clean — `AppShell` receives the wordmark as a prop, `SidebarWordmark` queries the DB server-side, and `Suspense` ensures no layout shift. The `--color-brand` CSS variable approach works well because child client components inherit it without needing brand data passed as props. `color-mix()` for the hover shade avoids needing to compute darker hex values in JS.
+
+**Corrected:** Layout refactored from client to server component. The blueprint specified `<Suspense>` + `<SidebarWordmark />` inside the layout, but since the layout was a `"use client"` component, server components could not be imported directly. Refactored to server layout + client `AppShell` + server `SidebarWordmark` following the standard Next.js pattern for mixing server and client components.
+
+**Root cause:** Server components cannot be imported into `"use client"` files — they become client components at the boundary. The correct pattern is to render server components in a server parent and pass them as React node props to client components.
+
+**Commit:** `feat: apply org branding to intake page and dashboard sidebar`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

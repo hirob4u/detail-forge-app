@@ -319,4 +319,30 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint -- Apply Org Branding to Intake Page
+### Convention: --color-brand for Customer-Facing Surfaces
+
+**Issue:** Not a bug — a convention established in this Blueprint.
+
+**Root cause:** N/A — design decision.
+
+**Fix applied:** The intake page uses `--color-brand` as its primary action color, not `--color-purple-action`. This CSS custom property is set inline on the page wrapper from the org's `accentColor` value. A companion `--color-brand-hover` is derived via `color-mix(in srgb, accentColor, black 15%)` for hover states. All child components on the intake page (intake form, structured photo capture) reference `--color-brand` and `--color-brand-hover` instead of the DetailForge purple variables. The dashboard always uses DetailForge purple — brand color customization is customer-facing only.
+
+**Add to Blueprint:** Any new UI added to the intake page must use `--color-brand` for primary actions — never hardcode `--color-purple-action` on the intake page. The dashboard always uses DetailForge purple. Brand color customization is customer-facing only. When adding hover states for brand-colored elements, use `--color-brand-hover` (derived via `color-mix()`) rather than computing dark shades in JavaScript.
+
+---
+
+### Blueprint -- Apply Org Branding to Dashboard Sidebar
+### Pattern: Server Component Inside Client Layout via Prop Passing
+
+**Issue:** The dashboard layout is a client component (`"use client"`) for sidebar toggle state and pathname tracking. The `SidebarWordmark` component needs to be a server component to query the database directly. Server components cannot be imported into client component files.
+
+**Root cause:** In Next.js App Router, the `"use client"` directive creates a client boundary — all components imported within that file become client components, losing the ability to be async or access server-only APIs.
+
+**Fix applied:** Refactored the layout into three pieces: (1) `layout.tsx` as a server component that composes the shell, (2) `AppShell` as a client component that receives `wordmark` as a React node prop, (3) `SidebarWordmark` as an async server component rendered in the server parent and passed through to the client component. `Suspense` wraps the wordmark with a "DetailForge" text fallback to prevent layout blocking.
+
+**Add to Blueprint:** When a layout needs both client-side interactivity and server-side data fetching, split into: server layout (composes components), client shell (handles interactivity, receives server content as React node props), server data components (async, query DB). Never import async server components directly into `"use client"` files. Always wrap server components in `Suspense` when passed to client components to prevent blocking.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
