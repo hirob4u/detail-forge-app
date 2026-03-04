@@ -43,6 +43,13 @@
       "when": 1772577209754,
       "tag": "0005_luxuriant_scourge",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772587455756,
+      "tag": "0006_narrow_the_fury",
+      "breakpoints": true
     }
   ]
 }

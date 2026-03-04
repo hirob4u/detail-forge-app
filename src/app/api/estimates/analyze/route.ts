@@ -85,20 +85,6 @@ function stripMarkdownFences(text: string): string {
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
-  // Fetch active assessment prompt
-  const [promptRecord] = await db
-    .select({ content: prompts.content })
-    .from(prompts)
-    .where(and(eq(prompts.name, "condition-assessment"), eq(prompts.active, true)))
-    .limit(1);
-
-  if (!promptRecord) {
-    return NextResponse.json(
-      { error: "No active assessment prompt configured" },
-      { status: 500 },
-    );
-  }
-
   // Parse request body
   const body = await request.json().catch(() => null);
   if (!body) {
@@ -144,39 +130,66 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
 
-  // Fetch photos from R2 (max 8)
-  const keysToFetch = photoKeys.slice(0, MAX_PHOTOS);
-  const base64Results = await Promise.all(keysToFetch.map(fetchPhotoAsBase64));
-  const photos = base64Results.filter((b): b is string => b !== null);
+  // Confirm processing has begun
+  await db
+    .update(jobs)
+    .set({ analysisStatus: "processing" })
+    .where(eq(jobs.id, jobId));
 
-  if (photos.length === 0) {
-    return NextResponse.json(
-      { error: "Failed to fetch any photos from storage" },
-      { status: 500 },
-    );
-  }
-
-  // Build Claude API message content
-  const imageBlocks: Anthropic.ImageBlockParam[] = photos.map((data) => ({
-    type: "image",
-    source: {
-      type: "base64",
-      media_type: "image/jpeg",
-      data,
-    },
-  }));
-
-  const userContent: Anthropic.ContentBlockParam[] = [
-    {
-      type: "text",
-      text: `Vehicle: ${vehicleYear} ${vehicleMake} ${vehicleModel} in ${vehicleColor}`,
-    },
-    ...imageBlocks,
-  ];
-
-  // Call Claude API
-  let responseText: string;
   try {
+    // Fetch active assessment prompt
+    const [promptRecord] = await db
+      .select({ content: prompts.content })
+      .from(prompts)
+      .where(and(eq(prompts.name, "condition-assessment"), eq(prompts.active, true)))
+      .limit(1);
+
+    if (!promptRecord) {
+      await db
+        .update(jobs)
+        .set({ analysisStatus: "failed" })
+        .where(eq(jobs.id, jobId));
+      return NextResponse.json(
+        { error: "No active assessment prompt configured" },
+        { status: 500 },
+      );
+    }
+
+    // Fetch photos from R2 (max 8)
+    const keysToFetch = photoKeys.slice(0, MAX_PHOTOS);
+    const base64Results = await Promise.all(keysToFetch.map(fetchPhotoAsBase64));
+    const photos = base64Results.filter((b): b is string => b !== null);
+
+    if (photos.length === 0) {
+      await db
+        .update(jobs)
+        .set({ analysisStatus: "failed" })
+        .where(eq(jobs.id, jobId));
+      return NextResponse.json(
+        { error: "Failed to fetch any photos from storage" },
+        { status: 500 },
+      );
+    }
+
+    // Build Claude API message content
+    const imageBlocks: Anthropic.ImageBlockParam[] = photos.map((data) => ({
+      type: "image",
+      source: {
+        type: "base64",
+        media_type: "image/jpeg",
+        data,
+      },
+    }));
+
+    const userContent: Anthropic.ContentBlockParam[] = [
+      {
+        type: "text",
+        text: `Vehicle: ${vehicleYear} ${vehicleMake} ${vehicleModel} in ${vehicleColor}`,
+      },
+      ...imageBlocks,
+    ];
+
+    // Call Claude API
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
       max_tokens: 2000,
@@ -186,38 +199,39 @@ export async function POST(request: NextRequest) {
 
     const textBlock = message.content.find((block) => block.type === "text");
     if (!textBlock || textBlock.type !== "text") {
+      await db
+        .update(jobs)
+        .set({ analysisStatus: "failed" })
+        .where(eq(jobs.id, jobId));
       return NextResponse.json(
         { error: "Assessment failed -- please try again" },
         { status: 500 },
       );
     }
-    responseText = textBlock.text;
+
+    // Parse JSON response
+    const cleaned = stripMarkdownFences(textBlock.text);
+    const assessment = JSON.parse(cleaned) as ConditionAssessment;
+
+    // Update job record with assessment and mark complete
+    await db
+      .update(jobs)
+      .set({
+        aiAssessment: assessment,
+        analysisStatus: "complete",
+      })
+      .where(eq(jobs.id, jobId));
+
+    return NextResponse.json(assessment);
   } catch (err) {
-    console.error("Claude API error:", err);
+    await db
+      .update(jobs)
+      .set({ analysisStatus: "failed" })
+      .where(eq(jobs.id, jobId));
+    console.error(`Analysis failed for job ${jobId}:`, err);
     return NextResponse.json(
-      { error: "Assessment failed -- please try again" },
+      { error: "Analysis failed" },
       { status: 500 },
     );
   }
-
-  // Parse JSON response
-  let assessment: ConditionAssessment;
-  try {
-    const cleaned = stripMarkdownFences(responseText);
-    assessment = JSON.parse(cleaned) as ConditionAssessment;
-  } catch {
-    console.error("Failed to parse Claude response as JSON:", responseText);
-    return NextResponse.json(
-      { error: "Assessment failed -- please try again" },
-      { status: 500 },
-    );
-  }
-
-  // Update job record with assessment
-  await db
-    .update(jobs)
-    .set({ aiAssessment: assessment })
-    .where(eq(jobs.id, jobId));
-
-  return NextResponse.json(assessment);
 }

@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobs, vehicles, customers } from "@/lib/db/schema";
+import AnalysisStatusPanel from "./analysis-status-panel";
 
 export default async function JobDetailPage({
   params,
@@ -15,7 +15,9 @@ export default async function JobDetailPage({
     .select({
       id: jobs.id,
       stage: jobs.stage,
+      analysisStatus: jobs.analysisStatus,
       aiAssessment: jobs.aiAssessment,
+      photos: jobs.photos,
       createdAt: jobs.createdAt,
       vehicleId: jobs.vehicleId,
       customerId: jobs.customerId,
@@ -50,15 +52,15 @@ export default async function JobDetailPage({
     .where(eq(customers.id, job.customerId))
     .limit(1);
 
-  const hasAssessment = job.aiAssessment !== null;
-  const isQuoted = job.stage === "quoted";
-
   const stageBadgeColor: Record<string, string> = {
     created: "text-[var(--color-amber)] border-[var(--color-amber)]",
     quoted: "text-[var(--color-cyan)] border-[var(--color-cyan)]",
     sent: "text-[var(--color-purple-text)] border-[var(--color-purple-text)]",
     approved: "text-[var(--color-green)] border-[var(--color-green)]",
   };
+
+  // Build retry payload from stored photos and vehicle info
+  const photoKeys = (job.photos || []).map((p) => p.key);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -119,15 +121,20 @@ export default async function JobDetailPage({
           </p>
         </div>
 
-        {/* Review / Quote action */}
-        {hasAssessment && (
-          <Link
-            href={`/dashboard/jobs/${jobId}/review`}
-            className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-purple-deep)]"
-          >
-            {isQuoted ? "View Quote" : "Review Assessment"}
-          </Link>
-        )}
+        {/* Analysis status / action panel */}
+        <AnalysisStatusPanel
+          jobId={job.id}
+          initialAnalysisStatus={job.analysisStatus}
+          initialStage={job.stage}
+          initialHasAssessment={job.aiAssessment !== null}
+          retryPayload={{
+            photoKeys,
+            vehicleYear: vehicle.year,
+            vehicleMake: vehicle.make,
+            vehicleModel: vehicle.model,
+            vehicleColor: vehicle.color,
+          }}
+        />
       </div>
     </div>
   );

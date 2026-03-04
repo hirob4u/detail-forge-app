@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ADD COLUMN "analysis_status" text DEFAULT 'processing' NOT NULL;

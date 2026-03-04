@@ -159,6 +159,10 @@ export const jobs = pgTable(
       .notNull()
       .references(() => customers.id, { onDelete: "cascade" }),
     stage: jobStageEnum("stage").notNull().default("created"),
+    analysisStatus: text("analysis_status")
+      .$type<"processing" | "complete" | "failed">()
+      .notNull()
+      .default("processing"),
     photos: jsonb("photos").$type<{ key: string; phase: string; area: string }[]>().default([]),
     aiAssessment: jsonb("ai_assessment"),
     detailerAdjustments: jsonb("detailer_adjustments"),
