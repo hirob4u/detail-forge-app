@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { QuoteLineItem, FinalQuote } from "@/lib/types/quote";
@@ -16,6 +16,22 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+
+const AREA_LABELS: Record<string, string> = {
+  "driver-side": "Driver Side",
+  "passenger-side": "Passenger Side",
+  front: "Front",
+  rear: "Rear",
+  hood: "Hood",
+  "driver-seat": "Driver Seat",
+  "rear-seat": "Rear Seat",
+  dashboard: "Dashboard",
+  "damage-area": "Damage Area",
+  wheel: "Wheel",
+  trunk: "Trunk / Cargo",
+  headliner: "Headliner",
+  "engine-bay": "Engine Bay",
+};
 
 // ---------------------------------------------------------------------------
 // Types
@@ -82,7 +98,8 @@ export default function ReviewForm({
   // Photo viewer state
   const [photos, setPhotos] = useState<PhotoWithUrl[]>([]);
   const [photosLoading, setPhotosLoading] = useState(hasPhotos);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const selectedPhoto = selectedIndex !== null ? photos[selectedIndex] : null;
 
   useEffect(() => {
     if (!hasPhotos) return;
@@ -93,24 +110,39 @@ export default function ReviewForm({
       .finally(() => setPhotosLoading(false));
   }, [jobId, hasPhotos]);
 
-  const handleLightboxKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (lightboxIndex === null) return;
-      if (e.key === "Escape") setLightboxIndex(null);
-      if (e.key === "ArrowRight" && lightboxIndex < photos.length - 1)
-        setLightboxIndex(lightboxIndex + 1);
-      if (e.key === "ArrowLeft" && lightboxIndex > 0)
-        setLightboxIndex(lightboxIndex - 1);
-    },
-    [lightboxIndex, photos.length],
-  );
-
+  // Lock body scroll when lightbox is open
   useEffect(() => {
-    if (lightboxIndex !== null) {
-      document.addEventListener("keydown", handleLightboxKeyDown);
-      return () => document.removeEventListener("keydown", handleLightboxKeyDown);
+    if (selectedIndex !== null) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
-  }, [lightboxIndex, handleLightboxKeyDown]);
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selectedIndex]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (selectedIndex === null) return;
+
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "ArrowRight") {
+        setSelectedIndex((i) =>
+          i !== null ? Math.min(i + 1, photos.length - 1) : null,
+        );
+      }
+      if (e.key === "ArrowLeft") {
+        setSelectedIndex((i) => (i !== null ? Math.max(i - 1, 0) : null));
+      }
+      if (e.key === "Escape") {
+        setSelectedIndex(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [selectedIndex, photos.length]);
 
   // Feedback state
   const [feedbackRating, setFeedbackRating] = useState<"helpful" | "needs_work" | null>(null);
@@ -275,7 +307,7 @@ export default function ReviewForm({
                 <button
                   key={photo.key}
                   type="button"
-                  onClick={() => setLightboxIndex(i)}
+                  onClick={() => setSelectedIndex(i)}
                   className="group relative aspect-square overflow-hidden rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)]"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -298,67 +330,80 @@ export default function ReviewForm({
       )}
 
       {/* Lightbox */}
-      {lightboxIndex !== null && photos[lightboxIndex] && (
+      {selectedPhoto && selectedIndex !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
-          onClick={() => setLightboxIndex(null)}
+          onClick={() => setSelectedIndex(null)}
         >
+          {/* Close button */}
           <button
             type="button"
-            onClick={() => setLightboxIndex(null)}
-            className="absolute right-4 top-4 rounded-full p-2 text-white/70 transition-colors hover:text-white"
+            className="absolute right-4 top-4 rounded-[var(--radius-button)] p-2 text-white transition-colors hover:bg-white/10"
+            onClick={() => setSelectedIndex(null)}
           >
             <X className="h-6 w-6" />
           </button>
 
-          {lightboxIndex > 0 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxIndex(lightboxIndex - 1);
-              }}
-              className="absolute left-4 rounded-full p-2 text-white/70 transition-colors hover:text-white"
-            >
-              <ChevronLeft className="h-8 w-8" />
-            </button>
-          )}
-
-          {lightboxIndex < photos.length - 1 && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxIndex(lightboxIndex + 1);
-              }}
-              className="absolute right-4 rounded-full p-2 text-white/70 transition-colors hover:text-white"
-            >
-              <ChevronRight className="h-8 w-8" />
-            </button>
-          )}
-
-          <div
-            className="max-h-[85vh] max-w-[90vw]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={photos[lightboxIndex].url}
-              alt={photos[lightboxIndex].area}
-              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain"
-            />
-            <p
-              className="mt-2 text-center text-xs font-medium uppercase tracking-wider text-white/70"
+          {/* Counter */}
+          <div className="absolute left-4 top-4 rounded-[var(--radius-badge)] bg-black/60 px-3 py-1">
+            <span
+              className="text-xs text-white"
               style={{ fontFamily: "var(--font-data)" }}
             >
-              {photos[lightboxIndex].area.replace(/-/g, " ")}
-              {photos[lightboxIndex].phase && (
-                <span className="ml-2 text-white/40">
-                  {photos[lightboxIndex].phase}
-                </span>
-              )}
-            </p>
+              {selectedIndex + 1} / {photos.length}
+            </span>
           </div>
+
+          {/* Area label */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-[var(--radius-badge)] bg-black/60 px-3 py-1">
+            <span
+              className="text-xs uppercase tracking-widest text-white"
+              style={{ fontFamily: "var(--font-data)" }}
+            >
+              {AREA_LABELS[selectedPhoto.area] ?? selectedPhoto.area}
+            </span>
+          </div>
+
+          {/* Prev button */}
+          {selectedIndex > 0 && (
+            <button
+              type="button"
+              className="absolute left-4 top-1/2 -translate-y-1/2 rounded-[var(--radius-button)] bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedIndex((i) =>
+                  i !== null ? Math.max(i - 1, 0) : null,
+                );
+              }}
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+          )}
+
+          {/* Next button */}
+          {selectedIndex < photos.length - 1 && (
+            <button
+              type="button"
+              className="absolute right-14 top-1/2 -translate-y-1/2 rounded-[var(--radius-button)] bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedIndex((i) =>
+                  i !== null ? Math.min(i + 1, photos.length - 1) : null,
+                );
+              }}
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          )}
+
+          {/* Photo */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={selectedPhoto.url}
+            alt={AREA_LABELS[selectedPhoto.area] ?? selectedPhoto.area}
+            className="max-h-[85vh] max-w-[85vw] rounded-[var(--radius-card)] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
 
