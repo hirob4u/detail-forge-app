@@ -293,4 +293,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Route Group Layout
+### Issue: Authenticated Pages Must Live Inside (app) Route Group
+
+**Issue:** Dashboard job detail and review pages were initially created at `src/app/dashboard/jobs/[jobId]/` — outside the `(app)` route group. These pages did not receive the sidebar layout from `(app)/layout.tsx` and rendered without navigation.
+
+**Root cause:** Next.js route groups (parenthesized directories like `(app)`) scope layouts. Only pages inside `src/app/(app)/` receive the sidebar layout. Pages at `src/app/dashboard/` are siblings of `(app)`, not children, so they get the root layout only.
+
+**Fix applied:** Moved all dashboard pages from `src/app/dashboard/` into `src/app/(app)/dashboard/`. The URL path is unchanged (`/dashboard/jobs/[jobId]`) because route groups don't affect URLs — they only affect layout scoping.
+
+**Add to Blueprint:** All authenticated app pages must live inside the `(app)` route group at `src/app/(app)/` to receive the sidebar layout from `(app)/layout.tsx`. Pages placed at `src/app/dashboard/` or other top-level directories outside `(app)/` will not receive the sidebar and will render without navigation. This applies to every new authenticated page in the codebase.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

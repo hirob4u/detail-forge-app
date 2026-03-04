@@ -366,4 +366,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint -- feat/detailer-dashboard
+
+**Built:** Complete detailer dashboard. Moved all existing dashboard pages (`/dashboard/jobs/[jobId]` and `/dashboard/jobs/[jobId]/review`) inside the `(app)` route group so they receive the sidebar layout. Created dashboard home at `/dashboard` with stage summary cards (7 stages in a responsive grid) linking to filtered job views, plus 10 most recent jobs. Created jobs list at `/jobs` with 8 filter tabs (All + 7 stages) as horizontally scrollable links updating the `?stage=` param. Created customers list at `/customers` with job count per customer. Created supplies and settings shell pages. Shared `StageBadge` component maps stage + analysisStatus to labeled colored pills (e.g. "Analyzing..." for created+processing, "Ready to Review" for created+complete). Shared `JobCard` component shows customer name, vehicle, stage badge, relative timestamp via `date-fns`, and final quote total. Created authenticated API routes for `/api/jobs` (with optional `?stage=` filter) and `/api/customers`. Installed `date-fns` for relative timestamps.
+
+**Worked well:** The `(app)` route group cleanly separates layout concerns — all authenticated pages get the sidebar without any per-page layout imports. Stage filter tabs as `<Link>` components with `searchParams` are simple server-rendered navigation with no client-side state. `leftJoin` for customer/vehicle data required nullable types in `JobCard` props — caught by TypeScript.
+
+**Corrected:** `JobCard` props initially typed customer/vehicle as non-nullable objects, but `leftJoin` returns `null` when no matching row exists. Fixed by making the customer and vehicle props nullable with optional chaining in the render.
+
+**Root cause:** `leftJoin` in SQL returns null for the joined table's columns when no match exists. The TypeScript types from Drizzle correctly reflect this as `T | null` at the top level of the joined object, not just on individual fields.
+
+**Commit:** `feat: complete detailer dashboard with job pipeline and customer list`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
