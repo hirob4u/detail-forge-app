@@ -333,7 +333,7 @@ export default function StructuredPhotoCapture({
           className={cn(
             "flex items-center gap-2 rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors",
             mode === "guided"
-              ? "bg-[var(--color-purple-action)] text-white"
+              ? "bg-[var(--color-brand)] text-white"
               : "bg-[var(--color-elevated)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
           )}
         >
@@ -345,7 +345,7 @@ export default function StructuredPhotoCapture({
           className={cn(
             "flex items-center gap-2 rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors",
             mode === "batch"
-              ? "bg-[var(--color-purple-action)] text-white"
+              ? "bg-[var(--color-brand)] text-white"
               : "bg-[var(--color-elevated)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
           )}
         >
@@ -371,7 +371,7 @@ export default function StructuredPhotoCapture({
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-elevated)]">
               <div
-                className="h-full rounded-full bg-[var(--color-purple-action)] transition-all"
+                className="h-full rounded-full bg-[var(--color-brand)] transition-all"
                 style={{ width: `${(completedRequired / 8) * 100}%` }}
               />
             </div>
@@ -386,7 +386,7 @@ export default function StructuredPhotoCapture({
                 </span>
                 {shot.required ? (
                   <span
-                    className="rounded-[var(--radius-badge)] bg-[var(--color-purple-deep)] px-2 py-0.5 text-[10px] uppercase text-[var(--color-purple-text)]"
+                    className="rounded-[var(--radius-badge)] bg-[var(--color-brand-hover)] px-2 py-0.5 text-[10px] uppercase text-[var(--color-brand)]"
                     style={{ fontFamily: "var(--font-data)" }}
                   >
                     Required
@@ -429,14 +429,14 @@ export default function StructuredPhotoCapture({
               <button
                 type="button"
                 onClick={() => inputRefs.current[shot.area]?.click()}
-                className="flex w-full flex-col items-center justify-center gap-3 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] py-12 transition-colors hover:border-[var(--color-purple-action)]"
+                className="flex w-full flex-col items-center justify-center gap-3 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] py-12 transition-colors hover:border-[var(--color-brand)]"
               >
                 {currentPhoto?.status === "uploading" ? (
-                  <Loader2 className="h-8 w-8 animate-spin text-[var(--color-purple-action)]" />
+                  <Loader2 className="h-8 w-8 animate-spin text-[var(--color-brand)]" />
                 ) : (
                   <>
                     <Upload className="h-8 w-8 text-[var(--color-muted)]" />
-                    <span className="text-sm font-medium text-[var(--color-purple-text)]">
+                    <span className="text-sm font-medium text-[var(--color-brand)]">
                       Tap to upload
                     </span>
                     <span className="text-xs text-[var(--color-muted)]">
@@ -484,7 +484,7 @@ export default function StructuredPhotoCapture({
                     className={cn(
                       "h-8 w-8 flex-shrink-0 overflow-hidden rounded-[var(--radius-badge)] border-2 transition-all",
                       i === currentStep
-                        ? "border-[var(--color-purple-action)]"
+                        ? "border-[var(--color-brand)]"
                         : "border-transparent opacity-50 hover:opacity-100",
                     )}
                   >
@@ -517,7 +517,7 @@ export default function StructuredPhotoCapture({
                 )
               }
               disabled={currentStep === ALL_SHOTS.length - 1}
-              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-purple-text)] transition-colors disabled:opacity-30"
+              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-brand)] transition-colors disabled:opacity-30"
             >
               {currentPhoto?.status === "done" ? "Next" : "Skip"}
             </button>
@@ -583,10 +583,10 @@ export default function StructuredPhotoCapture({
                         <button
                           type="button"
                           onClick={() => inputRefs.current[s.area]?.click()}
-                          className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-purple-action)]"
+                          className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-brand)]"
                         >
                           {uploading ? (
-                            <Loader2 className="h-5 w-5 animate-spin text-[var(--color-purple-action)]" />
+                            <Loader2 className="h-5 w-5 animate-spin text-[var(--color-brand)]" />
                           ) : (
                             <>
                               <Upload className="h-4 w-4 text-[var(--color-muted)]" />
@@ -652,10 +652,10 @@ export default function StructuredPhotoCapture({
                         <button
                           type="button"
                           onClick={() => inputRefs.current[s.area]?.click()}
-                          className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-purple-action)]"
+                          className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-brand)]"
                         >
                           {uploading ? (
-                            <Loader2 className="h-5 w-5 animate-spin text-[var(--color-purple-action)]" />
+                            <Loader2 className="h-5 w-5 animate-spin text-[var(--color-brand)]" />
                           ) : (
                             <>
                               <Upload className="h-4 w-4 text-[var(--color-muted)]" />

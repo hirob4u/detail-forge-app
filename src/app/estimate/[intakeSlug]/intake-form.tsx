@@ -81,7 +81,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
   }
 
   const inputClass =
-    "w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none";
+    "w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-brand)] focus:outline-none";
 
   const labelClass =
     "mb-1.5 block text-sm font-medium text-[var(--color-text)]";
@@ -276,7 +276,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
       <button
         type="submit"
         disabled={loading || !requiredComplete}
-        className="w-full rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-purple-deep)] disabled:opacity-50"
+        className="w-full rounded-[var(--radius-button)] bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-brand-hover)] disabled:opacity-50"
       >
         {loading ? "Submitting..." : "Request Estimate"}
       </button>
