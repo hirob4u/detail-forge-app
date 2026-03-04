@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { jobs, customers, vehicles } from "@/lib/db/schema";
 import type { jobStageEnum } from "@/lib/db/schema";
+import { getDetailForgeOrgId } from "@/lib/org";
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -11,8 +12,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
+  const betterAuthOrgId = session.session.activeOrganizationId;
+  const orgId = await getDetailForgeOrgId(betterAuthOrgId);
+  if (!orgId) {
     return NextResponse.json(
       { error: "No active organization" },
       { status: 403 },
@@ -24,8 +26,8 @@ export async function GET(request: NextRequest) {
     | null;
 
   const whereConditions = stageParam
-    ? and(eq(jobs.orgId, activeOrgId), eq(jobs.stage, stageParam))
-    : eq(jobs.orgId, activeOrgId);
+    ? and(eq(jobs.orgId, orgId), eq(jobs.stage, stageParam))
+    : eq(jobs.orgId, orgId);
 
   const jobList = await db
     .select({

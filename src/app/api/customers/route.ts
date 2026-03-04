@@ -3,6 +3,7 @@ import { eq, desc } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { customers } from "@/lib/db/schema";
+import { getDetailForgeOrgId } from "@/lib/org";
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -10,8 +11,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
+  const betterAuthOrgId = session.session.activeOrganizationId;
+  const orgId = await getDetailForgeOrgId(betterAuthOrgId);
+  if (!orgId) {
     return NextResponse.json(
       { error: "No active organization" },
       { status: 403 },
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest) {
       createdAt: customers.createdAt,
     })
     .from(customers)
-    .where(eq(customers.orgId, activeOrgId))
+    .where(eq(customers.orgId, orgId))
     .orderBy(desc(customers.createdAt));
 
   return NextResponse.json(customerList);

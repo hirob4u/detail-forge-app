@@ -1,30 +1,12 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { organizations } from "@/lib/db/schema";
+import { getDetailForgeOrg } from "@/lib/org";
 
 export default async function SidebarWordmark() {
   const session = await auth.api.getSession({ headers: await headers() });
-  const orgId = session?.session.activeOrganizationId;
+  const betterAuthOrgId = session?.session.activeOrganizationId;
 
-  if (!orgId) {
-    return (
-      <span className="text-xl font-bold text-[var(--color-purple-text)]">
-        DetailForge
-      </span>
-    );
-  }
-
-  const [org] = await db
-    .select({
-      logoUrl: organizations.logoUrl,
-      shopName: organizations.shopName,
-      name: organizations.name,
-    })
-    .from(organizations)
-    .where(eq(organizations.id, orgId))
-    .limit(1);
+  const org = await getDetailForgeOrg(betterAuthOrgId);
 
   if (org?.logoUrl) {
     return (

@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { jobs, customers, vehicles } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
+import { getDetailForgeOrgId } from "@/lib/org";
 import JobCard from "../_components/job-card";
 
 const stageConfig: Record<
@@ -62,7 +63,8 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const orgId = session.session.activeOrganizationId;
+  const betterAuthOrgId = session.session.activeOrganizationId;
+  const orgId = await getDetailForgeOrgId(betterAuthOrgId);
   if (!orgId) {
     return (
       <div className="py-24 text-center">

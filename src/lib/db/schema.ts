@@ -54,6 +54,7 @@ export const unitMeasureEnum = pgEnum("unit_measure", ["oz", "ml", "each"]);
 
 export const organizations = pgTable("organizations", {
   id: uuid("id").defaultRandom().primaryKey(),
+  betterAuthOrgId: text("better_auth_org_id").unique(),
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   businessEmail: varchar("business_email", { length: 255 }).notNull(),

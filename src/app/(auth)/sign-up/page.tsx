@@ -39,13 +39,40 @@ export default function SignUpPage() {
     }
 
     const slug = slugify(businessName);
-    const { error: orgError } = await organization.create({
+    const { data: orgData, error: orgError } = await organization.create({
       name: businessName,
       slug,
     });
 
-    if (orgError) {
-      setError(orgError.message ?? "Failed to create organization.");
+    if (orgError || !orgData) {
+      setError(orgError?.message ?? "Failed to create organization.");
+      setLoading(false);
+      return;
+    }
+
+    // Create the DetailForge organization record linked to the Better Auth org
+    const dfOrgRes = await fetch("/api/org/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        betterAuthOrgId: orgData.id,
+        name: businessName,
+        slug,
+      }),
+    });
+
+    if (!dfOrgRes.ok) {
+      setError("Failed to set up your organization. Please contact support.");
+      setLoading(false);
+      return;
+    }
+
+    const { error: activeError } = await organization.setActive({
+      organizationId: orgData.id,
+    });
+
+    if (activeError) {
+      setError(activeError.message ?? "Failed to activate organization.");
       setLoading(false);
       return;
     }

@@ -345,4 +345,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Organization ID Resolution
+### Issue: Better Auth Org IDs Are Nanoids, Not UUIDs
+
+**Issue:** Better Auth organization IDs are nanoids (e.g. `iYTBtl9yydZWW9As1DP77gOpPsQtJiz3`) not UUIDs. The DetailForge `organizations` table uses UUIDs as primary keys. These are two different ID spaces and must never be used interchangeably. All app data tables (jobs, customers, vehicles) reference the DetailForge UUID as `org_id`. Using the Better Auth nanoid directly as a foreign key returns zero results.
+
+**Root cause:** Better Auth's organization plugin generates its own IDs independently of the application's data layer. The session's `activeOrganizationId` is always a Better Auth nanoid — it is never a valid DetailForge `organizations.id`.
+
+**Fix applied:** Added `betterAuthOrgId` column to the `organizations` table with a unique constraint. Created `getDetailForgeOrgId()` and `getDetailForgeOrg()` utility functions in `src/lib/org.ts`. Updated all server components and API routes to resolve the session org ID through the utility before querying app data tables. Updated the sign-up flow to create a linked DetailForge org record via `/api/org/create` after the Better Auth org is created.
+
+**Add to Blueprint:** Always resolve the Better Auth org ID to the DetailForge UUID using `getDetailForgeOrgId()` before querying jobs, customers, vehicles, or any app data table. The session `activeOrganizationId` is always a Better Auth nanoid — it is never a valid DetailForge `organizations.id`. This distinction must be preserved in every new API route and server component that reads org context from the session. Never use `activeOrganizationId` directly as a foreign key in any app data query. `getDetailForgeOrgId` must be the single point of resolution — do not inline the lookup.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { jobs, customers, vehicles } from "@/lib/db/schema";
 import type { jobStageEnum } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
+import { getDetailForgeOrgId } from "@/lib/org";
 import JobCard from "../_components/job-card";
 
 const tabs: Array<{ label: string; value: string | null }> = [
@@ -31,7 +32,8 @@ export default async function JobsPage({
     redirect("/sign-in");
   }
 
-  const orgId = session.session.activeOrganizationId;
+  const betterAuthOrgId = session.session.activeOrganizationId;
+  const orgId = await getDetailForgeOrgId(betterAuthOrgId);
   if (!orgId) {
     redirect("/dashboard");
   }

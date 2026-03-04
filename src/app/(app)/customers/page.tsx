@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { customers, jobs } from "@/lib/db/schema";
+import { getDetailForgeOrgId } from "@/lib/org";
 
 export default async function CustomersPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -12,7 +13,8 @@ export default async function CustomersPage() {
     redirect("/sign-in");
   }
 
-  const orgId = session.session.activeOrganizationId;
+  const betterAuthOrgId = session.session.activeOrganizationId;
+  const orgId = await getDetailForgeOrgId(betterAuthOrgId);
   if (!orgId) {
     redirect("/dashboard");
   }
