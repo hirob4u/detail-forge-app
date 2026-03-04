@@ -29,12 +29,12 @@ const FONT_OPTIONS = [
 
 const ACCENT_COLORS = [
   { hex: "#7C4DFF", label: "Purple" },
+  { hex: "#9575FF", label: "Soft Purple" },
+  { hex: "#E040FB", label: "Magenta" },
   { hex: "#00E5FF", label: "Cyan" },
-  { hex: "#00E676", label: "Green" },
-  { hex: "#FFD740", label: "Amber" },
-  { hex: "#FF6D00", label: "Orange" },
-  { hex: "#FF4081", label: "Pink" },
-  { hex: "#64FFDA", label: "Teal" },
+  { hex: "#39FF14", label: "Green" },
+  { hex: "#FFAB00", label: "Amber" },
+  { hex: "#FF5252", label: "Red" },
 ] as const;
 
 const ALLOWED_HEXES: Set<string> = new Set(ACCENT_COLORS.map((c) => c.hex));
