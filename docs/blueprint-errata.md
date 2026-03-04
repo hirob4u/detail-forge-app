@@ -267,4 +267,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Background AI Analysis
+### Issue: Never Await Long-Running AI Calls From Intake Routes
+
+**Issue:** The analyze route takes 15-30 seconds to complete (R2 photo fetch + Claude API call + JSON parsing). Awaiting this from the intake submit route would block the customer's browser and risk a serverless function timeout on Vercel or Cloudflare.
+
+**Root cause:** AI analysis is a long-running operation that must not block user-facing request/response cycles. The intake form needs to return immediately after creating the job records.
+
+**Fix applied:** Fire-and-forget `fetch` from the intake submit route -- the analyze call runs in the background without blocking the response. A dedicated `analysisStatus` column on the jobs table tracks progress (`processing` → `complete` | `failed`). The analyze route sets the status on entry and on every exit path (success or error). A lightweight polling endpoint (`/api/jobs/[jobId]/status`) returns only status fields so the client can poll without pulling full assessment data. The `AnalysisStatusPanel` client component polls every 3 seconds and transitions between states without a page reload.
+
+**Add to Blueprint:** Never await long-running AI calls from intake submission routes on Vercel. The default function timeout will kill the request before the analysis completes. Use fire-and-forget `fetch` with a dedicated status column to communicate progress to the UI. The polling endpoint must be lightweight -- select only the status fields, never join photos or full assessment data in a polling route.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

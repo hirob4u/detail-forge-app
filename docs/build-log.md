@@ -336,4 +336,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-03 -- Blueprint -- feat/background-analysis
+
+**Built:** Background analysis wired into intake submission using fire-and-forget `fetch` to avoid Vercel/serverless function timeout. New `analysisStatus` column on jobs table (`processing` | `complete` | `failed`) drives a four-state UI on the job detail page. Lightweight polling endpoint at `/api/jobs/[jobId]/status` returns only status fields -- no photos or full assessment data. `AnalysisStatusPanel` client component polls every 3 seconds during `processing`, transitions to "AI Assessment Ready" with Review Assessment button on `complete`, shows retry button on `failed`, and shows "View Quote" on `quoted` stage. Analyze route wrapped in try/catch -- sets `analysisStatus` to `failed` on any error. Retry button fires a new analyze call and resumes polling.
+
+**Worked well:** Fire-and-forget pattern keeps intake submission response fast. Polling with `setInterval` + `useEffect` cleanup is simple and reliable. The `AnalysisStatusPanel` handles all four states without a page reload -- the server component renders the initial state, then the client component takes over with live updates.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `feat: background analysis with live status polling and retry`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

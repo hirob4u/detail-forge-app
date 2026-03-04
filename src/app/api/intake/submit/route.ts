@@ -71,6 +71,26 @@ export async function POST(request: NextRequest) {
       })
       .returning({ id: jobs.id });
 
+    // Fire and forget -- do not await
+    const baseUrl = process.env.BETTER_AUTH_URL;
+    fetch(`${baseUrl}/api/estimates/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jobId: job.id,
+        photoKeys: data.photoKeys.map((p) => p.key),
+        vehicleYear: data.vehicleYear,
+        vehicleMake: data.vehicleMake,
+        vehicleModel: data.vehicleModel,
+        vehicleColor: data.vehicleColor,
+      }),
+    }).catch((err) => {
+      console.error(
+        `Background analysis failed to start for job ${job.id}:`,
+        err,
+      );
+    });
+
     return NextResponse.json({ success: true, jobId: job.id });
   } catch (err) {
     console.error("Intake submit error:", err);
