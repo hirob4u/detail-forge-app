@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
+import { getDetailForgeOrgId } from "@/lib/org";
 import BrandingForm from "./branding-form";
 
 export default async function SettingsPage() {
@@ -12,7 +13,8 @@ export default async function SettingsPage() {
     redirect("/sign-in");
   }
 
-  const orgId = session.session.activeOrganizationId;
+  const betterAuthOrgId = session.session.activeOrganizationId;
+  const orgId = await getDetailForgeOrgId(betterAuthOrgId);
   if (!orgId) {
     redirect("/dashboard");
   }

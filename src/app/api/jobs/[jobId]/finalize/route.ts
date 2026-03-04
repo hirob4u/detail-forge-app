@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { jobs, member } from "@/lib/db/schema";
 import type { FinalQuote } from "@/lib/types/quote";
+import { getDetailForgeOrgId } from "@/lib/org";
 
 interface FinalizeBody {
   finalQuote: FinalQuote;
@@ -20,8 +21,9 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
+  const betterAuthOrgId = session.session.activeOrganizationId;
+  const orgId = await getDetailForgeOrgId(betterAuthOrgId);
+  if (!orgId) {
     return NextResponse.json(
       { error: "No active organization" },
       { status: 403 },
@@ -51,11 +53,6 @@ export async function POST(
   if (!job) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
-
-  // TODO: VERIFY -- org ID mapping between Better Auth orgs and DetailForge orgs
-  // For now, verify the job's orgId matches. The organizations table uses UUIDs
-  // while Better Auth org IDs are text. This check may need adjustment once
-  // the org linking pattern is established.
 
   const body = await request.json().catch(() => null);
   if (!body) {

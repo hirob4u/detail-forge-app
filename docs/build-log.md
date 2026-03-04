@@ -411,4 +411,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint F -- fix/org-id-bridge
+
+**Built:** Org ID bridge between Better Auth nanoid organization IDs and DetailForge UUID organization IDs. Added `betterAuthOrgId` column to the `organizations` table with a unique constraint. Created `getDetailForgeOrgId()` and `getDetailForgeOrg()` utility functions in `src/lib/org.ts` as the single point of resolution from session org ID to app data layer UUID. Updated sign-up flow to create a DetailForge `organizations` record linked to the Better Auth org via `betterAuthOrgId` after `organization.create()` succeeds, then call `setActive()`. Created `/api/org/create` route for the sign-up form to create the linked record. Updated all 12 files that previously used `session.session.activeOrganizationId` directly as a database foreign key: dashboard, jobs, customers, settings server components; sidebar wordmark; jobs API, customers API, finalize API, org profile API (GET and PATCH). Manually populated existing org record with correct `betterAuthOrgId`.
+
+**Worked well:** The `getDetailForgeOrgId` utility centralizes the resolution cleanly — every caller follows the same 3-line pattern: extract `betterAuthOrgId` from session, resolve via utility, guard on null. The `getDetailForgeOrg` variant returns the full record for components that need branding fields (sidebar wordmark).
+
+**Corrected:** The `org/profile` route (GET and PATCH) was not listed in the blueprint's affected files but also used `activeOrganizationId` directly to query `organizations.id`. Updated both handlers. Also removed a stale `TODO: VERIFY` comment in the finalize route since the org ID mapping pattern is now established.
+
+**Root cause:** Better Auth organization IDs are nanoids (short random strings like `iYTBtl9y...`), not UUIDs. The DetailForge `organizations` table uses UUIDs as primary keys. All app data tables (jobs, customers, vehicles) reference the DetailForge UUID. Using the Better Auth nanoid directly as a foreign key returns zero results because no UUID matches a nanoid.
+
+**Commit:** `fix: org ID bridge linking Better Auth nanoid to DetailForge UUID`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

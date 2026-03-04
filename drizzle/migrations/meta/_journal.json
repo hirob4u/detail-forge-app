@@ -57,6 +57,13 @@
       "when": 1772642499275,
       "tag": "0007_stiff_corsair",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1772646259244,
+      "tag": "0008_black_ironclad",
+      "breakpoints": true
     }
   ]
 }
