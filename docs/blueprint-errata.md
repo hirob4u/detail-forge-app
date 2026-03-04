@@ -384,4 +384,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Session Management
+### Issue: activeOrganizationId Null on New Sessions
+
+**Issue:** Better Auth's `activeOrganizationId` is null on new sessions -- any device or browser that hasn't manually called `set-active` hits the no-org error on every protected route. This affects mobile, incognito, and new browser sessions.
+
+**Root cause:** Better Auth does not auto-activate an organization on session creation. The `activeOrganizationId` field on the session record starts as null and requires an explicit `set-active` API call. The sign-up flow calls `set-active` after creating the org, but subsequent logins on new devices do not.
+
+**Fix applied:** Next.js middleware (`proxy.ts`) now intercepts protected route requests, detects null `activeOrganizationId` via `auth.api.getSession()`, looks up the user's first org membership via `/api/auth/organization/list`, and calls `/api/auth/organization/set-active` automatically. Errors fail silently -- the request is never blocked by auto-org failures. The middleware must remain in sync with the PROTECTED_PATHS list -- any new top-level authenticated route must be added to both the middleware matcher and the PROTECTED_PREFIXES array.
+
+**Add to Blueprint:** Any Blueprint that adds a new top-level authenticated route (e.g. `/billing`, `/analytics`) must add it to both the `PROTECTED_PREFIXES` array in `proxy.ts` and the `config.matcher` array. The auto-org middleware only runs on paths listed in `PROTECTED_PREFIXES`. Missing a path means that route will not auto-activate the org and users on new sessions will see the no-org error.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

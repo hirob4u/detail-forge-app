@@ -37,6 +37,9 @@ interpretation and leave a comment flagged with TODO: VERIFY
 so the human reviewer can make the call.
 
 ## Git Workflow
+- Before creating any branch, always sync with remote main first:
+  git checkout main && git pull origin main
+  This is mandatory. Never create a branch from a stale local main.
 - Never commit directly to main
 - Branch naming: type/short-descriptor
   - feat/ for new screens and components
