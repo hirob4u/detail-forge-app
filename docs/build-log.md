@@ -471,4 +471,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint F -- fix/review-photo-lightbox
+
+**Built:** Photo lightbox in review screen updated. Background scroll locked when lightbox is open via `document.body.style.overflow`. Prev/next navigation buttons added with `bg-black/60` pill styling. Keyboard arrow key navigation added using functional updater pattern in `setSelectedIndex`. Photo counter shows current position (e.g. "3 / 11") in top-left corner. Area label shown below the photo using `AREA_LABELS` lookup map for human-readable names. Escape key closes lightbox. Cleanup function always restores body scroll.
+
+**Worked well:** Functional updater pattern (`setSelectedIndex(i => ...)`) in the keyboard handler avoids stale closure issues -- the effect only re-registers when `selectedIndex` or `photos.length` changes, not on every render. The `AREA_LABELS` map provides clean display names for hyphenated area keys.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: photo lightbox with scroll lock, nav buttons, and keyboard navigation`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
