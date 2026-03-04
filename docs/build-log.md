@@ -456,4 +456,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint F -- fix/route-loading-states
+
+**Built:** `loading.tsx` files added for all 7 protected routes. Shared `PageSkeleton` component shows centered spinner (`Loader2` from lucide-react) and "Loading..." label during server component resolution. Covers dashboard, jobs, customers, supplies, settings, job detail, and review screen. Sidebar remains visible during navigation -- loading state only affects the content area.
+
+**Worked well:** Single `PageSkeleton` component reused by all 7 loading files keeps the pattern DRY. Next.js App Router automatically wraps the page in a `Suspense` boundary when `loading.tsx` is present, so no manual `Suspense` wiring was needed.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: add loading states for all protected routes`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
