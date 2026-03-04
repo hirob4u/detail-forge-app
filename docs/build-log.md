@@ -441,4 +441,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint F -- fix/intake-branding-and-auto-org
+
+**Built:** Three changes. (1) Shop name on intake page now renders in org accent color (`--color-brand`) instead of white (`--color-text`). (2) Neon color palette applied to branding settings -- replaced generic web colors with 7 neon swatches (Purple, Cyan, Green, Amber, Orange, Pink, Teal) matching the DetailForge dark mode aesthetic. Initialization guard defaults non-matching saved colors to purple. (3) Auto-org middleware added to `proxy.ts` -- intercepts protected route requests, detects null `activeOrganizationId`, looks up the user's first org membership via Better Auth API, and calls `set-active` automatically. Fixes mobile and new browser sessions that hit the no-org error without manual intervention. Auth page redirect also added (authenticated users on /sign-in redirect to /dashboard).
+
+**Worked well:** Using the existing `proxy.ts` (Next.js 16 middleware file) instead of creating a separate `middleware.ts` avoids the naming conflict documented in errata. The `ALLOWED_HEXES` Set derived from the ACCENT_COLORS array ensures the guard stays in sync automatically. The auto-org fetch calls go through `/api/auth/organization/list` and `/api/auth/organization/set-active` (verified from Better Auth plugin source).
+
+**Corrected:** Blueprint specified `src/middleware.ts` but Next.js 16 uses `proxy.ts` (documented in errata). Updated `proxy.ts` instead.
+
+**Root cause:** Blueprint was written against the standard Next.js convention. Next.js 16 renamed `middleware.ts` to `proxy.ts`.
+
+**Commit:** `fix: intake brand color, neon palette, and auto-org middleware`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

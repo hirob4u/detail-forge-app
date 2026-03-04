@@ -83,7 +83,7 @@ export default async function EstimatePage({
             ) : (
               <div className="flex flex-col items-center gap-2">
                 <p
-                  className="text-2xl font-bold text-[var(--color-text)]"
+                  className="text-2xl font-bold text-[var(--color-brand)]"
                   style={{
                     fontFamily: org.nameFont
                       ? `"${org.nameFont}", sans-serif`

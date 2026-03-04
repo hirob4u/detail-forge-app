@@ -28,14 +28,16 @@ const FONT_OPTIONS = [
 ] as const;
 
 const ACCENT_COLORS = [
-  { value: "#7C4DFF", label: "Purple" },
-  { value: "#2979FF", label: "Blue" },
-  { value: "#00BFA5", label: "Teal" },
-  { value: "#FF6D00", label: "Orange" },
-  { value: "#F50057", label: "Pink" },
-  { value: "#FFD600", label: "Gold" },
-  { value: "#76FF03", label: "Lime" },
+  { hex: "#7C4DFF", label: "Purple" },
+  { hex: "#00E5FF", label: "Cyan" },
+  { hex: "#00E676", label: "Green" },
+  { hex: "#FFD740", label: "Amber" },
+  { hex: "#FF6D00", label: "Orange" },
+  { hex: "#FF4081", label: "Pink" },
+  { hex: "#64FFDA", label: "Teal" },
 ] as const;
+
+const ALLOWED_HEXES: Set<string> = new Set(ACCENT_COLORS.map((c) => c.hex));
 
 export default function BrandingForm({ org }: { org: OrgData }) {
   // Business profile fields
@@ -49,7 +51,11 @@ export default function BrandingForm({ org }: { org: OrgData }) {
   // Branding fields
   const [shopName, setShopName] = useState(org.shopName ?? "");
   const [shopTagline, setShopTagline] = useState(org.shopTagline ?? "");
-  const [accentColor, setAccentColor] = useState(org.accentColor ?? "#7C4DFF");
+  const [accentColor, setAccentColor] = useState(
+    org.accentColor && ALLOWED_HEXES.has(org.accentColor)
+      ? org.accentColor
+      : "#7C4DFF",
+  );
   const [nameFont, setNameFont] = useState(org.nameFont ?? "DM Sans");
 
   // Logo state
@@ -453,16 +459,16 @@ export default function BrandingForm({ org }: { org: OrgData }) {
             <div className="flex flex-wrap gap-2">
               {ACCENT_COLORS.map((color) => (
                 <button
-                  key={color.value}
+                  key={color.hex}
                   type="button"
-                  onClick={() => setAccentColor(color.value)}
+                  onClick={() => setAccentColor(color.hex)}
                   title={color.label}
                   className={`h-9 w-9 rounded-full border-2 transition-transform hover:scale-110 ${
-                    accentColor === color.value
+                    accentColor === color.hex
                       ? "border-white scale-110"
                       : "border-transparent"
                   }`}
-                  style={{ backgroundColor: color.value }}
+                  style={{ backgroundColor: color.hex }}
                 />
               ))}
             </div>
