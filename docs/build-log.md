@@ -381,4 +381,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint -- feat/org-branding-settings
+
+**Built:** Organization profile and branding settings page at `/settings`. Server component fetches org data and renders `BrandingForm` client component with 4 independent sections: Business Profile (name, email, phone, website, city, state), Customer-Facing Branding (shop name, tagline with 120 char counter), Logo (upload to R2 via authenticated presign route, preview, remove), and Theme (accent color picker with hex input, shop name font selector with live preview). PATCH route at `/api/org/profile` validates with Zod and updates the organizations table. Logo presign route at `/api/org/logo-presign` requires auth and uses the existing `createPresignedUploadUrl` helper. Schema updated with 6 new columns on organizations: `shopName`, `shopTagline`, `logoKey`, `logoUrl`, `accentColor`, `nameFont`. Success feedback shows green checkmark for 3 seconds after save.
+
+**Worked well:** Reusing the existing `createPresignedUploadUrl` helper from `src/lib/r2.ts` for logo uploads kept the presign route minimal. The 4-section card layout naturally groups related settings without overwhelming the page. Font preview with live accent color gives immediate visual feedback.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `feat: organization branding settings with logo upload and theme customization`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
