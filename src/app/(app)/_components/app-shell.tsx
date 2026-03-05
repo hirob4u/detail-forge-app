@@ -24,9 +24,11 @@ const navLinks = [
 export default function AppShell({
   children,
   wordmark,
+  userSlot,
 }: Readonly<{
   children: ReactNode;
   wordmark: ReactNode;
+  userSlot: ReactNode;
 }>) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -80,6 +82,9 @@ export default function AppShell({
             );
           })}
         </nav>
+
+        {/* User panel */}
+        {userSlot}
       </aside>
 
       {/* Main content area */}
