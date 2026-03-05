@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { signOut } from "@/lib/auth-client";
 
 function getInitials(name: string): string {
   return name
@@ -26,7 +26,7 @@ export default function SidebarUserClient({
 
   async function handleLogout() {
     setLoggingOut(true);
-    await authClient.signOut();
+    await signOut();
     router.push("/sign-in");
   }
 
