@@ -397,4 +397,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint -- Organization Branding Settings
+### Issue: Font Selector Dropdown Does Not Show Actual Typefaces
+
+**Issue:** The font selector was a `<select>` dropdown that showed font names in the browser's default system font. Users had to select a font, then look at the preview below to see what it looked like. This created a trial-and-error loop instead of a single-glance comparison.
+
+**Root cause:** `<select>` elements do not support `fontFamily` styling on `<option>` elements in most browsers. The dropdown is always rendered in the system font regardless of CSS applied to individual options.
+
+**Fix applied:** Replaced the `<select>` with a 2-column grid of font card buttons. Each card renders the font name and "The quick brown fox" sample text using `style={{ fontFamily: font.name }}`. Google Fonts are loaded on mount via `useEffect` that injects `<link>` tags into the document head with dedup by element ID. The preview section below the cards still shows the selected font with the accent color applied.
+
+**Add to Blueprint:** When a Blueprint provides font selection, use visual font cards with sample text rendered in the actual typeface. Never use a `<select>` dropdown for font selection -- browsers cannot render `<option>` elements in custom fonts. Load fonts dynamically via Google Fonts `<link>` injection in a `useEffect` with element ID dedup to prevent duplicate stylesheet loads.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

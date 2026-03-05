@@ -16,7 +16,7 @@ export const orgProfileUpdateSchema = z.object({
     .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color")
     .optional(),
   nameFont: z
-    .enum(["DM Sans", "JetBrains Mono", "Inter", "Space Grotesk"])
+    .enum(["DM Sans", "JetBrains Mono", "Inter", "Space Grotesk", "Outfit", "Syne", "Anybody"])
     .optional(),
 });
 
