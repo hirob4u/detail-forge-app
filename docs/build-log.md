@@ -501,4 +501,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-05 -- Blueprint F -- fix/sidebar-user-panel
+
+**Built:** Sidebar user panel showing logged-in user initials avatar, name, and email at the bottom of the sidebar. Logout button signs out via `authClient.signOut()` and redirects to `/sign-in`. Server component (`SidebarUser`) fetches session data, client component (`SidebarUserClient`) handles logout interaction. Passed to `AppShell` as a `userSlot` ReactNode prop, wrapped in `Suspense` with `null` fallback to prevent layout shift. Avatar uses `rounded-[var(--radius-badge)]` per design system rules (no `rounded-full`).
+
+**Worked well:** Same server/client split pattern used for `SidebarWordmark` applied cleanly. The `userSlot` prop keeps `AppShell` as a pure layout component with no data fetching. `Suspense fallback={null}` means the sidebar renders without the user panel during the session fetch rather than showing a skeleton or flashing.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: sidebar user panel with initials avatar and logout`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
