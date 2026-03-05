@@ -486,4 +486,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-04 -- Blueprint F -- fix/settings-theme-ui
+
+**Built:** Replaced font selector dropdown with visual font card grid. Each card renders the font name and sample text in the actual typeface via dynamic Google Fonts loading. Added 3 new fonts (Outfit, Syne, Anybody) to the existing 4 (DM Sans, JetBrains Mono, Inter, Space Grotesk) for 7 total options. Google Fonts loaded on mount via `useEffect` that injects `<link>` tags with dedup by element ID. Color swatch shape changed from `rounded-full` to `rounded-[var(--radius-button)]` per design system rules. Font initialization guarded with `ALLOWED_FONT_NAMES` Set to prevent invalid saved values from crashing the picker. Server-side Zod validation updated to accept all 7 font names.
+
+**Worked well:** Dynamic Google Fonts loading via DOM `<link>` injection is simple and the browser deduplicates fonts already loaded by Next.js. The visual card grid gives immediate feedback -- users see the actual typeface before selecting it, unlike the dropdown which showed plain text labels in the system font.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: visual font cards, Google Fonts loading, and swatch shape`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

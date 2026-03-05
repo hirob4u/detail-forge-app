@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, type FormEvent } from "react";
+import { useState, useRef, useEffect, type FormEvent } from "react";
 import { Upload, X, Loader2, Check } from "lucide-react";
 
 interface OrgData {
@@ -20,12 +20,17 @@ interface OrgData {
   nameFont: string | null;
 }
 
-const FONT_OPTIONS = [
-  { value: "DM Sans", label: "DM Sans" },
-  { value: "JetBrains Mono", label: "JetBrains Mono" },
-  { value: "Inter", label: "Inter" },
-  { value: "Space Grotesk", label: "Space Grotesk" },
+const FONTS = [
+  { name: "DM Sans", googleUrl: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" },
+  { name: "JetBrains Mono", googleUrl: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" },
+  { name: "Inter", googleUrl: "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" },
+  { name: "Space Grotesk", googleUrl: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" },
+  { name: "Outfit", googleUrl: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" },
+  { name: "Syne", googleUrl: "https://fonts.googleapis.com/css2?family=Syne:wght@400;700&display=swap" },
+  { name: "Anybody", googleUrl: "https://fonts.googleapis.com/css2?family=Anybody:wght@400;700&display=swap" },
 ] as const;
+
+const ALLOWED_FONT_NAMES: Set<string> = new Set(FONTS.map((f) => f.name));
 
 const ACCENT_COLORS = [
   { hex: "#7C4DFF", label: "Purple" },
@@ -56,7 +61,11 @@ export default function BrandingForm({ org }: { org: OrgData }) {
       ? org.accentColor
       : "#7C4DFF",
   );
-  const [nameFont, setNameFont] = useState(org.nameFont ?? "DM Sans");
+  const [nameFont, setNameFont] = useState(
+    org.nameFont && ALLOWED_FONT_NAMES.has(org.nameFont)
+      ? org.nameFont
+      : "DM Sans",
+  );
 
   // Logo state
   const [logoKey, setLogoKey] = useState(org.logoKey);
@@ -69,6 +78,20 @@ export default function BrandingForm({ org }: { org: OrgData }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  // Load Google Fonts so cards render in actual typeface
+  useEffect(() => {
+    FONTS.forEach((font) => {
+      const id = `font-${font.name.replace(/\s+/g, "-").toLowerCase()}`;
+      if (!document.getElementById(id)) {
+        const link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = font.googleUrl;
+        document.head.appendChild(link);
+      }
+    });
+  }, []);
 
   async function handleLogoUpload(file: File) {
     setLogoUploading(true);
@@ -463,7 +486,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                   type="button"
                   onClick={() => setAccentColor(color.hex)}
                   title={color.label}
-                  className={`h-9 w-9 rounded-full border-2 transition-transform hover:scale-110 ${
+                  className={`h-9 w-9 rounded-[var(--radius-button)] border-2 transition-transform hover:scale-110 ${
                     accentColor === color.hex
                       ? "border-white scale-110"
                       : "border-transparent"
@@ -476,7 +499,6 @@ export default function BrandingForm({ org }: { org: OrgData }) {
 
           <div>
             <label
-              htmlFor="nameFont"
               className="mb-1.5 block text-sm font-medium text-[var(--color-text)]"
             >
               Shop Name Font
@@ -484,18 +506,33 @@ export default function BrandingForm({ org }: { org: OrgData }) {
             <p className="mb-1.5 text-xs text-[var(--color-muted)]">
               Font used for the shop name on the intake form
             </p>
-            <select
-              id="nameFont"
-              value={nameFont}
-              onChange={(e) => setNameFont(e.target.value)}
-              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-purple-action)] focus:outline-none"
-            >
-              {FONT_OPTIONS.map((font) => (
-                <option key={font.value} value={font.value}>
-                  {font.label}
-                </option>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {FONTS.map((font) => (
+                <button
+                  key={font.name}
+                  type="button"
+                  onClick={() => setNameFont(font.name)}
+                  className={`rounded-[var(--radius-button)] border px-4 py-3 text-left transition-colors ${
+                    nameFont === font.name
+                      ? "border-[var(--color-purple-action)] bg-[var(--color-elevated)]"
+                      : "border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-hover)]"
+                  }`}
+                >
+                  <p
+                    className="text-base font-bold text-[var(--color-text)]"
+                    style={{ fontFamily: font.name }}
+                  >
+                    {font.name}
+                  </p>
+                  <p
+                    className="mt-0.5 text-xs text-[var(--color-muted)]"
+                    style={{ fontFamily: font.name }}
+                  >
+                    The quick brown fox
+                  </p>
+                </button>
               ))}
-            </select>
+            </div>
 
             {/* Font preview */}
             <div
