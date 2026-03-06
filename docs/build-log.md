@@ -531,4 +531,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-06 -- Blueprint F -- fix/mobile-layout-and-invite-ux
+
+**Built:** Four fixes. (1) Auth layout `min-h-screen` replaced with `min-h-dvh` so sign-in, sign-up, and waitlist pages are vertically centered on mobile browsers. (2) App shell `h-screen` replaced with `h-dvh` so the dashboard fills the visible viewport on mobile without content shifting below browser chrome. (3) Waitlist page broken sign-up link removed -- previously linked to `/sign-up` without a code which middleware redirected back to `/waitlist` in a loop. Replaced with instructional text. (4) Invite code validation changed from optimistic to verified -- `inviteValid` initializes as `false` and a `useEffect` auto-validates the code on mount when present in the URL. Green checkmark only appears after the database confirms the code is valid.
+
+**Worked well:** `dvh` units are natively supported in Tailwind v4 with no config changes. The auto-validate `useEffect` reuses the existing `handleValidateCode` function so no logic was duplicated.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: mobile dvh viewport, waitlist link loop, and invite auto-validation`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

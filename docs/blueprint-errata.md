@@ -436,4 +436,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Layout and Validation
+### Issue: Mobile Viewport Height and Optimistic Validation
+
+**Issue:** Two issues. (1) `h-screen` and `min-h-screen` use CSS `100vh` which on mobile browsers includes the browser chrome (address bar, navigation bar), pushing content below the visible area. (2) Invite code validation was optimistic -- the presence of a `?code=` URL parameter set `inviteValid` to `true` before any database check, showing a false green checkmark for invalid or already-used codes.
+
+**Root cause:** (1) CSS `100vh` is a static measurement that does not account for dynamic mobile browser UI. (2) Treating a URL parameter as proof of validity is a client-side trust assumption that bypasses server validation.
+
+**Fix applied:** (1) Replaced `h-screen` with `h-dvh` and `min-h-screen` with `min-h-dvh` across all full-height layouts. `dvh` uses the dynamic viewport height which recalculates as browser chrome shows and hides. (2) Changed `inviteValid` initialization from `!!searchParams.get("code")` to `false`. Added a `useEffect` that auto-validates the code on mount when present in the URL -- green checkmark only appears after the database confirms validity.
+
+**Add to Blueprint:** Never use `h-screen` or `min-h-screen` in DetailForge layouts -- use `h-dvh` and `min-h-dvh` instead. Mobile browsers calculate `100vh` including their chrome which pushes content below the visible area. `dvh` recalculates dynamically as browser UI appears and disappears. This applies to every full-height layout in the app. Additionally, never treat the presence of a URL parameter as proof of validity -- always validate against the database before setting any valid state.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

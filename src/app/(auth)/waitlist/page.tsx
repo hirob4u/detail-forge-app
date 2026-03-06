@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export default function WaitlistPage() {
   return (
     <div className="w-full max-w-sm">
@@ -26,13 +24,7 @@ export default function WaitlistPage() {
           Request Access
         </a>
         <p className="mt-4 text-xs text-[var(--color-muted)]">
-          Already have an invite code?{" "}
-          <Link
-            href="/sign-up"
-            className="text-[var(--color-purple-text)] hover:underline"
-          >
-            Sign up here
-          </Link>
+          Have an invite link? Use the link sent to you directly to get started.
         </p>
       </div>
     </div>

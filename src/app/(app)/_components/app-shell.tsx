@@ -34,7 +34,7 @@ export default function AppShell({
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen bg-[var(--color-background)]">
+    <div className="flex h-dvh bg-[var(--color-background)]">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

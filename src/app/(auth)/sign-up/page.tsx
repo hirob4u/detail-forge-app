@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, type FormEvent } from "react";
+import { Suspense, useState, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2, CircleCheck } from "lucide-react";
@@ -27,9 +27,17 @@ function SignUpForm() {
   const [inviteCode, setInviteCode] = useState(
     searchParams.get("code")?.toUpperCase() ?? "",
   );
-  const [inviteValid, setInviteValid] = useState(!!searchParams.get("code"));
+  const [inviteValid, setInviteValid] = useState(false);
   const [inviteError, setInviteError] = useState("");
   const [validating, setValidating] = useState(false);
+
+  // Auto-validate invite code on mount when present in URL
+  useEffect(() => {
+    if (inviteCode) {
+      handleValidateCode();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount only
+  }, []);
 
   async function handleValidateCode() {
     if (!inviteCode) return;
