@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Loader2, CircleCheck } from "lucide-react";
 import { signUp, organization } from "@/lib/auth-client";
 
 function slugify(text: string): string {
@@ -12,8 +13,9 @@ function slugify(text: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,10 +23,45 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Invite code state
+  const [inviteCode, setInviteCode] = useState(
+    searchParams.get("code")?.toUpperCase() ?? "",
+  );
+  const [inviteValid, setInviteValid] = useState(!!searchParams.get("code"));
+  const [inviteError, setInviteError] = useState("");
+  const [validating, setValidating] = useState(false);
+
+  async function handleValidateCode() {
+    if (!inviteCode) return;
+    setValidating(true);
+    setInviteError("");
+
+    const res = await fetch("/api/invites/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: inviteCode, email }),
+    });
+    const data = await res.json();
+
+    if (data.valid) {
+      setInviteValid(true);
+    } else {
+      setInviteValid(false);
+      setInviteError(data.error ?? "Invalid invite code");
+    }
+    setValidating(false);
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
+
+    if (!inviteValid) {
+      setError("Please verify your invite code before creating an account.");
+      setLoading(false);
+      return;
+    }
 
     const { error: signUpError } = await signUp.email({
       name,
@@ -58,6 +95,8 @@ export default function SignUpPage() {
         betterAuthOrgId: orgData.id,
         name: businessName,
         slug,
+        inviteCode,
+        email,
       }),
     });
 
@@ -102,6 +141,54 @@ export default function SignUpPage() {
         )}
 
         <div className="space-y-4">
+          {/* Invite Code */}
+          <div>
+            <label
+              htmlFor="inviteCode"
+              className="mb-1.5 block text-sm font-medium text-[var(--color-text)]"
+            >
+              Invite Code
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="inviteCode"
+                type="text"
+                required
+                value={inviteCode}
+                onChange={(e) => {
+                  setInviteCode(e.target.value.toUpperCase());
+                  setInviteValid(false);
+                  setInviteError("");
+                }}
+                className="flex-1 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm uppercase text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+                style={{ fontFamily: "var(--font-data)" }}
+                placeholder="XXXX-XXXX"
+                maxLength={20}
+              />
+              <button
+                type="button"
+                onClick={handleValidateCode}
+                disabled={!inviteCode || validating}
+                className="rounded-[var(--radius-button)] border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-hover)] disabled:opacity-40"
+              >
+                {validating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Verify"
+                )}
+              </button>
+            </div>
+            {inviteError && (
+              <p className="mt-1 text-xs text-destructive">{inviteError}</p>
+            )}
+            {inviteValid && !inviteError && (
+              <p className="mt-1 flex items-center gap-1 text-xs text-[var(--color-green)]">
+                <CircleCheck className="h-3 w-3" />
+                Invite code accepted
+              </p>
+            )}
+          </div>
+
           <div>
             <label
               htmlFor="name"
@@ -194,5 +281,31 @@ export default function SignUpPage() {
         </p>
       </form>
     </div>
+  );
+}
+
+function SignUpFormFallback() {
+  return (
+    <div className="w-full max-w-sm">
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-bold text-[var(--color-purple-text)]">
+          DetailForge
+        </h1>
+        <p className="mt-2 text-sm text-[var(--color-muted)]">
+          Create your account
+        </p>
+      </div>
+      <div className="flex min-h-[300px] items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+        <Loader2 className="h-6 w-6 animate-spin text-[var(--color-purple-action)]" />
+      </div>
+    </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<SignUpFormFallback />}>
+      <SignUpForm />
+    </Suspense>
   );
 }

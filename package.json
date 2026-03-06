@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:prompt": "npx tsx scripts/seed-prompt.ts"
+    "seed:prompt": "npx tsx scripts/seed-prompt.ts",
+    "create-invite": "npx tsx scripts/create-invite.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

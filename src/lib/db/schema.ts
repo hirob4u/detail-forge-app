@@ -271,6 +271,22 @@ export const prompts = pgTable("prompts", {
 });
 
 // ---------------------------------------------------------------------------
+// Invites -- invite-only sign-up codes
+// ---------------------------------------------------------------------------
+
+export const invites = pgTable("invites", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: text("code").notNull().unique(),
+  email: text("email"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  usedBy: text("used_by"),
+  createdByNote: text("created_by_note"),
+});
+
+// ---------------------------------------------------------------------------
 // Better Auth -- user, session, account, verification
 // ---------------------------------------------------------------------------
 

@@ -7,9 +7,10 @@ const PUBLIC_PREFIXES = [
   "/estimate/",
   "/api/intake/",
   "/api/uploads/",
+  "/api/invites/",
 ];
 
-const AUTH_PATHS = ["/sign-in", "/sign-up"];
+const AUTH_PATHS = ["/sign-in", "/sign-up", "/waitlist"];
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
@@ -35,6 +36,11 @@ export async function proxy(request: NextRequest) {
 
   // Fast cookie check
   const sessionCookie = getSessionCookie(request);
+
+  // Redirect /sign-up without invite code to waitlist
+  if (pathname === "/sign-up" && !request.nextUrl.searchParams.get("code")) {
+    return NextResponse.redirect(new URL("/waitlist", request.url));
+  }
 
   // Auth pages: redirect to dashboard if already authenticated
   if (isAuth) {
