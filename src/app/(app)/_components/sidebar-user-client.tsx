@@ -52,7 +52,7 @@ export default function SidebarUserClient({
           onClick={handleLogout}
           disabled={loggingOut}
           title="Sign out"
-          className="flex-shrink-0 rounded-[var(--radius-button)] p-1.5 text-[var(--color-muted)] transition-colors hover:bg-[var(--color-hover)] hover:text-[var(--color-text)] disabled:opacity-40"
+          className="flex-shrink-0 rounded-[var(--radius-button)] p-1.5 text-[var(--color-muted)] transition-colors hover:bg-[var(--color-hover)] hover:text-[var(--color-text)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
         >
           <LogOut className="h-4 w-4" />
         </button>

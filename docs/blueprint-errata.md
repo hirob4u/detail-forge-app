@@ -449,4 +449,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Disabled Button Contrast
+### Issue: disabled:opacity Produces Illegible Text on Neon Backgrounds
+
+**Issue:** `disabled:opacity-*` Tailwind classes reduce the entire element's opacity. On neon-colored buttons (`bg-[var(--color-purple-action)]`, `bg-[var(--color-brand)]`), this produces a muddy semi-transparent background with washed-out text that is difficult to read against the dark page background.
+
+**Root cause:** Opacity is applied to the entire element including background, border, and text simultaneously. On dark themes with bright accent backgrounds, reduced opacity blends the accent color with the dark page background, producing an intermediate color with poor text contrast.
+
+**Fix applied:** Replaced all 10 `disabled:opacity-*` instances across 7 files with explicit disabled color overrides. Two patterns: (1) Filled buttons: `disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed`. (2) Ghost/outline buttons and inputs: `disabled:text-[var(--color-muted)] disabled:cursor-not-allowed`.
+
+**Add to Blueprint:** Never use `disabled:opacity-*` on any element in DetailForge. Use explicit disabled color overrides instead. Filled buttons: `disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed`. Ghost/outline buttons: `disabled:text-[var(--color-muted)] disabled:cursor-not-allowed`. This ensures disabled states are always legible regardless of the element's enabled-state background color.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

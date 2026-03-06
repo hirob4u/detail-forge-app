@@ -546,4 +546,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-06 -- Blueprint F -- fix/waitlist-and-contrast
+
+**Built:** Three changes. (1) Waitlist page replaced mailto button with plain text showing email in a purple accent span and instructional text about invite links -- no interactive elements that could break or confuse users. (2) Invite code validation already fixed on main (auto-validate via useEffect, `inviteValid` initialized as `false`). (3) Replaced all 10 `disabled:opacity-*` instances across 7 files with explicit disabled color overrides. Filled buttons get `disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed`. Ghost and outline buttons get `disabled:text-[var(--color-muted)] disabled:cursor-not-allowed`. Disabled inputs get `disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed`.
+
+**Worked well:** `grep -rn "disabled:opacity" src/app` as acceptance criteria made it easy to find all instances and verify zero remain. The two-pattern rule (filled vs ghost) was simple to apply consistently.
+
+**Corrected:** None.
+
+**Root cause:** `disabled:opacity-*` reduces the entire element's opacity including background, border, and text. On neon-colored backgrounds this produces illegible muddy text. Explicit color overrides ensure disabled states are always readable regardless of the element's enabled-state background color.
+
+**Commit:** `fix: replace disabled:opacity with explicit color overrides across entire codebase`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

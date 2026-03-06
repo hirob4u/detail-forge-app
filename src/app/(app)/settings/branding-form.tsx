@@ -563,7 +563,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-6 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-purple-deep)] disabled:opacity-50"
+          className="rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-6 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-purple-deep)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
         >
           {saving ? "Saving..." : "Save Settings"}
         </button>

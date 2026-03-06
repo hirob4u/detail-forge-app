@@ -465,7 +465,7 @@ export default function StructuredPhotoCapture({
               type="button"
               onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
               disabled={currentStep === 0}
-              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] disabled:opacity-30"
+              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
             >
               Previous
             </button>
@@ -517,7 +517,7 @@ export default function StructuredPhotoCapture({
                 )
               }
               disabled={currentStep === ALL_SHOTS.length - 1}
-              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-brand)] transition-colors disabled:opacity-30"
+              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-brand)] transition-colors disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
             >
               {currentPhoto?.status === "done" ? "Next" : "Skip"}
             </button>
