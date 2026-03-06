@@ -585,7 +585,7 @@ export default function ReviewForm({
                           value={item.finalPrice}
                           onChange={(e) => updatePrice(index, Number(e.target.value))}
                           disabled={!item.included}
-                          className="w-20 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-right text-sm text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] disabled:opacity-40"
+                          className="w-20 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-right text-sm text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
                           style={{ fontFamily: "var(--font-data)" }}
                         />
                       )}
@@ -646,7 +646,7 @@ export default function ReviewForm({
                 type="button"
                 onClick={handleFinalize}
                 disabled={submitting || includedItems.length === 0}
-                className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-purple-deep)] disabled:opacity-40"
+                className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-purple-deep)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>

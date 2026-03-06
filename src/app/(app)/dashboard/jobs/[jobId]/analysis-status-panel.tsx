@@ -182,7 +182,7 @@ export default function AnalysisStatusPanel({
           type="button"
           onClick={handleRetryAnalysis}
           disabled={retrying}
-          className="flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-purple-action)] disabled:opacity-40"
+          className="flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-purple-action)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
         >
           <RefreshCw className="h-4 w-4" />
           Retry Analysis

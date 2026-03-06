@@ -177,7 +177,7 @@ function SignUpForm() {
                 type="button"
                 onClick={handleValidateCode}
                 disabled={!inviteCode || validating}
-                className="rounded-[var(--radius-button)] border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-hover)] disabled:opacity-40"
+                className="rounded-[var(--radius-button)] border border-[var(--color-border)] px-3 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-hover)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
               >
                 {validating ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -273,7 +273,7 @@ function SignUpForm() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-6 w-full rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-purple-deep)] disabled:opacity-50"
+          className="mt-6 w-full rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-purple-deep)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
         >
           {loading ? "Creating account..." : "Create account"}
         </button>
