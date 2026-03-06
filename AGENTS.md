@@ -36,6 +36,18 @@ If a spec detail is ambiguous, use the most conservative
 interpretation and leave a comment flagged with TODO: VERIFY
 so the human reviewer can make the call.
 
+## Database
+- Two Neon branches exist: dev (local) and main (production)
+- .env.local `DATABASE_URL` always points to the dev branch
+- .env.local `DATABASE_URL_PROD` contains the production connection string
+- Vercel `DATABASE_URL` always points to the production branch
+- Every schema change Blueprint must run `drizzle-kit push` against both branches
+- Run dev first (default `drizzle.config.ts` uses `DATABASE_URL`), then create
+  a temporary `drizzle-prod.config.ts` that reads `DATABASE_URL_PROD` from
+  `.env.local`, run `npx drizzle-kit push --config drizzle-prod.config.ts`,
+  then delete the temp config file. Never commit the prod config.
+- Never run migrations from a parent directory
+
 ## Git Workflow
 - Before creating any branch, always sync with remote main first:
   git checkout main && git pull origin main

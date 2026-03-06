@@ -516,4 +516,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-05 -- Blueprint -- feat/invite-only-signup
+
+**Built:** Invite-only sign-up system. Added `invites` table to schema (code, email lock, usedAt, usedBy, createdByNote). Sign-up page requires a verified invite code before account creation -- invite code input with Verify button, green confirmation or red error feedback. Middleware redirects `/sign-up` without `?code=` param to `/waitlist` page. Waitlist page shows invite-only messaging with mailto link. Invite codes marked as used only on successful account creation (not on validation) to prevent codes being burned by failed sign-ups. Admin script `npm run create-invite` generates codes with optional `--email=`, `--note=`, and `--count=` flags. Codes are case-insensitive, always normalized to uppercase. `/api/invites/` added to public prefixes in proxy so validation works without auth.
+
+**Worked well:** The invite validation endpoint is stateless -- it checks but does not mutate. The actual `usedAt`/`usedBy` write happens in `/api/org/create` after the org record is successfully created, so failed sign-ups never burn a code. Middleware redirect to waitlist is a single pathname + searchParams check placed before the session check. The `useSearchParams` hook pre-fills the code from the URL so invite links work as expected.
+
+**Corrected:** Blueprint specified `src/middleware.ts` but this project uses `src/proxy.ts` (Next.js 16, documented in errata). Used `drizzle-kit push` instead of `drizzle-kit migrate` because the migration journal had unapplied older migrations that conflicted with the live schema.
+
+**Root cause:** `drizzle-kit migrate` replays all unapplied migrations sequentially. When earlier migrations were applied via `push` instead of `migrate`, the journal is out of sync and older migrations fail on already-existing columns.
+
+**Commit:** `feat: invite-only sign-up with invite codes, waitlist, and admin script`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

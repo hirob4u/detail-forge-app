@@ -410,4 +410,30 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Sign-Up Flow
+### Convention: Invite-Only Registration
+
+**Issue:** Not a bug -- a deliberate product decision documented here to prevent future Blueprints from removing the invite gate.
+
+**Root cause:** N/A -- intentional design for early access period.
+
+**Fix applied:** Sign-up is invite-only. Never remove the invite code check from the sign-up flow without a deliberate product decision to open registration. Invite codes are marked used only on successful account creation -- not on validation -- to prevent codes being burned by failed sign-ups. The middleware redirect from `/sign-up` to `/waitlist` applies only when no `?code=` param is present -- direct links with a code bypass the redirect and show the sign-up form with the code pre-filled.
+
+**Add to Blueprint:** Sign-up requires a valid invite code. The `/sign-up` route redirects to `/waitlist` unless a `?code=` query param is present. Invite validation is a separate API call (`POST /api/invites/validate`) that does not burn the code -- only successful account creation in `/api/org/create` marks the invite as used. When adding new public routes, add them to `PUBLIC_PREFIXES` in `proxy.ts`. The `/api/invites/` prefix must remain public so unauthenticated users can validate codes during sign-up.
+
+---
+
+### All Blueprints -- Schema Changes
+### Issue: Migrations Must Run Against Both Neon Branches
+
+**Issue:** Schema change was pushed to the dev Neon branch only. Production database was out of sync until manually pushed separately.
+
+**Root cause:** `drizzle-kit push` reads `DATABASE_URL` from `.env.local` which points to the dev branch. There is no automatic mechanism to apply the same change to the production branch.
+
+**Fix applied:** Created a temporary `drizzle-prod.config.ts` that reads `DATABASE_URL_PROD` from `.env.local` and ran `drizzle-kit push` against it. Deleted the temp config after confirming success.
+
+**Add to Blueprint:** Any Blueprint that includes a schema change must run migrations against both the dev and production Neon branches explicitly. Dev is the default target via `.env.local`. Production is defined in `.env.local` as `DATABASE_URL_PROD`, running the migration, and ensuring that the local env variables remain the same as before. Never assume a single migration run covers both branches.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

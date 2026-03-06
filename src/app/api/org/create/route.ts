@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { organizations } from "@/lib/db/schema";
+import { organizations, invites } from "@/lib/db/schema";
 
 export async function POST(request: Request) {
   try {
-    const { betterAuthOrgId, name, slug } = await request.json();
+    const { betterAuthOrgId, name, slug, inviteCode, email } =
+      await request.json();
 
     if (!betterAuthOrgId || !name || !slug) {
       return NextResponse.json(
@@ -22,6 +24,17 @@ export async function POST(request: Request) {
       city: "",
       state: "",
     });
+
+    // Mark invite code as used on successful account creation
+    if (inviteCode) {
+      await db
+        .update(invites)
+        .set({
+          usedAt: new Date(),
+          usedBy: email ?? null,
+        })
+        .where(eq(invites.code, inviteCode.trim().toUpperCase()));
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {
