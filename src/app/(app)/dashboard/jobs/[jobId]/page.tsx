@@ -3,6 +3,9 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobs, vehicles, customers } from "@/lib/db/schema";
 import AnalysisStatusPanel from "./analysis-status-panel";
+import StageControls from "./stage-controls";
+import StageHistory from "./stage-history";
+import type { JobStage } from "@/lib/db/schema";
 
 export default async function JobDetailPage({
   params,
@@ -21,6 +24,7 @@ export default async function JobDetailPage({
       createdAt: jobs.createdAt,
       vehicleId: jobs.vehicleId,
       customerId: jobs.customerId,
+      stageHistory: jobs.stageHistory,
     })
     .from(jobs)
     .where(eq(jobs.id, jobId))
@@ -135,6 +139,28 @@ export default async function JobDetailPage({
             vehicleColor: vehicle.color,
           }}
         />
+
+        {/* Stage controls */}
+        <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+          <h2
+            className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
+            style={{ fontFamily: "var(--font-data)" }}
+          >
+            Stage
+          </h2>
+          <StageControls jobId={job.id} currentStage={job.stage as JobStage} />
+        </section>
+
+        {/* Stage history */}
+        <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+          <h2
+            className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
+            style={{ fontFamily: "var(--font-data)" }}
+          >
+            History
+          </h2>
+          <StageHistory history={job.stageHistory ?? []} />
+        </section>
       </div>
     </div>
   );
