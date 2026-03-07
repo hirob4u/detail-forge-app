@@ -561,4 +561,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-06 -- Blueprint -- feat/job-stage-management
+
+**Built:** Job stage management with allowed transitions, server-side validation, and full audit trail. Added `archived` to `jobStageEnum` and typed `stageHistory` JSONB column on jobs table. Created `STAGE_TRANSITIONS` map in `src/lib/stage-transitions.ts` defining allowed forward and backward transitions for all 8 stages. PATCH endpoint at `/api/jobs/[jobId]/stage` validates the requested transition against the allowed map, appends to `stageHistory`, and updates the stage. `StageControls` client component renders purple filled buttons for forward transitions and ghost outline buttons for backward transitions. Backward moves and archive actions show an amber confirmation dialog before executing. `StageHistory` component displays the full audit trail newest first with relative timestamps. Complete is a terminal state with no outbound transitions. Archived jobs can only be restored to Created.
+
+**Worked well:** The shared `STAGE_TRANSITIONS` map used by both the API route (server-side validation) and the UI component (button rendering) keeps the allowed transitions in sync without duplication. The confirmation dialog pattern using amber color clearly signals caution without implying danger (red) or normal action (purple).
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `feat: job stage management with transitions, controls, and history`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

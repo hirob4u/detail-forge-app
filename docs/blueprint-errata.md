@@ -462,4 +462,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### All Blueprints -- Job Stage Management
+### Convention: Server-Side Stage Transition Validation
+
+**Issue:** Not a bug -- a convention established in this Blueprint.
+
+**Root cause:** N/A -- architecture decision.
+
+**Fix applied:** Stage transitions are validated server-side against `STAGE_TRANSITIONS` in `src/lib/stage-transitions.ts`. The PATCH `/api/jobs/[jobId]/stage` route checks the transition is in the allowed list for the current stage before executing. The client-side `StageControls` component reads the same map for button rendering but the UI is informational only -- the server is the source of truth. Complete is a terminal state with no outbound transitions. Archived jobs can only be restored to Created.
+
+**Add to Blueprint:** Never allow arbitrary stage values in the PATCH `/api/jobs/[jobId]/stage` route -- always check the transition is in the allowed list for the current stage. The `STAGE_TRANSITIONS` map in `src/lib/stage-transitions.ts` is the single source of truth for allowed transitions. Both the API route and the UI component import from it. When adding new stages or transitions, update the map and both consumers will pick up the change automatically.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

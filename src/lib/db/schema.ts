@@ -33,7 +33,10 @@ export const jobStageEnum = pgEnum("job_stage", [
   "inProgress",
   "qc",
   "complete",
+  "archived",
 ]);
+
+export type JobStage = (typeof jobStageEnum.enumValues)[number];
 
 export const productCategoryEnum = pgEnum("product_category", [
   "compound",
@@ -180,7 +183,10 @@ export const jobs = pgTable(
     estimateAmount: numeric("estimate_amount", { precision: 12, scale: 2 }),
     finalAmount: numeric("final_amount", { precision: 12, scale: 2 }),
     notes: text("notes"),
-    stageHistory: jsonb("stage_history").notNull().default([]),
+    stageHistory: jsonb("stage_history")
+      .$type<{ from: string; to: string; at: string; note?: string }[]>()
+      .notNull()
+      .default([]),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
