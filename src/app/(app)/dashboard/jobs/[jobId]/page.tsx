@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobs, vehicles, customers } from "@/lib/db/schema";
@@ -139,6 +140,27 @@ export default async function JobDetailPage({
             vehicleColor: vehicle.color,
           }}
         />
+
+        {/* QC link -- visible when job is in qc stage */}
+        {job.stage === "qc" && (
+          <div className="rounded-[var(--radius-card)] border border-[var(--color-purple-action)]/40 bg-[var(--color-elevated)] p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text)]">
+                This job is ready for QC
+              </p>
+              <p className="mt-0.5 text-xs text-[var(--color-muted)]">
+                Complete the checklist and upload after photos before marking
+                this job complete.
+              </p>
+            </div>
+            <Link
+              href={`/dashboard/jobs/${jobId}/qc`}
+              className="shrink-0 rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-purple-deep)]"
+            >
+              Open QC
+            </Link>
+          </div>
+        )}
 
         {/* Stage controls */}
         <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">

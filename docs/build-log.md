@@ -576,4 +576,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-06 -- Blueprint -- feat/qc-photo-upload
+
+**Built:** QC screen at `/dashboard/jobs/[jobId]/qc` with auto-generated checklist from AI assessment flags and finalized quote line items. Checklist items toggle between Pass and Rework with auto-save on every toggle. Before/after photo comparison grid shows intake photos on left and QC upload slots on right, grouped by area. After photos upload to R2 via presigned PUT URLs under `qc/[orgId]/[jobId]/` path. QC notes field saves on blur. Completion gate unlocks when all checklist items pass, showing a link back to the job detail page to mark complete via stage controls. QC screen only accessible when `job.stage === 'qc'` -- server component redirects to job detail for any other stage. Schema adds `qcPhotos`, `qcNotes`, `qcCompletedAt`, and `qcChecklist` JSONB columns to jobs table. Lightbox for photo viewing follows same pattern as review screen. Job detail page shows prominent "Open QC" link when job is in QC stage.
+
+**Worked well:** Reusing `createPresignedGetUrl` from `src/lib/r2.ts` for signing both before and after photos kept the GET route clean. Checklist generation from `finalQuote.lineItems` and `aiAssessment.flags` produces relevant QC items without manual configuration. Auto-save on checklist toggle gives instant feedback without a save button.
+
+**Corrected:** Blueprint referenced `jobs.services` column which does not exist -- services come from `finalQuote.lineItems`. Adapted the GET route to extract included service names from the finalized quote instead.
+
+**Root cause:** Blueprint was written before the final schema was confirmed. The `services` field was assumed to be a top-level column but the data lives inside the `finalQuote` JSONB structure.
+
+**Commit:** `feat: QC screen with checklist, before/after photos, and completion gate`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

@@ -183,6 +183,21 @@ export const jobs = pgTable(
     estimateAmount: numeric("estimate_amount", { precision: 12, scale: 2 }),
     finalAmount: numeric("final_amount", { precision: 12, scale: 2 }),
     notes: text("notes"),
+    qcPhotos: jsonb("qc_photos")
+      .$type<{ key: string; area: string; uploadedAt: string }[]>()
+      .default([]),
+    qcNotes: text("qc_notes"),
+    qcCompletedAt: timestamp("qc_completed_at", { withTimezone: true }),
+    qcChecklist: jsonb("qc_checklist")
+      .$type<
+        {
+          itemId: string;
+          label: string;
+          status: "pending" | "pass" | "needs-work";
+          note?: string;
+        }[]
+      >()
+      .default([]),
     stageHistory: jsonb("stage_history")
       .$type<{ from: string; to: string; at: string; note?: string }[]>()
       .notNull()
