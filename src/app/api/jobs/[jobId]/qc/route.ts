@@ -4,7 +4,6 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { jobs } from "@/lib/db/schema";
 import { getDetailForgeOrgId } from "@/lib/org";
-import { createPresignedGetUrl } from "@/lib/r2";
 import { generateQcChecklist } from "@/lib/qc-checklist";
 import type { FinalQuote } from "@/lib/types/quote";
 
@@ -70,20 +69,22 @@ export async function GET(
       .where(eq(jobs.id, jobId));
   }
 
-  // Sign intake (before) photos
-  const beforePhotos = await Promise.all(
-    (job.photos ?? []).map(async (photo) => ({
-      ...photo,
-      url: await createPresignedGetUrl(photo.key),
-    })),
+  // Before photos -- metadata only, no signing
+  const beforePhotos = (job.photos ?? []).map(
+    (photo: { key: string; area: string; phase: string }) => ({
+      key: photo.key,
+      area: photo.area,
+      phase: photo.phase,
+    }),
   );
 
-  // Sign QC (after) photos
-  const afterPhotos = await Promise.all(
-    (job.qcPhotos ?? []).map(async (photo) => ({
-      ...photo,
-      url: await createPresignedGetUrl(photo.key),
-    })),
+  // QC (after) photos -- metadata only
+  const afterPhotos = (job.qcPhotos ?? []).map(
+    (photo: { key: string; area: string; uploadedAt: string }) => ({
+      key: photo.key,
+      area: photo.area,
+      uploadedAt: photo.uploadedAt,
+    }),
   );
 
   return NextResponse.json({

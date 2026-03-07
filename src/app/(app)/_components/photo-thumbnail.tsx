@@ -8,25 +8,34 @@ export default function PhotoThumbnail({
   alt,
   label,
   onClick,
+  loading: externalLoading,
   className,
 }: {
-  src: string;
+  src?: string | null;
   alt: string;
-  label?: string;
+  label: string;
   onClick?: () => void;
+  loading?: boolean;
   className?: string;
 }) {
-  const [loaded, setLoaded] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [error, setError] = useState(false);
+
+  const showSpinner = externalLoading || (!!src && !imageLoaded && !error);
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`group relative aspect-square overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] transition-colors hover:border-[var(--color-purple-action)]/50 ${className ?? ""}`}
+      disabled={!src || !!externalLoading}
+      className={`group relative aspect-square overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] transition-colors disabled:cursor-default ${
+        src && !externalLoading
+          ? "hover:border-[var(--color-purple-action)]/50"
+          : ""
+      } ${className ?? ""}`}
     >
-      {/* Placeholder -- always rendered, hidden once image loads */}
-      {!loaded && !error && (
+      {/* Spinner shown while loading or while image is fetching */}
+      {showSpinner && (
         <div className="absolute inset-0 flex items-center justify-center">
           <Loader2 className="h-5 w-5 animate-spin text-[var(--color-muted)]" />
         </div>
@@ -44,31 +53,29 @@ export default function PhotoThumbnail({
         </div>
       )}
 
-      {/* Image -- rendered immediately but invisible until loaded */}
-      {!error && (
+      {/* Image -- invisible until loaded, fades in */}
+      {src && !error && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src}
           alt={alt}
-          onLoad={() => setLoaded(true)}
+          onLoad={() => setImageLoaded(true)}
           onError={() => setError(true)}
           className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
-            loaded ? "opacity-100" : "opacity-0"
+            imageLoaded ? "opacity-100" : "opacity-0"
           }`}
         />
       )}
 
-      {/* Area label overlay -- only shown when loaded */}
-      {label && loaded && (
-        <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
-          <p
-            className="truncate text-[10px] uppercase tracking-widest text-white"
-            style={{ fontFamily: "var(--font-data)" }}
-          >
-            {label}
-          </p>
-        </div>
-      )}
+      {/* Label -- ALWAYS visible regardless of load state */}
+      <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-2 py-1">
+        <p
+          className="truncate text-[10px] uppercase tracking-widest text-white"
+          style={{ fontFamily: "var(--font-data)" }}
+        >
+          {label}
+        </p>
+      </div>
     </button>
   );
 }

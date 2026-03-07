@@ -501,4 +501,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Two-Phase Photo Loading
+### Convention: Photo Loading Is Always Two-Phase
+
+**Issue:** Not a bug -- a performance architecture established in this Blueprint.
+
+**Root cause:** N/A -- architecture decision.
+
+**Fix applied:** Photo loading is always two-phase. Phase 1 calls `/api/jobs/[jobId]/photos/meta` -- DB only, no R2, returns fast. Phase 2 calls `/api/jobs/[jobId]/photos/urls` with the keys from Phase 1 -- generates presigned R2 URLs in parallel. Never combine these into a single blocking call. The `/photos/urls` endpoint validates every requested key against the job's actual photo records before signing -- it must never sign arbitrary keys. QC after photo keys live in `jobs.qcPhotos` and must be included in the key validation set alongside intake photo keys from `jobs.photos`. Area labels are derived from the area key string using `formatAreaLabel` (split on hyphens, capitalize each word) -- never use a hardcoded lookup table.
+
+**Add to Blueprint:** Photo loading is always two-phase. Phase 1 calls `/api/jobs/[jobId]/photos/meta` -- DB only, no R2, returns fast. Phase 2 calls `/api/jobs/[jobId]/photos/urls` with the keys from Phase 1 -- generates presigned R2 URLs in parallel. Never combine these into a single blocking call. The `/photos/urls` endpoint validates every requested key against the job's actual photo records before signing -- it must never sign arbitrary keys. QC after photo keys live in `jobs.qcPhotos` and must be included in the key validation set alongside intake photo keys from `jobs.photos`.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

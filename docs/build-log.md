@@ -606,4 +606,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-06 -- Blueprint F -- fix/photo-two-phase-loading
+
+**Built:** Photo loading refactored to two-phase approach. New `/api/jobs/[jobId]/photos/meta` endpoint returns DB metadata only (no R2 calls) in under 50ms, allowing labeled placeholder slots to render immediately. New `/api/jobs/[jobId]/photos/urls` POST endpoint accepts an array of R2 keys and returns presigned GET URLs in parallel after metadata arrives. Key validation ensures every requested key belongs to the job's `photos` or `qcPhotos` arrays before signing -- returns 403 for invalid keys. `PhotoThumbnail` updated with `loading` prop and optional `src` to support the two-phase state where labels show immediately and images fade in as URLs resolve. Review form and QC form both updated to the two-phase pattern. QC GET route no longer signs URLs -- returns metadata only. Area labels derived directly from the area key string (`formatAreaLabel`) instead of a hardcoded lookup table. `photo-areas.ts` confirmed deleted (never existed in codebase). Existing `/api/jobs/[jobId]/photos` route preserved for backward compatibility.
+
+**Worked well:** Splitting metadata from URL signing eliminated the blocking R2 presign latency from the initial render. The `PhotoThumbnail` `loading` prop cleanly bridges the gap between metadata arriving (label visible) and URL arriving (image fades in). Using `formatAreaLabel` to derive labels from the key string eliminated all hardcoded `AREA_LABELS` maps across the codebase.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: two-phase photo loading with /photos/meta and /photos/urls endpoints`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

@@ -7,34 +7,42 @@ import type { ChecklistItem } from "@/lib/qc-checklist";
 import PhotoThumbnail from "@/app/(app)/_components/photo-thumbnail";
 import PhotoGridSkeleton from "@/app/(app)/_components/photo-grid-skeleton";
 
-const AREA_LABELS: Record<string, string> = {
-  "driver-side": "Driver Side",
-  "passenger-side": "Passenger Side",
-  front: "Front",
-  rear: "Rear",
-  hood: "Hood",
-  "driver-seat": "Driver Seat",
-  "rear-seat": "Rear Seat",
-  dashboard: "Dashboard",
-  "damage-area": "Damage Area",
-  wheel: "Wheel",
-  trunk: "Trunk / Cargo",
-  headliner: "Headliner",
-  "engine-bay": "Engine Bay",
-};
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-interface SignedPhoto {
+/** Convert "driver-side" → "Driver Side" */
+function formatAreaLabel(area: string): string {
+  return area
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type PhotoMeta = {
   key: string;
   area: string;
-  url: string;
-}
+  phase?: string;
+};
+
+type AfterPhotoMeta = {
+  key: string;
+  area: string;
+  uploadedAt: string;
+};
 
 export default function QcForm({ jobId }: { jobId: string }) {
   const [loading, setLoading] = useState(true);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [qcNotes, setQcNotes] = useState("");
-  const [beforePhotos, setBeforePhotos] = useState<SignedPhoto[]>([]);
-  const [afterPhotos, setAfterPhotos] = useState<SignedPhoto[]>([]);
+  const [beforeMeta, setBeforeMeta] = useState<PhotoMeta[]>([]);
+  const [afterMeta, setAfterMeta] = useState<AfterPhotoMeta[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
+  const [urlsLoading, setUrlsLoading] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<{
     url: string;
@@ -54,8 +62,8 @@ export default function QcForm({ jobId }: { jobId: string }) {
       const data = await res.json();
       setChecklist(data.checklist ?? []);
       setQcNotes(data.qcNotes ?? "");
-      setBeforePhotos(data.beforePhotos ?? []);
-      setAfterPhotos(data.afterPhotos ?? []);
+      setBeforeMeta(data.beforePhotos ?? []);
+      setAfterMeta(data.afterPhotos ?? []);
     } catch {
       // Silently ignore -- will show empty state
     } finally {
@@ -66,6 +74,33 @@ export default function QcForm({ jobId }: { jobId: string }) {
   useEffect(() => {
     loadQcData();
   }, [loadQcData]);
+
+  // Phase 2 -- fetch presigned URLs once metadata arrives
+  useEffect(() => {
+    if (loading) return;
+    const allKeys = [
+      ...beforeMeta.map((p) => p.key),
+      ...afterMeta.map((p) => p.key),
+    ];
+    if (allKeys.length === 0) return;
+
+    setUrlsLoading(true);
+    fetch(`/api/jobs/${jobId}/photos/urls`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ keys: allKeys }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        const urlMap: Record<string, string> = {};
+        (data.photos ?? []).forEach((p: { key: string; url: string }) => {
+          urlMap[p.key] = p.url;
+        });
+        setPhotoUrls(urlMap);
+        setUrlsLoading(false);
+      })
+      .catch(() => setUrlsLoading(false));
+  }, [loading, jobId, beforeMeta, afterMeta]);
 
   // Lock body scroll when lightbox is open
   useEffect(() => {
@@ -153,7 +188,7 @@ export default function QcForm({ jobId }: { jobId: string }) {
           body: JSON.stringify({ key, area }),
         });
 
-        // Refresh QC state to get signed URL for the new photo
+        // Refresh QC state to get updated metadata
         await loadQcData();
       } catch {
         // TODO: VERIFY error state
@@ -244,7 +279,7 @@ export default function QcForm({ jobId }: { jobId: string }) {
       </section>
 
       {/* Section 2 -- Before / After Photos */}
-      {beforePhotos.length > 0 && (
+      {beforeMeta.length > 0 && (
         <section>
           <h2
             className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
@@ -253,8 +288,11 @@ export default function QcForm({ jobId }: { jobId: string }) {
             Before / After Photos
           </h2>
           <div className="space-y-3">
-            {beforePhotos.map((before) => {
-              const after = afterPhotos.find((a) => a.area === before.area);
+            {beforeMeta.map((before) => {
+              const after = afterMeta.find((a) => a.area === before.area);
+              const beforeUrl = photoUrls[before.key] ?? null;
+              const afterUrl = after ? (photoUrls[after.key] ?? null) : null;
+
               return (
                 <div
                   key={before.key}
@@ -264,7 +302,7 @@ export default function QcForm({ jobId }: { jobId: string }) {
                     className="mb-2 text-[10px] uppercase tracking-widest text-[var(--color-muted)]"
                     style={{ fontFamily: "var(--font-data)" }}
                   >
-                    {AREA_LABELS[before.area] ?? before.area}
+                    {formatAreaLabel(before.area)}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {/* Before */}
@@ -276,13 +314,18 @@ export default function QcForm({ jobId }: { jobId: string }) {
                         Before
                       </p>
                       <PhotoThumbnail
-                        src={before.url}
-                        alt={`${AREA_LABELS[before.area] ?? before.area} — Before`}
-                        onClick={() =>
-                          setSelectedPhoto({
-                            url: before.url,
-                            label: `${AREA_LABELS[before.area] ?? before.area} — Before`,
-                          })
+                        src={beforeUrl}
+                        alt={`${formatAreaLabel(before.area)} — Before`}
+                        label={formatAreaLabel(before.area)}
+                        loading={urlsLoading && !beforeUrl}
+                        onClick={
+                          beforeUrl
+                            ? () =>
+                                setSelectedPhoto({
+                                  url: beforeUrl,
+                                  label: `${formatAreaLabel(before.area)} — Before`,
+                                })
+                            : undefined
                         }
                       />
                     </div>
@@ -297,14 +340,19 @@ export default function QcForm({ jobId }: { jobId: string }) {
                       </p>
                       {after ? (
                         <PhotoThumbnail
-                          src={after.url}
-                          alt={`${AREA_LABELS[after.area] ?? after.area} — After`}
+                          src={afterUrl}
+                          alt={`${formatAreaLabel(after.area)} — After`}
+                          label={formatAreaLabel(after.area)}
                           className="border-[var(--color-green)]/40"
-                          onClick={() =>
-                            setSelectedPhoto({
-                              url: after.url,
-                              label: `${AREA_LABELS[after.area] ?? after.area} — After`,
-                            })
+                          loading={urlsLoading && !afterUrl}
+                          onClick={
+                            afterUrl
+                              ? () =>
+                                  setSelectedPhoto({
+                                    url: afterUrl,
+                                    label: `${formatAreaLabel(after.area)} — After`,
+                                  })
+                              : undefined
                           }
                         />
                       ) : (
