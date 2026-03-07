@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Loader2, Camera, X } from "lucide-react";
 import type { ChecklistItem } from "@/lib/qc-checklist";
+import PhotoThumbnail from "@/app/(app)/_components/photo-thumbnail";
+import PhotoGridSkeleton from "@/app/(app)/_components/photo-grid-skeleton";
 
 const AREA_LABELS: Record<string, string> = {
   "driver-side": "Driver Side",
@@ -164,9 +166,8 @@ export default function QcForm({ jobId }: { jobId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-[var(--color-muted)]">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading QC data...
+      <div className="space-y-6">
+        <PhotoGridSkeleton count={4} />
       </div>
     );
   }
@@ -274,23 +275,16 @@ export default function QcForm({ jobId }: { jobId: string }) {
                       >
                         Before
                       </p>
-                      <button
-                        type="button"
+                      <PhotoThumbnail
+                        src={before.url}
+                        alt={`${AREA_LABELS[before.area] ?? before.area} — Before`}
                         onClick={() =>
                           setSelectedPhoto({
                             url: before.url,
                             label: `${AREA_LABELS[before.area] ?? before.area} — Before`,
                           })
                         }
-                        className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-button)] border border-[var(--color-border)]"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={before.url}
-                          alt="Before"
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
+                      />
                     </div>
 
                     {/* After */}
@@ -302,23 +296,17 @@ export default function QcForm({ jobId }: { jobId: string }) {
                         After
                       </p>
                       {after ? (
-                        <button
-                          type="button"
+                        <PhotoThumbnail
+                          src={after.url}
+                          alt={`${AREA_LABELS[after.area] ?? after.area} — After`}
+                          className="border-[var(--color-green)]/40"
                           onClick={() =>
                             setSelectedPhoto({
                               url: after.url,
                               label: `${AREA_LABELS[after.area] ?? after.area} — After`,
                             })
                           }
-                          className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-button)] border border-[var(--color-green)]/40"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={after.url}
-                            alt="After"
-                            className="h-full w-full object-cover"
-                          />
-                        </button>
+                        />
                       ) : (
                         <button
                           type="button"

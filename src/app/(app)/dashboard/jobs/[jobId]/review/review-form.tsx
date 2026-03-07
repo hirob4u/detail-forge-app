@@ -16,6 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import PhotoThumbnail from "@/app/(app)/_components/photo-thumbnail";
+import PhotoGridSkeleton from "@/app/(app)/_components/photo-grid-skeleton";
 
 const AREA_LABELS: Record<string, string> = {
   "driver-side": "Driver Side",
@@ -297,32 +299,19 @@ export default function ReviewForm({
           </p>
 
           {photosLoading ? (
-            <div className="mt-4 flex items-center gap-2 text-sm text-[var(--color-muted)]">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading photos...
+            <div className="mt-4">
+              <PhotoGridSkeleton count={8} />
             </div>
           ) : photos.length > 0 ? (
             <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
               {photos.map((photo, i) => (
-                <button
+                <PhotoThumbnail
                   key={photo.key}
-                  type="button"
+                  src={photo.url}
+                  alt={AREA_LABELS[photo.area] ?? photo.area}
+                  label={AREA_LABELS[photo.area] ?? photo.area}
                   onClick={() => setSelectedIndex(i)}
-                  className="group relative aspect-square overflow-hidden rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)]"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo.url}
-                    alt={photo.area}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                  <span
-                    className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white"
-                    style={{ fontFamily: "var(--font-data)" }}
-                  >
-                    {photo.area.replace(/-/g, " ")}
-                  </span>
-                </button>
+                />
               ))}
             </div>
           ) : null}

@@ -591,4 +591,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-06 -- Blueprint F -- fix/photo-loading-placeholders
+
+**Built:** Shared `PhotoThumbnail` client component (`src/app/(app)/_components/photo-thumbnail.tsx`) that handles image loading with a spinner placeholder, fade-in transition on load, error state display, and area label overlay. Shared `PhotoGridSkeleton` component (`src/app/(app)/_components/photo-grid-skeleton.tsx`) that renders a grid of spinning placeholder tiles during API fetch. Updated the review form photo grid to use `PhotoThumbnail` instead of inline `<button>` + `<img>` markup and replaced the "Loading photos..." text with `PhotoGridSkeleton`. Updated the QC form before/after photo display to use `PhotoThumbnail` (with green border class for after photos) and replaced the QC loading state with `PhotoGridSkeleton`.
+
+**Worked well:** Extracting the thumbnail pattern into a shared component eliminated duplicated loading/error/fade-in logic across review and QC forms. The `aspect-square` container on `PhotoThumbnail` prevents layout shift before images load. The `className` prop on `PhotoThumbnail` allows the QC form to apply the green border for after photos without a separate component.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: shared PhotoThumbnail and PhotoGridSkeleton prevent layout shift during photo loading`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
