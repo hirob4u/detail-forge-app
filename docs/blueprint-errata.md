@@ -488,4 +488,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Photo Loading Placeholders
+### Convention: Shared Photo Display Components
+
+**Issue:** Not a bug -- a convention established in this Blueprint.
+
+**Root cause:** N/A -- architecture decision.
+
+**Fix applied:** All photo thumbnail display across the app uses `PhotoThumbnail` from `src/app/(app)/_components/photo-thumbnail.tsx`. This component handles the loading spinner, opacity-0 to opacity-100 fade-in, error fallback, and area label overlay. The `className` prop allows consumers to override border styling (e.g. green border for QC after photos). For loading states during API fetch, use `PhotoGridSkeleton` from `src/app/(app)/_components/photo-grid-skeleton.tsx` which renders placeholder tiles with spinning indicators. Both components use `aspect-square` to prevent layout shift.
+
+**Add to Blueprint:** When displaying photos in a grid, always use `PhotoThumbnail` -- never inline `<img>` tags with manual loading state. For API-level loading placeholders, use `PhotoGridSkeleton` with a `count` prop matching the expected number of photos. Both components live in `src/app/(app)/_components/` and follow AGENTS.md design token rules (no `rounded-full`, uses CSS custom properties).
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
