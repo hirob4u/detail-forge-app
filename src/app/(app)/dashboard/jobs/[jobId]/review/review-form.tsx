@@ -17,23 +17,18 @@ import {
   ChevronRight,
 } from "lucide-react";
 import PhotoThumbnail from "@/app/(app)/_components/photo-thumbnail";
-import PhotoGridSkeleton from "@/app/(app)/_components/photo-grid-skeleton";
 
-const AREA_LABELS: Record<string, string> = {
-  "driver-side": "Driver Side",
-  "passenger-side": "Passenger Side",
-  front: "Front",
-  rear: "Rear",
-  hood: "Hood",
-  "driver-seat": "Driver Seat",
-  "rear-seat": "Rear Seat",
-  dashboard: "Dashboard",
-  "damage-area": "Damage Area",
-  wheel: "Wheel",
-  trunk: "Trunk / Cargo",
-  headliner: "Headliner",
-  "engine-bay": "Engine Bay",
-};
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Convert "driver-side" → "Driver Side" */
+function formatAreaLabel(area: string): string {
+  return area
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -61,12 +56,11 @@ interface ConditionAssessment {
   flags: string[];
 }
 
-interface PhotoWithUrl {
+type PhotoMeta = {
   key: string;
   area: string;
   phase: string;
-  url: string;
-}
+};
 
 interface ReviewFormProps {
   jobId: string;
@@ -97,20 +91,56 @@ export default function ReviewForm({
 }: ReviewFormProps) {
   const router = useRouter();
 
-  // Photo viewer state
-  const [photos, setPhotos] = useState<PhotoWithUrl[]>([]);
-  const [photosLoading, setPhotosLoading] = useState(hasPhotos);
+  // Two-phase photo state
+  const [photoMeta, setPhotoMeta] = useState<PhotoMeta[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
+  const [metaLoading, setMetaLoading] = useState(hasPhotos);
+  const [urlsLoading, setUrlsLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const selectedPhoto = selectedIndex !== null ? photos[selectedIndex] : null;
 
+  // Phase 1 -- metadata only, runs on mount
   useEffect(() => {
     if (!hasPhotos) return;
-    fetch(`/api/jobs/${jobId}/photos`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data: PhotoWithUrl[]) => setPhotos(data))
-      .catch(() => setPhotos([]))
-      .finally(() => setPhotosLoading(false));
+    fetch(`/api/jobs/${jobId}/photos/meta`)
+      .then((r) => r.json())
+      .then((data) => {
+        setPhotoMeta(data.photos ?? []);
+        setMetaLoading(false);
+      })
+      .catch(() => setMetaLoading(false));
   }, [jobId, hasPhotos]);
+
+  // Phase 2 -- presigned URLs, runs once metadata is available
+  useEffect(() => {
+    if (metaLoading || photoMeta.length === 0) return;
+
+    const keys = photoMeta.map((p) => p.key);
+
+    fetch(`/api/jobs/${jobId}/photos/urls`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ keys }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        const urlMap: Record<string, string> = {};
+        (data.photos ?? []).forEach((p: { key: string; url: string }) => {
+          urlMap[p.key] = p.url;
+        });
+        setPhotoUrls(urlMap);
+        setUrlsLoading(false);
+      })
+      .catch(() => setUrlsLoading(false));
+  }, [jobId, metaLoading, photoMeta]);
+
+  // Derived lightbox photo
+  const selectedPhoto =
+    selectedIndex !== null
+      ? {
+          url: photoUrls[photoMeta[selectedIndex]?.key ?? ""] ?? "",
+          area: photoMeta[selectedIndex]?.area ?? "",
+        }
+      : null;
 
   // Lock body scroll when lightbox is open
   useEffect(() => {
@@ -131,7 +161,7 @@ export default function ReviewForm({
     function handleKey(e: KeyboardEvent) {
       if (e.key === "ArrowRight") {
         setSelectedIndex((i) =>
-          i !== null ? Math.min(i + 1, photos.length - 1) : null,
+          i !== null ? Math.min(i + 1, photoMeta.length - 1) : null,
         );
       }
       if (e.key === "ArrowLeft") {
@@ -144,7 +174,7 @@ export default function ReviewForm({
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [selectedIndex, photos.length]);
+  }, [selectedIndex, photoMeta.length]);
 
   // Feedback state
   const [feedbackRating, setFeedbackRating] = useState<"helpful" | "needs_work" | null>(null);
@@ -298,28 +328,37 @@ export default function ReviewForm({
             Photos submitted with the intake form. Click to enlarge.
           </p>
 
-          {photosLoading ? (
-            <div className="mt-4">
-              <PhotoGridSkeleton count={8} />
+          {metaLoading ? (
+            <div className="mt-4 flex items-center gap-2 text-sm text-[var(--color-muted)]">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading photos...</span>
             </div>
-          ) : photos.length > 0 ? (
-            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-              {photos.map((photo, i) => (
-                <PhotoThumbnail
-                  key={photo.key}
-                  src={photo.url}
-                  alt={AREA_LABELS[photo.area] ?? photo.area}
-                  label={AREA_LABELS[photo.area] ?? photo.area}
-                  onClick={() => setSelectedIndex(i)}
-                />
-              ))}
+          ) : photoMeta.length === 0 ? (
+            <p className="mt-4 text-sm text-[var(--color-muted)]">
+              No photos were submitted with this job.
+            </p>
+          ) : (
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+              {photoMeta.map((photo, index) => {
+                const url = photoUrls[photo.key] ?? null;
+                return (
+                  <PhotoThumbnail
+                    key={photo.key}
+                    src={url}
+                    alt={formatAreaLabel(photo.area)}
+                    label={formatAreaLabel(photo.area)}
+                    loading={urlsLoading && !url}
+                    onClick={url ? () => setSelectedIndex(index) : undefined}
+                  />
+                );
+              })}
             </div>
-          ) : null}
+          )}
         </div>
       )}
 
       {/* Lightbox */}
-      {selectedPhoto && selectedIndex !== null && (
+      {selectedPhoto && selectedPhoto.url && selectedIndex !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
           onClick={() => setSelectedIndex(null)}
@@ -339,7 +378,7 @@ export default function ReviewForm({
               className="text-xs text-white"
               style={{ fontFamily: "var(--font-data)" }}
             >
-              {selectedIndex + 1} / {photos.length}
+              {selectedIndex + 1} / {photoMeta.length}
             </span>
           </div>
 
@@ -349,7 +388,7 @@ export default function ReviewForm({
               className="text-xs uppercase tracking-widest text-white"
               style={{ fontFamily: "var(--font-data)" }}
             >
-              {AREA_LABELS[selectedPhoto.area] ?? selectedPhoto.area}
+              {formatAreaLabel(selectedPhoto.area)}
             </span>
           </div>
 
@@ -370,14 +409,14 @@ export default function ReviewForm({
           )}
 
           {/* Next button */}
-          {selectedIndex < photos.length - 1 && (
+          {selectedIndex < photoMeta.length - 1 && (
             <button
               type="button"
               className="absolute right-14 top-1/2 -translate-y-1/2 rounded-[var(--radius-button)] bg-black/60 p-3 text-white transition-colors hover:bg-black/80"
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedIndex((i) =>
-                  i !== null ? Math.min(i + 1, photos.length - 1) : null,
+                  i !== null ? Math.min(i + 1, photoMeta.length - 1) : null,
                 );
               }}
             >
@@ -389,7 +428,7 @@ export default function ReviewForm({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={selectedPhoto.url}
-            alt={AREA_LABELS[selectedPhoto.area] ?? selectedPhoto.area}
+            alt={formatAreaLabel(selectedPhoto.area)}
             className="max-h-[85vh] max-w-[85vw] rounded-[var(--radius-card)] object-contain"
             onClick={(e) => e.stopPropagation()}
           />
