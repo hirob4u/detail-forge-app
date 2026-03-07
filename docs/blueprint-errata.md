@@ -475,4 +475,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint -- QC Photo Upload Screen
+### Convention: QC Screen Access and Photo Storage Paths
+
+**Issue:** Not a bug -- a convention established in this Blueprint.
+
+**Root cause:** N/A -- architecture decision.
+
+**Fix applied:** The QC screen is only accessible at `/dashboard/jobs/[jobId]/qc` when `job.stage === 'qc'`. The page server component enforces this and redirects to the job detail page for any other stage. QC after photos are stored in R2 under `qc/[orgId]/[jobId]/` separate from intake photos which live under `intake/[orgSlug]/`. Never mix these paths. The QC checklist is generated once from the AI assessment flags and finalized quote line items, then persisted to `qcChecklist` on the job -- it is not regenerated on subsequent page loads if items already exist.
+
+**Add to Blueprint:** The QC screen must enforce stage gating in its server component -- redirect to job detail if the stage is not `qc`. QC after photos use a separate R2 key prefix (`qc/`) from intake photos (`intake/`). Never store QC photos under the intake prefix. The QC checklist is generated once and persisted -- the `generateQcChecklist` function is only called when `qcChecklist` is empty, not on every page load.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
