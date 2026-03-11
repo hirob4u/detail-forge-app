@@ -651,4 +651,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-11 -- Blueprint F -- fix/logo-and-font-picker
+
+**Built:** Estimates page header updated to left-aligned logo and shop name lockup -- logo renders at h-12 beside shop name in brand font and color. DetailForge wordmark restored in dashboard sidebar -- removed org logo from SidebarWordmark, now a pure static component with no DB call. Font picker replaced with swatch grid matching color picker layout -- each card renders the shop name in the actual font, no font name labels shown. FONTS array updated to DM Sans, Inter, Syne, Barlow, Oswald, Bebas Neue, Montserrat. Server-side Zod validation updated to match. Logo preview size increased to h-20 in settings with max-w-[240px]. Google Fonts URLs updated in estimates page server component to include new fonts.
+
+**Worked well:** Converting SidebarWordmark from async server component (with DB call) to pure static component simplified the layout -- no Suspense wrapper needed for the wordmark slot. Font swatch grid reuses the same aspect-square + selection ring pattern as color swatches for visual consistency.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: estimates header lockup, sidebar wordmark, font swatch grid, and logo preview size`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

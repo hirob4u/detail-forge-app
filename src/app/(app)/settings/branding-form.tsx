@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, type FormEvent } from "react";
-import { Upload, X, Loader2, Check } from "lucide-react";
+import { X, Loader2, Check } from "lucide-react";
 
 interface OrgData {
   id: string;
@@ -21,16 +21,16 @@ interface OrgData {
 }
 
 const FONTS = [
-  { name: "DM Sans", googleUrl: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" },
-  { name: "JetBrains Mono", googleUrl: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" },
-  { name: "Inter", googleUrl: "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" },
-  { name: "Space Grotesk", googleUrl: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" },
-  { name: "Outfit", googleUrl: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" },
-  { name: "Syne", googleUrl: "https://fonts.googleapis.com/css2?family=Syne:wght@400;700&display=swap" },
-  { name: "Anybody", googleUrl: "https://fonts.googleapis.com/css2?family=Anybody:wght@400;700&display=swap" },
+  { value: "DM Sans" },
+  { value: "Inter" },
+  { value: "Syne" },
+  { value: "Barlow" },
+  { value: "Oswald" },
+  { value: "Bebas Neue" },
+  { value: "Montserrat" },
 ] as const;
 
-const ALLOWED_FONT_NAMES: Set<string> = new Set(FONTS.map((f) => f.name));
+const ALLOWED_FONT_NAMES: Set<string> = new Set(FONTS.map((f) => f.value));
 
 const ACCENT_COLORS = [
   { hex: "#7C4DFF", label: "Purple" },
@@ -62,9 +62,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
       : "#7C4DFF",
   );
   const [nameFont, setNameFont] = useState(
-    org.nameFont && ALLOWED_FONT_NAMES.has(org.nameFont)
-      ? org.nameFont
-      : "DM Sans",
+    org.nameFont && ALLOWED_FONT_NAMES.has(org.nameFont) ? org.nameFont : "DM Sans",
   );
 
   // Logo state
@@ -79,18 +77,21 @@ export default function BrandingForm({ org }: { org: OrgData }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  // Load Google Fonts so cards render in actual typeface
+  // Load Google Fonts so swatch cards render in actual typeface
   useEffect(() => {
-    FONTS.forEach((font) => {
-      const id = `font-${font.name.replace(/\s+/g, "-").toLowerCase()}`;
-      if (!document.getElementById(id)) {
-        const link = document.createElement("link");
-        link.id = id;
-        link.rel = "stylesheet";
-        link.href = font.googleUrl;
-        document.head.appendChild(link);
-      }
-    });
+    const fonts = [
+      "DM+Sans",
+      "Inter",
+      "Syne",
+      "Barlow",
+      "Oswald",
+      "Bebas+Neue",
+      "Montserrat",
+    ];
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?${fonts.map((f) => `family=${f}:wght@400;600`).join("&")}&display=swap`;
+    document.head.appendChild(link);
   }, []);
 
   async function handleLogoUpload(file: File) {
@@ -393,47 +394,41 @@ export default function BrandingForm({ org }: { org: OrgData }) {
         </legend>
 
         <div className="flex items-start gap-4">
-          {/* Logo preview / upload zone */}
-          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)]">
+          {/* Logo preview */}
+          <div className="shrink-0">
             {logoDisplayUrl ? (
-              <div className="group relative h-full w-full">
+              <div className="group relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={logoDisplayUrl}
-                  alt="Logo"
-                  className="h-full w-full object-contain p-1"
+                  alt="Shop logo"
+                  className="h-20 w-auto max-w-[240px] object-contain"
                 />
                 <button
                   type="button"
                   onClick={handleLogoRemove}
-                  className="absolute -right-1 -top-1 rounded-full bg-[var(--color-elevated)] p-0.5 opacity-0 transition-opacity group-hover:opacity-100"
+                  className="absolute -right-1 -top-1 rounded-[var(--radius-badge)] bg-[var(--color-elevated)] p-0.5 opacity-0 transition-opacity group-hover:opacity-100"
                 >
                   <X className="h-3.5 w-3.5 text-[var(--color-muted)]" />
                 </button>
               </div>
             ) : logoUploading ? (
-              <div className="flex h-full w-full items-center justify-center">
+              <div className="flex h-20 w-40 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-[var(--color-border)]">
                 <Loader2 className="h-5 w-5 animate-spin text-[var(--color-muted)]" />
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => logoInputRef.current?.click()}
-                className="flex h-full w-full items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-text)]"
-              >
-                <Upload className="h-5 w-5" />
-              </button>
+              <div className="flex h-20 w-40 items-center justify-center rounded-[var(--radius-card)] border border-dashed border-[var(--color-border)]">
+                <p className="text-xs text-[var(--color-muted)]">No logo uploaded</p>
+              </div>
             )}
           </div>
 
           <div className="flex-1">
             <p className="text-sm text-[var(--color-text)]">
-              {logoDisplayUrl
-                ? "Logo uploaded"
-                : "Upload your shop logo"}
+              {logoDisplayUrl ? "Logo uploaded" : "Upload your shop logo"}
             </p>
             <p className="mt-0.5 text-xs text-[var(--color-muted)]">
-              JPEG, PNG, or WebP. Displayed on the intake form header.
+              JPEG, PNG, or WebP. Displayed on the estimates page header.
             </p>
             {!logoDisplayUrl && !logoUploading && (
               <button
@@ -497,62 +492,41 @@ export default function BrandingForm({ org }: { org: OrgData }) {
             </div>
           </div>
 
+          {/* Font picker -- swatch grid, no labels */}
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium text-[var(--color-text)]"
+              className="mb-3 block text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
+              style={{ fontFamily: "var(--font-data)" }}
             >
               Shop Name Font
             </label>
-            <p className="mb-1.5 text-xs text-[var(--color-muted)]">
-              Font used for the shop name on the intake form
-            </p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {FONTS.map((font) => (
-                <button
-                  key={font.name}
-                  type="button"
-                  onClick={() => setNameFont(font.name)}
-                  className={`rounded-[var(--radius-button)] border px-4 py-3 text-left transition-colors ${
-                    nameFont === font.name
-                      ? "border-[var(--color-purple-action)] bg-[var(--color-elevated)]"
-                      : "border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-hover)]"
-                  }`}
-                >
-                  <p
-                    className="text-base font-bold text-[var(--color-text)]"
-                    style={{ fontFamily: font.name }}
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+              {FONTS.map((font) => {
+                const isSelected = nameFont === font.value;
+                return (
+                  <button
+                    key={font.value}
+                    type="button"
+                    onClick={() => setNameFont(font.value)}
+                    className={`relative flex aspect-square items-center justify-center rounded-[var(--radius-card)] border-2 bg-[var(--color-elevated)] p-2 transition-all ${
+                      isSelected
+                        ? "border-[var(--color-purple-action)]"
+                        : "border-[var(--color-border)] hover:border-[var(--color-hover)]"
+                    }`}
                   >
-                    {font.name}
-                  </p>
-                  <p
-                    className="mt-0.5 text-xs text-[var(--color-muted)]"
-                    style={{ fontFamily: font.name }}
-                  >
-                    The quick brown fox
-                  </p>
-                </button>
-              ))}
-            </div>
-
-            {/* Font preview */}
-            <div
-              className="mt-3 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-4 py-3"
-            >
-              <p className="text-xs text-[var(--color-muted)]">Preview</p>
-              <p
-                className="mt-1 text-lg font-bold"
-                style={{
-                  fontFamily: nameFont,
-                  color: accentColor,
-                }}
-              >
-                {shopName || org.name}
-              </p>
-              {shopTagline && (
-                <p className="mt-0.5 text-xs text-[var(--color-muted)]">
-                  {shopTagline}
-                </p>
-              )}
+                    {/* Selection ring -- same pattern as color swatches */}
+                    {isSelected && (
+                      <div className="absolute inset-0 rounded-[var(--radius-card)] ring-2 ring-[var(--color-purple-action)] ring-offset-2 ring-offset-[var(--color-background)]" />
+                    )}
+                    <span
+                      style={{ fontFamily: `'${font.value}', sans-serif` }}
+                      className="text-center text-sm leading-tight text-[var(--color-text)]"
+                    >
+                      {shopName || "Your Shop"}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
