@@ -7,11 +7,13 @@ import IntakeForm from "./intake-form";
 const GOOGLE_FONTS_URLS: Record<string, string> = {
   Inter:
     "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap",
-  "Space Grotesk":
-    "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap",
   Syne: "https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&display=swap",
   Barlow:
     "https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&display=swap",
+  Oswald:
+    "https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap",
+  "Bebas Neue":
+    "https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap",
   Montserrat:
     "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap",
 };
@@ -64,42 +66,35 @@ export default async function EstimatePage({
 
       <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">
-          {/* Branded header */}
-          <header className="mb-8 py-8 text-center">
-            {org.logoUrl ? (
-              <div className="flex flex-col items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+          {/* Branded header -- left aligned logo + shop name lockup */}
+          <header className="mb-8 py-8">
+            <div className="flex items-center gap-3">
+              {org.logoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={org.logoUrl}
                   alt={displayName}
-                  className="h-16 w-auto object-contain"
+                  className="h-12 w-auto object-contain"
                 />
-                {org.shopTagline && (
-                  <p className="text-sm text-[var(--color-muted)]">
-                    {org.shopTagline}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <p
-                  className="text-2xl font-bold text-[var(--color-brand)]"
-                  style={{
-                    fontFamily: org.nameFont
-                      ? `"${org.nameFont}", sans-serif`
-                      : "inherit",
-                  }}
-                >
-                  {displayName}
-                </p>
-                {org.shopTagline && (
-                  <p className="text-sm text-[var(--color-muted)]">
-                    {org.shopTagline}
-                  </p>
-                )}
-              </div>
+              )}
+              <span
+                className="text-xl font-semibold"
+                style={{
+                  color: `var(--color-brand, #7C4DFF)`,
+                  fontFamily: org.nameFont
+                    ? `'${org.nameFont}', sans-serif`
+                    : "inherit",
+                }}
+              >
+                {displayName}
+              </span>
+            </div>
+            {org.shopTagline && (
+              <p className="mt-2 text-sm text-[var(--color-muted)]">
+                {org.shopTagline}
+              </p>
             )}
-            <p className="mt-2 text-sm text-[var(--color-muted)]">
+            <p className="mt-1 text-sm text-[var(--color-muted)]">
               Request a detailing estimate
             </p>
           </header>

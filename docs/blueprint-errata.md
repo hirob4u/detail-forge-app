@@ -540,4 +540,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Logo and Font Picker
+### Convention: Org Branding Placement and Font Swatch Design
+
+**Issue:** Not a bug -- conventions established in this Blueprint.
+
+**Root cause:** N/A -- architecture and design decisions.
+
+**Fix applied:** The org logo and shop name appear together on customer-facing pages only -- estimates page and intake form. The DetailForge wordmark always appears in the dashboard sidebar regardless of org branding settings. Font swatches render the shop name as preview text using the actual font -- never show font names in the UI. The FONTS array and ALLOWED_FONTS server validation must always be kept in sync.
+
+**Add to Blueprint:** Org logo never appears in the dashboard sidebar -- the sidebar always shows the DetailForge wordmark. Logo and shop name always render together as a left-aligned lockup on customer-facing pages (estimates, intake). If no logo is set, the shop name renders alone; if no shop name is set, fall back to org name. Font picker uses an aspect-square swatch grid matching the color picker layout -- each card renders the shop name in the actual font with no font name label. The FONTS constant in `branding-form.tsx` and the `nameFont` enum in `src/lib/validations/org-profile.ts` must always contain the exact same list. Current fonts: DM Sans, Inter, Syne, Barlow, Oswald, Bebas Neue, Montserrat.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
