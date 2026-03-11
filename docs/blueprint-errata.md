@@ -523,7 +523,20 @@ content-length -- signing it will always cause a 403.
 
 **Fix applied:** R2 storage uses two separate buckets. `R2_BUCKET_PHOTOS` (private) stores all intake and QC photos via presigned PUT/GET URLs. `R2_BUCKET_LOGOS` (public) stores organization logos with a public URL (`R2_LOGOS_PUBLIC_URL`). Both buckets share a single `S3Client` instance (`r2`) since they use the same R2 account credentials. Bucket constants `PHOTOS_BUCKET` and `LOGOS_BUCKET` are exported from `src/lib/r2.ts`. Routes that need inline key generation (intake presign, QC upload) import the bucket constant directly. The old `R2_BUCKET_NAME` and `R2_PUBLIC_URL` env vars are fully replaced -- no references remain.
 
-**Add to Blueprint:** R2 uses two buckets: `R2_BUCKET_PHOTOS` (private, presigned URLs) and `R2_BUCKET_LOGOS` (public, direct URL). Import `PHOTOS_BUCKET` or `LOGOS_BUCKET` from `src/lib/r2.ts` -- never reference `process.env.R2_BUCKET_*` directly in route files. Logo public URLs use `R2_LOGOS_PUBLIC_URL`. Use `createPresignedUploadUrl` (requires orgId, jobId, area) for job-associated photos and `createPresignedLogoUploadUrl` (requires orgId) for logos. Intake photos generate keys inline because no jobId exists at upload time.
+**Add to Blueprint:** R2 uses two buckets: `R2_BUCKET_PHOTOS` (private, presigned URLs) and `R2_BUCKET_LOGOS` (public, direct URL). Import `PHOTOS_BUCKET` or `LOGOS_BUCKET` from `src/lib/r2.ts` -- never reference `process.env.R2_BUCKET_*` directly in route files. Logo public URLs use `NEXT_PUBLIC_LOGOS_URL`. Use `createPresignedUploadUrl` (requires orgId, jobId, area) for job-associated photos and `createPresignedLogoUploadUrl` (requires orgId) for logos. Intake photos generate keys inline because no jobId exists at upload time.
+
+---
+
+### Blueprint F -- Logo URL Environment Variable
+### Convention: NEXT_PUBLIC_LOGOS_URL Is the Logo Base URL
+
+**Issue:** Code referenced `R2_LOGOS_PUBLIC_URL` which does not exist. The correct variable is `NEXT_PUBLIC_LOGOS_URL`.
+
+**Root cause:** Previous Blueprint (`fix/r2-key-structure-and-logos-bucket`) invented `R2_LOGOS_PUBLIC_URL` as the env var name without checking the actual environment configuration.
+
+**Fix applied:** Replaced `process.env.R2_LOGOS_PUBLIC_URL` with `process.env.NEXT_PUBLIC_LOGOS_URL` in `src/app/api/org/profile/route.ts`.
+
+**Add to Blueprint:** The public logo base URL environment variable is `NEXT_PUBLIC_LOGOS_URL`. Never use `R2_LOGOS_PUBLIC_URL` -- that variable does not exist in this project. The `NEXT_PUBLIC_` prefix makes the value available on the client side without an API call. Any future code that constructs a logo URL must use `process.env.NEXT_PUBLIC_LOGOS_URL`.
 
 ---
 

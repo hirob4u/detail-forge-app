@@ -636,4 +636,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-10 -- Blueprint F -- fix/logo-url-env-var
+
+**Built:** Fixed logo URL construction in org profile PATCH handler. Environment variable corrected from `R2_LOGOS_PUBLIC_URL` to `NEXT_PUBLIC_LOGOS_URL`.
+
+**Worked well:** One-line fix, no other changes needed.
+
+**Corrected:** None -- this was the correction.
+
+**Root cause:** Previous Blueprint (`fix/r2-key-structure-and-logos-bucket`) renamed `R2_PUBLIC_URL` to `R2_LOGOS_PUBLIC_URL`, but the actual environment variable configured in Vercel and `.env.local` is `NEXT_PUBLIC_LOGOS_URL`. The code was referencing a variable that does not exist.
+
+**Commit:** `fix: correct logo URL env var from R2_LOGOS_PUBLIC_URL to NEXT_PUBLIC_LOGOS_URL`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
