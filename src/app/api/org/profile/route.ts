@@ -81,8 +81,8 @@ export async function PATCH(request: NextRequest) {
     const updates = parsed.data;
 
     // Build logoUrl from logoKey if logoKey is being set
-    if (updates.logoKey && process.env.R2_PUBLIC_URL) {
-      updates.logoUrl = `${process.env.R2_PUBLIC_URL}/${updates.logoKey}`;
+    if (updates.logoKey && process.env.R2_LOGOS_PUBLIC_URL) {
+      updates.logoUrl = `${process.env.R2_LOGOS_PUBLIC_URL}/${updates.logoKey}`;
     } else if (updates.logoKey === null) {
       updates.logoUrl = null;
     }

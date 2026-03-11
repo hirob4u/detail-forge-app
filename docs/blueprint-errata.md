@@ -514,4 +514,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- R2 Key Structure and Logos Bucket
+### Convention: Dual R2 Bucket Architecture
+
+**Issue:** Not a bug -- an infrastructure convention established in this Blueprint.
+
+**Root cause:** N/A -- architecture decision.
+
+**Fix applied:** R2 storage uses two separate buckets. `R2_BUCKET_PHOTOS` (private) stores all intake and QC photos via presigned PUT/GET URLs. `R2_BUCKET_LOGOS` (public) stores organization logos with a public URL (`R2_LOGOS_PUBLIC_URL`). Both buckets share a single `S3Client` instance (`r2`) since they use the same R2 account credentials. Bucket constants `PHOTOS_BUCKET` and `LOGOS_BUCKET` are exported from `src/lib/r2.ts`. Routes that need inline key generation (intake presign, QC upload) import the bucket constant directly. The old `R2_BUCKET_NAME` and `R2_PUBLIC_URL` env vars are fully replaced -- no references remain.
+
+**Add to Blueprint:** R2 uses two buckets: `R2_BUCKET_PHOTOS` (private, presigned URLs) and `R2_BUCKET_LOGOS` (public, direct URL). Import `PHOTOS_BUCKET` or `LOGOS_BUCKET` from `src/lib/r2.ts` -- never reference `process.env.R2_BUCKET_*` directly in route files. Logo public URLs use `R2_LOGOS_PUBLIC_URL`. Use `createPresignedUploadUrl` (requires orgId, jobId, area) for job-associated photos and `createPresignedLogoUploadUrl` (requires orgId) for logos. Intake photos generate keys inline because no jobId exists at upload time.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
