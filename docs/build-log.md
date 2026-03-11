@@ -621,4 +621,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-10 -- Blueprint F -- fix/r2-key-structure-and-logos-bucket
+
+**Built:** Separated R2 infrastructure into dual-bucket architecture. `r2.ts` rewritten with `PHOTOS_BUCKET` (`R2_BUCKET_PHOTOS`) and `LOGOS_BUCKET` (`R2_BUCKET_LOGOS`) exported constants. `createPresignedUploadUrl` now takes `{orgId, jobId, area, fileName, contentType}` with key pattern `photos/{orgId}/{jobId}/{area}-{timestamp}.{ext}`. New `createPresignedLogoUploadUrl` function for logos bucket with key pattern `logos/{orgId}/{timestamp}-{random}-{safeName}`. Logo presign route updated to resolve orgId via `getDetailForgeOrgId` and use new logo function. Org profile route updated to use `R2_LOGOS_PUBLIC_URL` instead of `R2_PUBLIC_URL`. Intake presign route now looks up orgId from orgSlug via DB and generates keys inline using `PHOTOS_BUCKET` (no jobId at intake time). QC upload route and estimates/analyze route updated to use `PHOTOS_BUCKET` from shared r2.ts instead of `R2_BUCKET_NAME`. Analyze route's local `r2Client` removed in favor of shared `r2` import.
+
+**Worked well:** Exporting `PHOTOS_BUCKET` and `LOGOS_BUCKET` as constants from r2.ts allows routes that need inline key generation (intake, QC) to use the correct bucket without `process.env` references scattered across the codebase. The estimates/analyze route previously had its own `S3Client` instance -- consolidating to the shared `r2` export eliminated the duplication.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: dual R2 bucket architecture with separate photos and logos buckets`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

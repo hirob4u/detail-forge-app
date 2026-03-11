@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { createPresignedUploadUrl } from "@/lib/r2";
+import { createPresignedLogoUploadUrl } from "@/lib/r2";
+import { getDetailForgeOrgId } from "@/lib/org";
 
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -8,8 +9,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
+  const betterAuthOrgId = session.session.activeOrganizationId;
+  if (!betterAuthOrgId) {
+    return NextResponse.json(
+      { error: "No active organization" },
+      { status: 403 },
+    );
+  }
+
+  const orgId = await getDetailForgeOrgId(betterAuthOrgId);
+  if (!orgId) {
     return NextResponse.json(
       { error: "No active organization" },
       { status: 403 },
@@ -27,8 +36,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { presignedUrl, key } = await createPresignedUploadUrl({
-      orgSlug: `logos/${activeOrgId}`,
+    const { presignedUrl, key } = await createPresignedLogoUploadUrl({
+      orgId,
       fileName,
       contentType,
     });

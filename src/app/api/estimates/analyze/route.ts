@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import Anthropic from "@anthropic-ai/sdk";
 import sharp from "sharp";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobs, prompts } from "@/lib/db/schema";
+import { r2, PHOTOS_BUCKET } from "@/lib/r2";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,21 +36,6 @@ interface ConditionAssessment {
 }
 
 // ---------------------------------------------------------------------------
-// R2 client (uses R2_ACCOUNT_ID-based endpoint per Blueprint D spec)
-// ---------------------------------------------------------------------------
-
-const r2Client = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
-
-const R2_BUCKET = process.env.R2_BUCKET_NAME!;
-
-// ---------------------------------------------------------------------------
 // Claude client
 // ---------------------------------------------------------------------------
 
@@ -65,8 +51,8 @@ async function fetchPhotoAsBase64(
   key: string,
 ): Promise<{ base64: string; mediaType: "image/jpeg" } | null> {
   try {
-    const command = new GetObjectCommand({ Bucket: R2_BUCKET, Key: key });
-    const response = await r2Client.send(command);
+    const command = new GetObjectCommand({ Bucket: PHOTOS_BUCKET, Key: key });
+    const response = await r2.send(command);
     const bytes = await response.Body?.transformToByteArray();
     if (!bytes) return null;
 

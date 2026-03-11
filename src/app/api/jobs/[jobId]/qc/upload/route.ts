@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { jobs } from "@/lib/db/schema";
 import { getDetailForgeOrgId } from "@/lib/org";
-import { r2 } from "@/lib/r2";
+import { r2, PHOTOS_BUCKET } from "@/lib/r2";
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -79,7 +79,7 @@ export async function POST(
   const key = `qc/${orgId}/${jobId}/${area}-${Date.now()}.${ext}`;
 
   const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
+    Bucket: PHOTOS_BUCKET,
     Key: key,
     ContentType: fileType,
   });
