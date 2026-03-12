@@ -681,4 +681,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-11 -- Blueprint F -- fix/estimate-page-mobile
+
+**Built:** Full-bleed mobile layout for the estimates page. Form card surface treatment (border, rounded corners, elevated background) removed on mobile and restored at `sm` breakpoint using `sm:rounded-[var(--radius-card)] sm:border sm:border-[var(--color-border)] sm:bg-[var(--color-elevated)]`. Outer main padding set to `px-0 sm:px-8` so form content sits edge to edge on mobile. Header gets its own `px-4 sm:px-0` inset. Form section uses `px-4 py-6 sm:px-6 sm:py-8` for comfortable mobile inset without card chrome. Logo responsive at `h-10 sm:h-14`, shop name at `text-2xl sm:text-3xl`. Vertical padding reduced to `py-6 sm:py-16`.
+
+**Worked well:** Using `sm:` prefixed card styles (border, bg, rounded) is clean -- mobile gets zero card treatment by default, desktop gets the full card. The form section's own `px-4` handles mobile horizontal inset directly since main is `px-0`.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: full-bleed mobile layout for estimates page`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

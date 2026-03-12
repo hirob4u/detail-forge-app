@@ -72,9 +72,9 @@ export default async function EstimatePage({
     >
       {fontUrl && <link rel="stylesheet" href={fontUrl} />}
 
-      <main className="flex-1 w-full max-w-2xl mx-auto px-6 sm:px-8 py-16">
+      <main className="flex-1 w-full max-w-2xl mx-auto px-0 sm:px-8 py-6 sm:py-16">
         {/* Identity region */}
-        <header className="mb-0">
+        <header className="mb-0 px-4 sm:px-0">
           {/* Logo + shop name lockup */}
           <div className="flex items-center gap-4 mb-3">
             {org.logoUrl && (
@@ -82,11 +82,11 @@ export default async function EstimatePage({
               <img
                 src={org.logoUrl}
                 alt={displayName}
-                className="h-14 w-auto object-contain flex-shrink-0"
+                className="h-10 sm:h-14 w-auto object-contain flex-shrink-0"
               />
             )}
             <span
-              className="text-3xl font-semibold leading-tight text-[var(--color-text)]"
+              className="text-2xl sm:text-3xl font-semibold leading-tight text-[var(--color-text)]"
               style={{
                 fontFamily: org.nameFont
                   ? `'${org.nameFont}', sans-serif`
@@ -118,7 +118,7 @@ export default async function EstimatePage({
         </header>
 
         {/* Form card */}
-        <section className="mt-10 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-6 py-8">
+        <section className="mt-8 sm:mt-10 px-4 py-6 sm:rounded-[var(--radius-card)] sm:border sm:border-[var(--color-border)] sm:bg-[var(--color-elevated)] sm:px-6 sm:py-8">
           <p
             className="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider mb-6"
             style={{ fontFamily: "var(--font-data)" }}
