@@ -657,4 +657,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint chore -- Shared Stage Config Extraction
+### Convention: Single Source of Truth for Stage Labels and Colors
+
+**Issue:** Stage label and color configuration defined independently in three places (dashboard `stageConfig`, jobs `tabs`, StageBadge internal map). Adding or recoloring a stage requires updating all three in sync.
+
+**Root cause:** Each component was built in a separate Blueprint and defined its own stage mapping. No shared config file existed.
+
+**Fix applied:** Extracted `STAGE_CONFIG` to `src/app/(app)/_components/stage-config.ts`. Dashboard imports from shared file. Jobs `tabs` and StageBadge left as-is (different shapes) with `TODO: VERIFY` for future unification.
+
+**Add to Blueprint:** Stage labels, colors, backgrounds, and borders must be defined once in `src/app/(app)/_components/stage-config.ts` as `STAGE_CONFIG`. Any component that needs stage display info should import from this file. If a component needs a different shape (e.g. tabs with a null "All" entry), derive it from `STAGE_CONFIG` rather than defining a parallel map.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

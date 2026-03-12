@@ -771,4 +771,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-12 -- Blueprint chore -- chore/shared-stage-config
+
+**Built:** Extracted `STAGE_CONFIG` record from the dashboard page into a shared file at `src/app/(app)/_components/stage-config.ts`. Dashboard page imports from the shared file instead of defining the config inline. Added `TODO: VERIFY` comment to the jobs page tabs array for future derivation from `STAGE_CONFIG`.
+
+**Worked well:** Straightforward extraction -- the dashboard `stageConfig` was already the most complete definition. Single rename from `stageConfig` to `STAGE_CONFIG` (module-level constant convention).
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `chore: extract shared STAGE_CONFIG from dashboard`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

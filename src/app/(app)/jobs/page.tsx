@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { getDetailForgeOrgId } from "@/lib/org";
 import JobCard from "../_components/job-card";
 
+// TODO: VERIFY -- consider deriving tabs from STAGE_CONFIG
 const tabs: Array<{ label: string; value: string | null }> = [
   { label: "All", value: null },
   { label: "New", value: "created" },

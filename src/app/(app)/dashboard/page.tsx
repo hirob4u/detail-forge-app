@@ -8,54 +8,7 @@ import { jobs, customers, vehicles } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { getDetailForgeOrgId } from "@/lib/org";
 import JobCard from "../_components/job-card";
-
-const stageConfig: Record<
-  string,
-  { label: string; color: string; bg: string; border: string }
-> = {
-  created: {
-    label: "New",
-    color: "text-[var(--color-amber)]",
-    bg: "bg-yellow-900/20",
-    border: "border-yellow-800/40",
-  },
-  quoted: {
-    label: "Quoted",
-    color: "text-[var(--color-cyan)]",
-    bg: "bg-cyan-900/20",
-    border: "border-cyan-800/40",
-  },
-  sent: {
-    label: "Sent",
-    color: "text-[var(--color-purple-text)]",
-    bg: "bg-purple-900/20",
-    border: "border-purple-800/40",
-  },
-  approved: {
-    label: "Approved",
-    color: "text-[var(--color-green)]",
-    bg: "bg-green-900/20",
-    border: "border-green-800/40",
-  },
-  inProgress: {
-    label: "In Progress",
-    color: "text-[var(--color-purple-action)]",
-    bg: "bg-purple-900/20",
-    border: "border-purple-800/40",
-  },
-  qc: {
-    label: "QC",
-    color: "text-[var(--color-amber)]",
-    bg: "bg-amber-900/20",
-    border: "border-amber-800/40",
-  },
-  complete: {
-    label: "Complete",
-    color: "text-[var(--color-green)]",
-    bg: "bg-green-900/20",
-    border: "border-green-800/40",
-  },
-};
+import { STAGE_CONFIG } from "../_components/stage-config";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -125,7 +78,7 @@ export default async function DashboardPage() {
 
       {/* Stage summary cards */}
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {Object.entries(stageConfig).map(([stage, config]) => (
+        {Object.entries(STAGE_CONFIG).map(([stage, config]) => (
           <Link
             key={stage}
             href={`/jobs?stage=${stage}`}
