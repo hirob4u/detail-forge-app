@@ -696,4 +696,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-11 -- Blueprint F -- feat/settings-font-picker
+
+**Built:** Replaced the font picker in the settings branding form. The old grid used large aspect-square cells with the full shop name as preview text -- it took up too much vertical space and made it hard to compare fonts at a glance. Replaced with compact `h-11 w-11` flex-wrap swatches showing "Df" specimen text rendered in each font, matching the color picker layout. Selection state uses `border-white scale-110` ring consistent with color swatches. Added a live preview panel below the swatch row that renders the shop name in the selected font at the current accent color.
+
+**Worked well:** Matching the font picker layout to the existing color picker (flex-wrap row of small swatches with border-white scale-110 selection) keeps the branding section visually consistent. The "Df" specimen text is short enough to fit in a small swatch while still showing the typeface character.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `feat: compact font picker swatches with live preview panel`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
