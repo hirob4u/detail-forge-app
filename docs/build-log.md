@@ -816,4 +816,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-12 -- Blueprint F -- fix/shell-mobile-overflow
+
+**Built:** Fixed mobile horizontal overflow on all dashboard pages. Added `min-w-0` to the content column flex child so it constrains to available width instead of growing to fit content. Added `overflow-x-hidden` to the `<main>` element to clip any remaining horizontal overflow. Two class additions, no structural changes.
+
+**Worked well:** Classic flex child overflow fix — `min-w-0` is the standard solution for flex items that need to shrink below their content size. Combined with `overflow-x-hidden` on the scrollable main, horizontal overflow is fully contained.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: app shell mobile overflow with min-w-0 and overflow-x-hidden`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
