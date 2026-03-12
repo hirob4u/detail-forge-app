@@ -79,7 +79,7 @@ export default async function JobsPage({
       </div>
 
       {/* Stage filter tabs */}
-      <div className="mb-6 flex gap-1 overflow-x-auto">
+      <div className="mb-6 flex gap-1 overflow-x-auto border-b border-[var(--color-border)]">
         {tabs.map((tab) => {
           const isActive = activeStage === tab.value;
           const href = tab.value ? `/jobs?stage=${tab.value}` : "/jobs";
@@ -88,10 +88,10 @@ export default async function JobsPage({
               key={tab.label}
               href={href}
               className={cn(
-                "whitespace-nowrap rounded-[var(--radius-button)] px-3 py-1.5 text-sm font-medium transition-colors",
+                "whitespace-nowrap px-3 py-1.5 text-sm font-medium transition-colors border-b-2",
                 isActive
-                  ? "bg-[var(--color-elevated)] text-[var(--color-text)]"
-                  : "text-[var(--color-muted)] hover:text-[var(--color-text)]",
+                  ? "border-[var(--color-purple-action)] text-[var(--color-text)]"
+                  : "border-transparent text-[var(--color-muted)] hover:text-[var(--color-text)]",
               )}
             >
               {tab.label}

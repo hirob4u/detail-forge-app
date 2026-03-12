@@ -631,4 +631,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Jobs Filter Tab Active State
+### Convention: Bottom-Border Tab Active Indicator
+
+**Issue:** Active tab used `bg-[var(--color-elevated)]` pill on dark surface — contrast too subtle to read clearly as a selection.
+
+**Root cause:** Original tab treatment used a background fill for the active state. On the dark dashboard surface, the elevated background is only slightly lighter than the base surface, making the active/inactive distinction hard to perceive.
+
+**Fix applied:** Replaced pill treatment with `border-b-2 border-[var(--color-purple-action)]` bottom border accent on active tab. Removed `rounded-[var(--radius-button)]` (conflicts with bottom-border pattern). Added `border-b border-[var(--color-border)]` to the tab row container to ground the baseline.
+
+**Add to Blueprint:** Tab filter rows should use bottom-border active indicators (`border-b-2 border-[var(--color-purple-action)]`) instead of background fill on dark surfaces. The tab row container needs a `border-b border-[var(--color-border)]` baseline. Do not apply `rounded-[var(--radius-button)]` to bottom-border tabs — border radius conflicts with the flush baseline treatment.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

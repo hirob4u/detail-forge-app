@@ -741,4 +741,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-12 -- Blueprint F -- fix/jobs-filter-tabs
+
+**Built:** Replaced the jobs page stage filter tab active state. Removed `rounded-[var(--radius-button)]` and `bg-[var(--color-elevated)]` pill treatment. Active tab now uses `border-b-2 border-[var(--color-purple-action)]` bottom border accent. Inactive tabs use `border-b-2 border-transparent`. Tab row container gets `border-b border-[var(--color-border)]` to ground the row baseline.
+
+**Worked well:** Bottom-border tab pattern is a well-understood convention. The purple accent matches the brand and the swatch selection ring pattern used elsewhere.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: jobs filter tabs use bottom-border active state`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
