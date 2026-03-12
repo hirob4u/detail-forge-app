@@ -696,4 +696,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- App Shell Mobile Overflow
+### Convention: Flex Child Overflow Containment
+
+**Issue:** All dashboard pages clipped content on the right edge on mobile viewports. Horizontal overflow escaped the shell entirely.
+
+**Root cause:** The main content column (`flex flex-1 flex-col overflow-hidden`) was missing `min-w-0`, so flex children could grow beyond available width. The `<main>` element used `overflow-y-auto` without `overflow-x-hidden`, allowing horizontal overflow to escape.
+
+**Fix applied:** Added `min-w-0` to the content column div. Added `overflow-x-hidden` to the `<main>` element.
+
+**Add to Blueprint:** Any flex child that serves as a content column in a sidebar+content layout must include `min-w-0` to prevent content from expanding the flex item beyond the available width. The scrollable main element should use `overflow-x-hidden` alongside `overflow-y-auto` to clip horizontal overflow from child content.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

@@ -88,7 +88,7 @@ export default function AppShell({
       </aside>
 
       {/* Main content area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         {/* Mobile header with hamburger */}
         <header className="flex h-16 items-center border-b border-[var(--color-border)] px-4 md:hidden">
           <button
@@ -106,7 +106,7 @@ export default function AppShell({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6">{children}</main>
       </div>
     </div>
   );
