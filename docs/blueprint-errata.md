@@ -553,4 +553,30 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint -- Estimates Page Redesign
+### Convention: Token Usage in Tailwind Classes
+
+**Issue:** Blueprint specified importing design tokens and using them in Tailwind className via template literals (`` bg-[${colors.background}] ``). This does not work because Tailwind scans source files as text and cannot resolve JS interpolations.
+
+**Root cause:** Tailwind's static extractor parses source files without evaluating JavaScript. A template literal like `bg-[${colors.background}]` appears literally as `bg-[${colors.background}]` in the source, not as the resolved `bg-[#0A0A0F]`. No CSS is generated for the utility.
+
+**Fix applied:** Used CSS custom property references in Tailwind classes (e.g. `bg-[var(--color-background)]`) which Tailwind extracts correctly and which resolve to the same hex values at runtime. Imported `colors` from `design-tokens.ts` for inline styles and JS-level values (brand color fallback) only. Both sources (`var(--color-background)` and `colors.background`) resolve to the same hex, defined in `globals.css` and `design-tokens.ts` respectively.
+
+**Add to Blueprint:** Never use design token imports in Tailwind className template literals -- Tailwind cannot resolve JS interpolations. Use CSS custom property references in Tailwind classes (`bg-[var(--color-background)]`). Import from `design-tokens.ts` only for inline styles and JS-level logic (e.g. computing `color-mix()` values). Both sources must stay in sync with `globals.css`. The estimates page uses `colors.purpleAction` as the brand color fallback and `brandColor` for the `--color-brand` CSS property and accent bar inline style.
+
+---
+
+### Blueprint -- Estimates Page Redesign
+### Convention: Estimates Page Layout Structure
+
+**Issue:** Not a bug -- layout conventions established in this Blueprint.
+
+**Root cause:** N/A -- architecture decision.
+
+**Fix applied:** The estimates page uses a top-anchored `max-w-2xl` layout (not vertically centered). Shop name renders in `colors.text` (not brand color). Brand color appears only on the accent bar (`h-0.5 w-10`). IntakeForm is wrapped in a surface card (`colors.elevated` + `colors.border` + `radii.card`) consistent with dashboard cards. Footer is a proper `<footer>` element outside `<main>`.
+
+**Add to Blueprint:** The estimates page layout is: `min-h-dvh` flex column with `max-w-2xl` centered main. Identity region (logo + shop name in `colors.text`, tagline, intent label at `text-xs uppercase tracking-widest opacity-60`). Brand color accent bar above `colors.border` rule. Form card wrapping IntakeForm in `colors.elevated` surface with section label. Footer outside main. Never apply brand color to text -- it reads as a hyperlink. Always use `min-h-dvh`, never `min-h-screen`.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
