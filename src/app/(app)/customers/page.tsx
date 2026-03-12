@@ -63,13 +63,19 @@ export default async function CustomersPage() {
                   <p className="text-sm font-semibold text-[var(--color-text)]">
                     {customer.firstName} {customer.lastName}
                   </p>
-                  <p className="mt-0.5 text-sm text-[var(--color-muted)]">
+                  <a
+                    href={`mailto:${customer.email}`}
+                    className="mt-0.5 block text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
+                  >
                     {customer.email}
-                  </p>
+                  </a>
                   {customer.phone && (
-                    <p className="mt-0.5 text-sm text-[var(--color-muted)]">
+                    <a
+                      href={`tel:${customer.phone}`}
+                      className="mt-0.5 block text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
+                    >
                       {customer.phone}
-                    </p>
+                    </a>
                   )}
                 </div>
                 <div className="text-right">
@@ -85,6 +91,7 @@ export default async function CustomersPage() {
                   >
                     Since {new Date(customer.createdAt).toLocaleDateString()}
                   </p>
+                  {/* TODO: VERIFY -- link to filtered jobs view once customer filter param is supported on /jobs */}
                 </div>
               </div>
             </div>
