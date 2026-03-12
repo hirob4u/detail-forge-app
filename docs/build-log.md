@@ -726,4 +726,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-11 -- Blueprint F -- fix/ui-polish-wordmark-swatches
+
+**Built:** Three related UI polish fixes. (1) Sidebar wordmark wrapped in `<Link href="/dashboard">` with `hover:opacity-80 transition-opacity` and bumped from `text-lg` to `text-xl`. (2) Color picker swatches changed from `border-transparent` to `border-[var(--color-border)]` at rest. (3) Font picker swatches changed from `border-transparent` to `border-[var(--color-border)]` at rest. Both swatch types retain `border-white scale-110` when selected. The visible border at rest matches the preview panel border, making the Theme section read as a unified group.
+
+**Worked well:** All three changes are class-only edits with no logic changes. The wordmark Link import is the only structural addition.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: wordmark link + consistent swatch borders in theme section`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
