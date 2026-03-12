@@ -481,10 +481,10 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                   type="button"
                   onClick={() => setAccentColor(color.hex)}
                   title={color.label}
-                  className={`h-9 w-9 rounded-[var(--radius-button)] border-2 transition-transform hover:scale-110 ${
+                  className={`h-9 w-9 rounded-[var(--radius-button)] border-2 transition-transform hover:scale-105 ${
                     accentColor === color.hex
                       ? "border-white scale-110"
-                      : "border-transparent"
+                      : "border-[var(--color-border)] hover:scale-105"
                   }`}
                   style={{ backgroundColor: color.hex }}
                 />
@@ -514,7 +514,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                     className={`flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] border-2 bg-[var(--color-elevated)] transition-transform hover:scale-105 ${
                       isSelected
                         ? "border-white scale-110"
-                        : "border-transparent hover:border-[var(--color-border)]"
+                        : "border-[var(--color-border)] hover:scale-105"
                     }`}
                   >
                     <span

@@ -618,4 +618,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Sidebar Wordmark + Swatch Borders
+### Convention: Clickable Wordmark and Visible Swatch Borders
+
+**Issue:** Sidebar wordmark was a plain `<span>` with no navigation (clicking did nothing). Theme section swatches had `border-transparent` at rest while the preview panel had a visible border, creating inconsistent visual weight.
+
+**Root cause:** Wordmark was initially converted from an async server component (org logo lookup) to a static component and the Link wrapper was not added. Swatch borders were set to transparent to avoid visual noise, but this left them unanchored relative to the bordered preview panel below.
+
+**Fix applied:** Wordmark wrapped in `<Link href="/dashboard">` with `hover:opacity-80 transition-opacity`, bumped to `text-xl`. Both color and font swatches changed from `border-transparent` to `border-[var(--color-border)]` at rest.
+
+**Add to Blueprint:** The sidebar wordmark must always be a `<Link href="/dashboard">` — logo/wordmark as navigation home is a universal web convention. All swatch pickers in the branding section should use `border-[var(--color-border)]` at rest (not `border-transparent`) so their visual weight matches adjacent bordered elements like preview panels.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

@@ -1,11 +1,15 @@
+import Link from "next/link";
+
 // Sidebar wordmark -- always DetailForge, never org logo
 export default function SidebarWordmark() {
   return (
-    <span
-      className="text-lg tracking-wide text-[var(--color-text)]"
-      style={{ fontFamily: "var(--font-display)" }}
-    >
-      Detail<span className="text-[var(--color-purple-action)]">Forge</span>
-    </span>
+    <Link href="/dashboard">
+      <span
+        className="text-xl tracking-wide text-[var(--color-text)] hover:opacity-80 transition-opacity"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        Detail<span className="text-[var(--color-purple-action)]">Forge</span>
+      </span>
+    </Link>
   );
 }
