@@ -666,4 +666,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-11 -- Blueprint -- feat/estimate-page-redesign
+
+**Built:** Full redesign of the estimates page layout. Replaced vertically-centered narrow `max-w-lg` column with top-anchored `max-w-2xl` layout. Shop name renders in `colors.text` instead of brand color (previously read as a hyperlink). `min-h-screen` (used twice) replaced with single `min-h-dvh` on the page shell. All hardcoded hex removed -- brand fallback uses `colors.purpleAction` from imported design tokens, all other values reference CSS custom properties. IntakeForm wrapped in an elevated surface card (`bg-[var(--color-elevated)]` with `border-[var(--color-border)]` and `rounded-[var(--radius-card)]`) consistent with dashboard JobCard treatment. Identity region separated from form by an accent bar (brand color, `h-0.5 w-10`) above a `colors.border` horizontal rule. Section label "Vehicle & contact details" added inside the form card. Page intent label restyled to `text-xs uppercase tracking-widest opacity-60`. Footer moved outside `<main>` as a proper `<footer>` element.
+
+**Worked well:** Importing `colors` from `design-tokens.ts` for the brand fallback eliminates the last hardcoded hex. CSS custom property references in Tailwind classes (`var(--color-text)` etc.) remain the correct pattern because Tailwind's static extractor cannot resolve JS template interpolations at scan time.
+
+**Corrected:** Blueprint specified template literal interpolation in className (`` bg-[${colors.background}] ``). This does not work with Tailwind's static extraction -- it sees the template string, not the resolved value. Adapted to use CSS variable references (`bg-[var(--color-background)]`) which Tailwind extracts correctly and which resolve to the same hex values at runtime.
+
+**Root cause:** Tailwind scans source files as text to discover utility classes. JS template literals are not evaluated during scanning, so `bg-[${colors.background}]` is seen literally as `bg-[${colors.background}]`, not `bg-[#0A0A0F]`. CSS custom property references like `bg-[var(--color-background)]` are extracted as-is and resolve at runtime.
+
+**Commit:** `feat: estimates page redesign with token-based layout and surface card`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

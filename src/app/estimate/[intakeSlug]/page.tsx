@@ -4,6 +4,12 @@ import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
 import IntakeForm from "./intake-form";
 
+// Design tokens imported for inline styles. Tailwind classes reference the
+// equivalent CSS custom properties (e.g. var(--color-background)) because
+// Tailwind's static extractor cannot resolve JS template interpolations.
+// Both sources resolve to the same hex values defined in globals.css.
+import { colors } from "@/lib/design-tokens";
+
 const GOOGLE_FONTS_URLS: Record<string, string> = {
   Inter:
     "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap",
@@ -45,8 +51,12 @@ export default async function EstimatePage({
   }
 
   const displayName = org.shopName ?? org.name;
+  const brandColor = org.accentColor ?? colors.purpleAction;
+
   const fontUrl =
-    org.nameFont && org.nameFont !== "DM Sans" && org.nameFont !== "JetBrains Mono"
+    org.nameFont &&
+    org.nameFont !== "DM Sans" &&
+    org.nameFont !== "JetBrains Mono"
       ? GOOGLE_FONTS_URLS[org.nameFont]
       : null;
 
@@ -54,69 +64,85 @@ export default async function EstimatePage({
     <div
       style={
         {
-          "--color-brand": org.accentColor ?? "#7C4DFF",
-          "--color-brand-hover": `color-mix(in srgb, ${org.accentColor ?? "#7C4DFF"}, black 15%)`,
+          "--color-brand": brandColor,
+          "--color-brand-hover": `color-mix(in srgb, ${brandColor}, black 15%)`,
         } as React.CSSProperties
       }
-      className="min-h-screen bg-[var(--color-background)]"
+      className="min-h-dvh flex flex-col bg-[var(--color-background)]"
     >
-      {fontUrl && (
-        <link rel="stylesheet" href={fontUrl} />
-      )}
+      {fontUrl && <link rel="stylesheet" href={fontUrl} />}
 
-      <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-lg">
-          {/* Branded header -- left aligned logo + shop name lockup */}
-          <header className="mb-8 py-8">
-            <div className="flex items-center gap-3">
-              {org.logoUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={org.logoUrl}
-                  alt={displayName}
-                  className="h-12 w-auto object-contain"
-                />
-              )}
-              <span
-                className="text-xl font-semibold"
-                style={{
-                  color: `var(--color-brand, #7C4DFF)`,
-                  fontFamily: org.nameFont
-                    ? `'${org.nameFont}', sans-serif`
-                    : "inherit",
-                }}
-              >
-                {displayName}
-              </span>
-            </div>
-            {org.shopTagline && (
-              <p className="mt-2 text-sm text-[var(--color-muted)]">
-                {org.shopTagline}
-              </p>
+      <main className="flex-1 w-full max-w-2xl mx-auto px-6 sm:px-8 py-16">
+        {/* Identity region */}
+        <header className="mb-0">
+          {/* Logo + shop name lockup */}
+          <div className="flex items-center gap-4 mb-3">
+            {org.logoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={org.logoUrl}
+                alt={displayName}
+                className="h-14 w-auto object-contain flex-shrink-0"
+              />
             )}
-            <p className="mt-1 text-sm text-[var(--color-muted)]">
-              Request a detailing estimate
-            </p>
-          </header>
-
-          <IntakeForm orgSlug={org.slug} orgName={displayName} />
-        </div>
-
-        {/* Powered by badge */}
-        <footer className="py-6 text-center">
-          <a
-            href="https://detailforge.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)] opacity-50 transition-opacity hover:opacity-80"
-          >
-            <span>Powered by</span>
-            <span className="font-semibold text-[var(--color-text)]">
-              DetailForge.io
+            <span
+              className="text-3xl font-semibold leading-tight text-[var(--color-text)]"
+              style={{
+                fontFamily: org.nameFont
+                  ? `'${org.nameFont}', sans-serif`
+                  : "inherit",
+              }}
+            >
+              {displayName}
             </span>
-          </a>
-        </footer>
-      </div>
+          </div>
+
+          {/* Tagline */}
+          {org.shopTagline && (
+            <p className="text-base text-[var(--color-muted)] mb-1">
+              {org.shopTagline}
+            </p>
+          )}
+
+          {/* Page intent label */}
+          <p className="text-xs uppercase tracking-widest text-[var(--color-muted)] opacity-60 mb-6">
+            Request a detailing estimate
+          </p>
+
+          {/* Accent bar + divider */}
+          <div
+            className="h-0.5 w-10 mb-px"
+            style={{ backgroundColor: brandColor }}
+          />
+          <hr className="border-[var(--color-border)]" />
+        </header>
+
+        {/* Form card */}
+        <section className="mt-10 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-6 py-8">
+          <p
+            className="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider mb-6"
+            style={{ fontFamily: "var(--font-data)" }}
+          >
+            Vehicle &amp; contact details
+          </p>
+          <IntakeForm orgSlug={org.slug} orgName={displayName} />
+        </section>
+      </main>
+
+      {/* Powered by footer */}
+      <footer className="py-5 text-center">
+        <a
+          href="https://detailforge.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)] opacity-50 transition-opacity hover:opacity-80"
+        >
+          <span>Powered by</span>
+          <span className="font-semibold text-[var(--color-text)]">
+            DetailForge.io
+          </span>
+        </a>
+      </footer>
     </div>
   );
 }
