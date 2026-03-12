@@ -605,4 +605,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Font Picker Swatch Size
+### Convention: Uniform Swatch Dimensions Across Pickers
+
+**Issue:** Font picker swatches at `h-11 w-11` were visibly larger than color swatches at `h-9 w-9`, creating inconsistent visual rhythm in the Theme section.
+
+**Root cause:** BP-SETTINGS-FONTPICKER-01 spec'd `h-11 w-11` for font swatches without cross-referencing the existing `h-9 w-9` color swatch dimensions.
+
+**Fix applied:** Changed font swatch button from `h-11 w-11` to `h-9 w-9`. Specimen text size (`text-base font-semibold`) unchanged — it fills the smaller box tightly.
+
+**Add to Blueprint:** All swatch pickers in the branding section must use `h-9 w-9` dimensions. When adding a new picker, cross-reference existing picker swatch sizes to maintain uniform visual rhythm.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

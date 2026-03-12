@@ -511,7 +511,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                     type="button"
                     onClick={() => setNameFont(font.value)}
                     title={font.value}
-                    className={`flex h-11 w-11 items-center justify-center rounded-[var(--radius-button)] border-2 bg-[var(--color-elevated)] transition-transform hover:scale-105 ${
+                    className={`flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] border-2 bg-[var(--color-elevated)] transition-transform hover:scale-105 ${
                       isSelected
                         ? "border-white scale-110"
                         : "border-transparent hover:border-[var(--color-border)]"

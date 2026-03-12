@@ -711,4 +711,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-11 -- Blueprint F -- fix/settings-font-picker-size
+
+**Built:** Reduced font picker swatch dimensions from `h-11 w-11` to `h-9 w-9` to match the color picker swatches directly above. Both pickers now use identical swatch sizes so the Theme section reads as a unified control group.
+
+**Worked well:** Single two-class change, no side effects. The "Df" specimen text at `text-base font-semibold` fills the smaller box tightly and remains legible across all seven fonts.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: match font picker swatch size to color picker (h-9 w-9)`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
