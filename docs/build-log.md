@@ -756,4 +756,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-12 -- Blueprint F -- fix/customer-contact-links
+
+**Built:** Made customer row contact info actionable. Email rendered as `mailto:` link, phone as `tel:` link. Both use `text-[var(--color-muted)]` at rest with `hover:text-[var(--color-text)]` transition. Added `TODO: VERIFY` comment for future customer-filtered jobs view link.
+
+**Worked well:** Simple `<p>` to `<a>` swap with `block` display preserves the existing layout. The `transition-colors hover:text-[var(--color-text)]` pattern provides a subtle hover affordance without introducing underlines or color accents.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: make customer email and phone tappable contact links`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

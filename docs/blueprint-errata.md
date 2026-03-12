@@ -644,4 +644,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Customer Row Contact Links
+### Convention: Actionable Contact Info in List Rows
+
+**Issue:** Customer email and phone rendered as plain `<p>` text with no interactivity. Detailers in a shop environment need to tap to call or compose without copy-pasting.
+
+**Root cause:** The customers page was built as a read-only list. Contact fields were styled as display text rather than interactive elements.
+
+**Fix applied:** Email changed from `<p>` to `<a href="mailto:...">`, phone from `<p>` to `<a href="tel:...">`. Both use `block text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]`.
+
+**Add to Blueprint:** Any time email or phone appears in a list row, render as `<a>` with `mailto:` or `tel:` href — never as plain text. Use `hover:text-[var(--color-text)]` transition for subtle interactivity affordance. Customer row navigation to filtered jobs view is deferred with a `TODO: VERIFY` until the jobs page supports a customer filter param.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
