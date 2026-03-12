@@ -786,4 +786,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-12 -- Blueprint F -- fix/ui-polish-logo-avatar
+
+**Built:** Two polish fixes. (1) Estimates page logo increased from `h-10 sm:h-14` to `h-14 sm:h-20` with `max-w-[160px] sm:max-w-[200px]` to constrain wide logos. Class string confirmed as a fully static literal — no template interpolation. (2) Sidebar user avatar radius changed from `rounded-[var(--radius-badge)]` (6px) to `rounded-[var(--radius-button)]` (8px) for more proportionate corners on the `h-8 w-8` element.
+
+**Worked well:** Both are single-line class edits. The logo class was already a static literal so the prior sizing issue was simply undersized values, not a Tailwind extraction failure.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: estimates logo size and sidebar avatar radius`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

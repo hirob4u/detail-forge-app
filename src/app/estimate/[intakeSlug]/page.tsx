@@ -82,7 +82,7 @@ export default async function EstimatePage({
               <img
                 src={org.logoUrl}
                 alt={displayName}
-                className="h-10 sm:h-14 w-auto object-contain flex-shrink-0"
+                className="h-14 w-auto max-w-[160px] object-contain flex-shrink-0 sm:h-20 sm:max-w-[200px]"
               />
             )}
             <span
