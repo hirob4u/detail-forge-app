@@ -17,6 +17,8 @@ import {
   Loader2,
   Check,
   Upload,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -360,7 +362,7 @@ export default function StructuredPhotoCapture({
           <div>
             <div className="mb-2 flex justify-between">
               <span className="text-sm font-medium text-[var(--color-text)]">
-                {completedRequired} of 8 required shots
+                {completedRequired} of {REQUIRED_SHOTS.length} required shots
               </span>
               <span
                 className="text-xs text-[var(--color-muted)]"
@@ -372,7 +374,7 @@ export default function StructuredPhotoCapture({
             <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-elevated)]">
               <div
                 className="h-full rounded-full bg-[var(--color-brand)] transition-all"
-                style={{ width: `${(completedRequired / 8) * 100}%` }}
+                style={{ width: `${(completedRequired / REQUIRED_SHOTS.length) * 100}%` }}
               />
             </div>
           </div>
@@ -386,7 +388,7 @@ export default function StructuredPhotoCapture({
                 </span>
                 {shot.required ? (
                   <span
-                    className="rounded-[var(--radius-badge)] bg-[var(--color-brand-hover)] px-2 py-0.5 text-[10px] uppercase text-[var(--color-brand)]"
+                    className="rounded-[var(--radius-badge)] bg-[var(--color-brand)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-white"
                     style={{ fontFamily: "var(--font-data)" }}
                   >
                     Required
@@ -414,7 +416,7 @@ export default function StructuredPhotoCapture({
                   className="w-full rounded-[var(--radius-button)] object-cover"
                   style={{ maxHeight: "260px" }}
                 />
-                <div className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-green)]">
+                <div className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-[var(--radius-button)] bg-[var(--color-green)]">
                   <Check className="h-4 w-4 text-black" />
                 </div>
                 <button
@@ -460,67 +462,60 @@ export default function StructuredPhotoCapture({
           </div>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
+
+            {/* Previous button */}
             <button
               type="button"
               onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
               disabled={currentStep === 0}
-              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
+              className={cn(
+                "flex items-center gap-1.5 rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition-colors",
+                currentStep === 0
+                  ? "border-[var(--color-border)] text-[var(--color-muted)] cursor-not-allowed"
+                  : "border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-purple-action)] hover:text-[var(--color-purple-action)]",
+              )}
             >
+              <ChevronLeft className="h-4 w-4" />
               Previous
             </button>
 
-            {/* Thumbnail strip */}
-            <div className="flex max-w-[180px] gap-1.5 overflow-x-auto">
-              {ALL_SHOTS.map((s, i) => {
-                const p = photos.find(
-                  (ph) => ph.shotArea === s.area && ph.status === "done",
-                );
-                return (
-                  <button
-                    key={s.area}
-                    type="button"
-                    onClick={() => setCurrentStep(i)}
-                    className={cn(
-                      "h-8 w-8 flex-shrink-0 overflow-hidden rounded-[var(--radius-badge)] border-2 transition-all",
-                      i === currentStep
-                        ? "border-[var(--color-brand)]"
-                        : "border-transparent opacity-50 hover:opacity-100",
-                    )}
-                  >
-                    {p ? (
-                      <img
-                        src={p.previewUrl}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[var(--color-elevated)]">
-                        <span
-                          className="text-[8px] text-[var(--color-muted)]"
-                          style={{ fontFamily: "var(--font-data)" }}
-                        >
-                          {i + 1}
-                        </span>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
+            {/* Step counter */}
+            <div className="flex flex-col items-center gap-1">
+              <span
+                className="text-sm font-medium text-[var(--color-text)]"
+                style={{ fontFamily: "var(--font-data)" }}
+              >
+                {currentStep + 1} / {ALL_SHOTS.length}
+              </span>
+              <span
+                className="text-[10px] uppercase tracking-widest text-[var(--color-muted)]"
+                style={{ fontFamily: "var(--font-data)" }}
+              >
+                {currentStep < REQUIRED_SHOTS.length ? "Required" : "Optional"}
+              </span>
             </div>
 
+            {/* Skip / Next button */}
             <button
               type="button"
               onClick={() =>
-                setCurrentStep((s) =>
-                  Math.min(ALL_SHOTS.length - 1, s + 1),
-                )
+                setCurrentStep((s) => Math.min(ALL_SHOTS.length - 1, s + 1))
               }
               disabled={currentStep === ALL_SHOTS.length - 1}
-              className="flex items-center gap-1 rounded-[var(--radius-button)] px-4 py-2 text-sm text-[var(--color-brand)] transition-colors disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
+              className={cn(
+                "flex items-center gap-1.5 rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors",
+                currentStep === ALL_SHOTS.length - 1
+                  ? "text-[var(--color-muted)] cursor-not-allowed"
+                  : currentPhoto?.status === "done"
+                    ? "bg-[var(--color-brand)] text-white hover:opacity-90"
+                    : "border border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
+              )}
             >
               {currentPhoto?.status === "done" ? "Next" : "Skip"}
+              <ChevronRight className="h-4 w-4" />
             </button>
+
           </div>
         </div>
       )}
@@ -537,13 +532,13 @@ export default function StructuredPhotoCapture({
               <span
                 className={cn(
                   "text-xs transition-colors",
-                  completedRequired === 8
+                  completedRequired === REQUIRED_SHOTS.length
                     ? "text-[var(--color-green)]"
                     : "text-[var(--color-muted)]",
                 )}
                 style={{ fontFamily: "var(--font-data)" }}
               >
-                {completedRequired} of 8
+                {completedRequired} of {REQUIRED_SHOTS.length}
               </span>
             </div>
             <div className="space-y-2">
@@ -575,7 +570,7 @@ export default function StructuredPhotoCapture({
                             alt={s.label}
                             className="h-full w-full rounded-[var(--radius-button)] object-cover"
                           />
-                          <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-green)]">
+                          <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-[var(--radius-button)] bg-[var(--color-green)]">
                             <Check className="h-3 w-3 text-black" />
                           </div>
                         </div>
@@ -644,7 +639,7 @@ export default function StructuredPhotoCapture({
                             alt={s.label}
                             className="h-full w-full rounded-[var(--radius-button)] object-cover"
                           />
-                          <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-green)]">
+                          <div className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-[var(--radius-button)] bg-[var(--color-green)]">
                             <Check className="h-3 w-3 text-black" />
                           </div>
                         </div>

@@ -683,4 +683,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint feat -- Structured Photo Capture UI Overhaul
+### Convention: Badge Contrast, Data-Driven Counts, Navigation Patterns
+
+**Issue:** Five compounding problems in the photo capture UI: (1) Required badge illegible due to brand-on-brand-hover contrast. (2) Required shot count hardcoded as `8` in four places. (3) Two checkmark badges used `rounded-full` violating AGENTS.md. (4) Thumbnail strip navigation crammed 13 tiles into 180px. (5) Previous button had no visual affordance.
+
+**Root cause:** Badge colors were chosen without testing at multiple brand color values. Shot count was written as a literal rather than derived from the data array. `rounded-full` was used reflexively for circular badges. Thumbnail strip was designed for fewer shots than the final 13.
+
+**Fix applied:** Badge uses white text on solid brand bg. All four `8` values replaced with `REQUIRED_SHOTS.length`. Checkmark badges use `rounded-[var(--radius-button)]`. Thumbnail strip replaced with step counter + bordered Previous/Next buttons with chevron icons. Next becomes solid brand when current shot is uploaded.
+
+**Add to Blueprint:** Badges on brand-colored backgrounds must use white text for guaranteed contrast. Never hardcode array lengths — derive from `.length`. Never use `rounded-full` (AGENTS.md). Navigation through a multi-step flow should use a step counter with Previous/Next buttons, not a thumbnail strip — thumbnails become unusable beyond ~5 items. Previous buttons must have visible borders. Next/Skip should change visual weight based on completion state (solid when progressing, bordered when skipping).
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

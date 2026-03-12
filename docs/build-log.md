@@ -801,4 +801,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-12 -- Blueprint feat -- feat/photo-capture-overhaul
+
+**Built:** Five fixes to the structured photo capture UI. (1) Required badge contrast: white text on solid brand background replaces near-zero-contrast brand-on-brand-hover. (2) Hardcoded `8` replaced with `REQUIRED_SHOTS.length` in four places (progress text, progress bar width, batch counter, batch color condition). (3) Two `rounded-full` checkmark overlay badges replaced with `rounded-[var(--radius-button)]` per AGENTS.md. (4) Thumbnail strip navigation (13 tiles in 180px container) replaced with step counter (`X / 13`) and two properly styled Previous/Next buttons with ChevronLeft/ChevronRight icons. Previous is a bordered button, Next becomes solid brand when photo is uploaded, bordered Skip when not. (5) Center label shows "Required" or "Optional" below the step counter.
+
+**Worked well:** The step counter + buttons pattern is dramatically simpler than the thumbnail strip and works at all viewport widths. Deriving from `REQUIRED_SHOTS.length` means the shot list can be modified without updating counts in four places.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `feat: photo capture UI overhaul -- badge contrast, data-driven counts, navigation redesign`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
