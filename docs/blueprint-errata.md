@@ -579,4 +579,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Estimates Page Mobile
+### Convention: Full-Bleed Mobile Form Pattern
+
+**Issue:** Form card with visible border and margins on mobile wastes horizontal space and adds visual noise.
+
+**Root cause:** The estimates page redesign applied card surface treatment (border, rounded corners, elevated background) at all breakpoints. On mobile viewports a bordered card floating with margins looks like a dropped widget rather than a native surface.
+
+**Fix applied:** Card surface treatment removed on mobile -- border, rounded corners, and elevated background only appear at `sm` breakpoint via `sm:rounded-[var(--radius-card)] sm:border sm:border-[var(--color-border)] sm:bg-[var(--color-elevated)]`. Outer main padding is `px-0 sm:px-8`. Form section handles its own mobile inset via `px-4 py-6`. Header has independent `px-4 sm:px-0` padding.
+
+**Add to Blueprint:** On customer-facing form pages, use full-bleed on mobile: no card border, no elevated background, no outer horizontal padding. Card treatment appears only at `sm` and up using `sm:` prefixed utilities. The form section handles its own horizontal padding (`px-4`) on mobile since the outer container is `px-0`. Header padding is independent (`px-4 sm:px-0`). Logo and shop name use responsive sizing: `h-10 sm:h-14` and `text-2xl sm:text-3xl`.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
