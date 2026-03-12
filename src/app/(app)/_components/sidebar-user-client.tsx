@@ -34,7 +34,7 @@ export default function SidebarUserClient({
     <div className="border-t border-[var(--color-border)] p-3">
       <div className="flex items-center gap-3">
         {/* Avatar */}
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[var(--radius-badge)] bg-[var(--color-purple-deep)] text-xs font-bold text-[var(--color-purple-text)]">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[var(--color-purple-deep)] text-xs font-bold text-[var(--color-purple-text)]">
           {getInitials(name)}
         </div>
 

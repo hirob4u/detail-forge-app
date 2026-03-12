@@ -670,4 +670,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Logo Size + Sidebar Avatar Radius
+### Convention: Logo Sizing and Avatar Corner Radius
+
+**Issue:** Estimates page logo was too small at `h-10 sm:h-14`. Sidebar avatar used `radius-badge` (6px) on an `h-8 w-8` element which read as slightly rectangular.
+
+**Root cause:** Logo sizing was conservative from the initial mobile-first blueprint. Avatar radius used the badge token which is designed for smaller inline elements, not square avatar containers.
+
+**Fix applied:** Logo updated to `h-14 sm:h-20` with `max-w-[160px] sm:max-w-[200px]` to constrain wide logos. Avatar radius changed from `radius-badge` to `radius-button` (8px).
+
+**Add to Blueprint:** Logo on the estimates page should use `h-14 sm:h-20` with max-width constraints (`max-w-[160px] sm:max-w-[200px]`) to handle both tall and wide logo aspect ratios. Square avatar containers (`h-8 w-8` and similar) should use `radius-button` (8px), not `radius-badge` (6px) — the badge radius is for small inline elements like status pills.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
