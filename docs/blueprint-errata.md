@@ -592,4 +592,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Settings Font Picker
+### Convention: Compact Swatch Pickers for Branding Options
+
+**Issue:** Font picker used large grid cells with full shop name preview text, taking excessive vertical space and making comparison difficult.
+
+**Root cause:** The original font picker was designed independently from the color picker. Each font option was a tall card with the shop name rendered as preview, creating a grid that dominated the branding section.
+
+**Fix applied:** Font picker replaced with compact `h-11 w-11` flex-wrap swatches showing "Df" specimen text, matching the color picker swatch pattern. Selection state uses `border-white scale-110` consistent with color swatches. A separate live preview panel below shows the shop name in the selected font at the accent color.
+
+**Add to Blueprint:** Settings branding pickers should use a consistent compact swatch pattern: flex-wrap row of small square buttons (`h-11 w-11` for fonts, `h-9 w-9` for colors), selection indicated by `border-white scale-110`. Font swatches show short specimen text ("Df"), not the full shop name. Use a separate preview panel for full-size font rendering. This keeps the form compact and lets users scan options quickly.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

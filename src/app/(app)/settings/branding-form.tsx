@@ -492,15 +492,17 @@ export default function BrandingForm({ org }: { org: OrgData }) {
             </div>
           </div>
 
-          {/* Font picker -- swatch grid, no labels */}
+          {/* Font picker -- compact swatches matching color picker layout */}
           <div>
             <label
-              className="mb-3 block text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
-              style={{ fontFamily: "var(--font-data)" }}
+              className="mb-1.5 block text-sm font-medium text-[var(--color-text)]"
             >
               Shop Name Font
             </label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+            <p className="mb-2 text-xs text-[var(--color-muted)]">
+              Applied to your shop name on the estimates page
+            </p>
+            <div className="flex flex-wrap gap-2">
               {FONTS.map((font) => {
                 const isSelected = nameFont === font.value;
                 return (
@@ -508,25 +510,41 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                     key={font.value}
                     type="button"
                     onClick={() => setNameFont(font.value)}
-                    className={`relative flex aspect-square items-center justify-center rounded-[var(--radius-card)] border-2 bg-[var(--color-elevated)] p-2 transition-all ${
+                    title={font.value}
+                    className={`flex h-11 w-11 items-center justify-center rounded-[var(--radius-button)] border-2 bg-[var(--color-elevated)] transition-transform hover:scale-105 ${
                       isSelected
-                        ? "border-[var(--color-purple-action)]"
-                        : "border-[var(--color-border)] hover:border-[var(--color-hover)]"
+                        ? "border-white scale-110"
+                        : "border-transparent hover:border-[var(--color-border)]"
                     }`}
                   >
-                    {/* Selection ring -- same pattern as color swatches */}
-                    {isSelected && (
-                      <div className="absolute inset-0 rounded-[var(--radius-card)] ring-2 ring-[var(--color-purple-action)] ring-offset-2 ring-offset-[var(--color-background)]" />
-                    )}
                     <span
                       style={{ fontFamily: `'${font.value}', sans-serif` }}
-                      className="text-center text-sm leading-tight text-[var(--color-text)]"
+                      className="text-base font-semibold text-[var(--color-text)] select-none"
                     >
-                      {shopName || "Your Shop"}
+                      Df
                     </span>
                   </button>
                 );
               })}
+            </div>
+
+            {/* Live preview -- shop name in selected font + accent color */}
+            <div className="mt-4 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-5 py-4">
+              <p
+                className="mb-2 text-xs uppercase tracking-wider text-[var(--color-muted)]"
+                style={{ fontFamily: "var(--font-data)" }}
+              >
+                Preview
+              </p>
+              <span
+                style={{
+                  fontFamily: `'${nameFont}', sans-serif`,
+                  color: accentColor,
+                }}
+                className="text-2xl font-semibold leading-tight"
+              >
+                {shopName || org.name || "Your Shop"}
+              </span>
             </div>
           </div>
         </div>
