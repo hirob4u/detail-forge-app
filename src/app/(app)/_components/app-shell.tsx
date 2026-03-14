@@ -85,12 +85,17 @@ export default function AppShell({
 
         {/* Sidebar brand footer */}
         <div className="px-6 py-3">
-          <span
-            className="text-sm tracking-wide text-[var(--color-muted)] opacity-40"
-            style={{ fontFamily: "var(--font-display)" }}
+          <a
+            href="https://detailforge.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)] opacity-50 transition-opacity hover:opacity-80"
           >
-            Detail<span>Forge</span>
-          </span>
+            <span>Powered by</span>
+            <span className="font-semibold text-[var(--color-text)]">
+              DetailForge.io
+            </span>
+          </a>
         </div>
 
         {/* User panel */}

@@ -722,4 +722,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Sidebar Brand Footer Text
+### Convention: Powered-by Footer Treatment
+
+**Issue:** Sidebar brand footer used Lazer84 display font with static "DetailForge" text. Should match the "Powered by DetailForge.io" treatment from the estimates page.
+
+**Root cause:** BP-SIDEBAR-BRAND-01 designed the footer as decorative brand reinforcement using the display font. The established pattern is a "Powered by" link in DM Sans, already used on the customer-facing estimates page.
+
+**Fix applied:** Replaced static Lazer84 span with `<a href="https://detailforge.io" target="_blank">` containing "Powered by" + "DetailForge.io" (font-semibold, text color). Uses `text-xs opacity-50 hover:opacity-80`.
+
+**Add to Blueprint:** The sidebar brand footer must use the same "Powered by DetailForge.io" link treatment as the estimates page footer: DM Sans (default font), `text-xs`, `opacity-50`, `hover:opacity-80`, `target="_blank"`. Never use the display font for the footer — it competes with the top wordmark. The footer is a product link, not decorative text.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
