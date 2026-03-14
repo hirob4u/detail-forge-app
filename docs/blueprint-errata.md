@@ -709,4 +709,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint F -- Sidebar Wordmark Scale + Brand Footer
+### Convention: Sidebar Brand Identity Hierarchy
+
+**Issue:** Sidebar wordmark at `text-xl` lacked presence for a primary brand mark. No persistent brand identity below navigation left the sidebar bottom visually unanchored.
+
+**Root cause:** Wordmark was sized conservatively during the initial sidebar build. Brand footer was not part of the original sidebar spec.
+
+**Fix applied:** Wordmark bumped to `text-2xl`. Brand footer added between `</nav>` and user panel as `text-sm opacity-40` flat muted text — static, no link, no purple accent.
+
+**Add to Blueprint:** The sidebar has two brand instances with distinct visual hierarchy: (1) Top wordmark — `text-2xl`, full contrast, interactive Link, purple accent on "Forge". (2) Brand footer — `text-sm`, `opacity-40`, muted flat color, no purple, static (not a link). The footer sits between `</nav>` and the user panel. Keep the two instances visually distinct so the footer reads as decorative reinforcement, not a competing navigation element.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

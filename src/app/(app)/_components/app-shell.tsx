@@ -83,6 +83,16 @@ export default function AppShell({
           })}
         </nav>
 
+        {/* Sidebar brand footer */}
+        <div className="px-6 py-3">
+          <span
+            className="text-sm tracking-wide text-[var(--color-muted)] opacity-40"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Detail<span>Forge</span>
+          </span>
+        </div>
+
         {/* User panel */}
         {userSlot}
       </aside>

@@ -831,4 +831,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-13 -- Blueprint F -- fix/sidebar-brand
+
+**Built:** Two sidebar brand identity changes. (1) Top wordmark bumped from `text-xl` to `text-2xl` for more presence in the header slot. (2) Added a brand footer between `</nav>` and the user panel — `text-sm tracking-wide text-[var(--color-muted)] opacity-40` rendering "DetailForge" in flat muted color with no purple accent. Footer is static (not a link) and clearly subordinate to the top wordmark.
+
+**Worked well:** The two instances are visually distinct by design: top is large, full contrast, interactive with purple accent; bottom is small, low contrast, static, flat color. `opacity-40` keeps the footer clearly subordinate.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: sidebar wordmark scale and brand footer`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
