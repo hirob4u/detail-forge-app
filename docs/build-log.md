@@ -846,4 +846,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-13 -- Blueprint F -- fix/sidebar-brand-footer-text
+
+**Built:** Replaced the sidebar brand footer from a static Lazer84-font "DetailForge" span to a "Powered by DetailForge.io" link matching the estimates page footer treatment. Uses DM Sans (default), `text-xs`, `opacity-50` with `hover:opacity-80` transition. "DetailForge.io" is `font-semibold text-[var(--color-text)]`. Links to `detailforge.io` in a new tab.
+
+**Worked well:** Matching the estimates page footer pattern keeps brand treatment consistent across surfaces. The `<a>` with `target="_blank"` is appropriate here since the footer is a product link, not in-app navigation.
+
+**Corrected:** Previous Blueprint used Lazer84 display font and static text. This was incorrect — the footer should match the "Powered by" treatment used on customer-facing pages.
+
+**Root cause:** BP-SIDEBAR-BRAND-01 spec'd the footer as decorative brand reinforcement using the display font. The correct pattern is the "Powered by DetailForge.io" link treatment already established on the estimates page.
+
+**Commit:** `fix: sidebar brand footer to powered-by link treatment`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
