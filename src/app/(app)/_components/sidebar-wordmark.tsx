@@ -5,7 +5,7 @@ export default function SidebarWordmark() {
   return (
     <Link href="/dashboard">
       <span
-        className="text-xl tracking-wide text-[var(--color-text)] hover:opacity-80 transition-opacity"
+        className="text-2xl tracking-wide text-[var(--color-text)] hover:opacity-80 transition-opacity"
         style={{ fontFamily: "var(--font-display)" }}
       >
         Detail<span className="text-[var(--color-purple-action)]">Forge</span>
