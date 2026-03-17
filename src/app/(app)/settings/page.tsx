@@ -35,6 +35,8 @@ export default async function SettingsPage() {
       logoUrl: organizations.logoUrl,
       accentColor: organizations.accentColor,
       nameFont: organizations.nameFont,
+      plateBlockingEnabled: organizations.plateBlockingEnabled,
+      watermarkEnabled: organizations.watermarkEnabled,
     })
     .from(organizations)
     .where(eq(organizations.id, orgId))

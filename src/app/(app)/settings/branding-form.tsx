@@ -19,6 +19,8 @@ interface OrgData {
   logoUrl: string | null;
   accentColor: string | null;
   nameFont: string | null;
+  plateBlockingEnabled: boolean;
+  watermarkEnabled: boolean;
 }
 
 const FONTS = [
@@ -65,6 +67,10 @@ export default function BrandingForm({ org }: { org: OrgData }) {
   const [nameFont, setNameFont] = useState(
     org.nameFont && ALLOWED_FONT_NAMES.has(org.nameFont) ? org.nameFont : "DM Sans",
   );
+
+  // Social export toggles
+  const [plateBlockingEnabled, setPlateBlockingEnabled] = useState(org.plateBlockingEnabled);
+  const [watermarkEnabled, setWatermarkEnabled] = useState(org.watermarkEnabled);
 
   // Logo state
   const [logoKey, setLogoKey] = useState(org.logoKey);
@@ -154,6 +160,8 @@ export default function BrandingForm({ org }: { org: OrgData }) {
           logoKey,
           accentColor,
           nameFont,
+          plateBlockingEnabled,
+          watermarkEnabled,
         }),
       });
 
@@ -531,6 +539,76 @@ export default function BrandingForm({ org }: { org: OrgData }) {
               </span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Section 5: Social Export */}
+      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+        <legend
+          className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
+          style={{ fontFamily: "var(--font-data)" }}
+        >
+          Social Export
+        </legend>
+
+        <div className="space-y-4">
+          {/* Plate Blocking toggle */}
+          <label className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-[var(--color-text)]">
+                License Plate Blocking
+              </p>
+              <p className="text-xs text-[var(--color-muted)]">
+                Automatically blur license plates in exported photos
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={plateBlockingEnabled}
+              onClick={() => setPlateBlockingEnabled(!plateBlockingEnabled)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-[var(--radius-button)] transition-colors ${
+                plateBlockingEnabled
+                  ? "bg-[var(--color-purple-action)]"
+                  : "bg-[var(--color-elevated)]"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 rounded-[var(--radius-badge)] bg-white transition-transform ${
+                  plateBlockingEnabled ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </label>
+
+          {/* Watermark toggle */}
+          <label className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-[var(--color-text)]">
+                Watermark
+              </p>
+              <p className="text-xs text-[var(--color-muted)]">
+                Add your shop name watermark to exported photos
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={watermarkEnabled}
+              onClick={() => setWatermarkEnabled(!watermarkEnabled)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-[var(--radius-button)] transition-colors ${
+                watermarkEnabled
+                  ? "bg-[var(--color-purple-action)]"
+                  : "bg-[var(--color-elevated)]"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 rounded-[var(--radius-badge)] bg-white transition-transform ${
+                  watermarkEnabled ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </label>
         </div>
       </div>
 
