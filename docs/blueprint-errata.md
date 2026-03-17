@@ -774,4 +774,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### BP-SOCIAL-EXPORT-01 -- Social Export
+### Issue: R2 Function Name Mismatch and Sharp Type Import
+
+**Issue:** Blueprint referenced `getPresignedDownloadUrl` but the actual export in `src/lib/r2.ts` is `createPresignedGetUrl`. Blueprint also used `sharp.OverlayOptions` but Sharp exports `OverlayOptions` as a named type.
+
+**Root cause:** Blueprint was drafted without verifying the R2 module's exact export names. The R2 module uses `createPresigned*` naming convention for all its functions. Sharp's TypeScript types are named exports, not namespace members.
+
+**Fix applied:** Used `createPresignedGetUrl` from `@/lib/r2`. Imported `type { OverlayOptions } from "sharp"` as a named type import. Added `escapeXml` helper for SVG text to prevent injection. Used `plateBlocked` boolean instead of `composites.length === 0` to track whether logo composite succeeded. Wrapped output buffer in `new Uint8Array()` for `NextResponse` body TypeScript compatibility.
+
+**Add to Blueprint:** Always verify R2 function names against `src/lib/r2.ts` before referencing them — the module uses `createPresigned*` naming. Sharp types are named exports (`import type { OverlayOptions } from "sharp"`), not namespace members. When compositing SVG text with user-controlled content (shop names), always escape XML special characters. When returning binary buffers from Next.js API routes, wrap `Buffer` in `new Uint8Array()` to satisfy the `BodyInit` type constraint.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

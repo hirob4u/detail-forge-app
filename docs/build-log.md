@@ -921,4 +921,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-17 -- Blueprint feat -- feat/social-export
+
+**Built:** Social export feature for completed jobs. New POST endpoint at `/api/jobs/[jobId]/social-export` accepts a photo key, fetches the source photo from R2, optionally detects and blocks the license plate via Claude Vision, optionally adds a shop name watermark in the bottom-right corner, and returns a processed JPEG as a binary download. Plate blocking composites the org logo over a dark background on the detected plate region, with a text fallback (shop name in accent color) when no logo is uploaded. New `SocialExportPanel` client component renders on the job detail page only when `stage === "complete"` — lists QC after photos with per-photo Download buttons. Panel respects both toggle settings and hides entirely when neither feature is enabled. Job detail page updated with org query to pass branding/toggle data to the panel.
+
+**Worked well:** Using Sharp's composite API with SVG text buffers for both the plate text fallback and watermark avoids any server-side canvas or font rendering dependencies beyond Sharp itself. The `createPresignedGetUrl` function from `r2.ts` (not `getPresignedDownloadUrl` as the blueprint specified) handles photo access. Source photos in R2 are never modified — the export generates a new buffer in memory and streams it directly as the response body.
+
+**Corrected:** Blueprint referenced `getPresignedDownloadUrl` but the actual function in `r2.ts` is `createPresignedGetUrl`. Blueprint used `sharp.OverlayOptions` type directly but the correct import is `import type { OverlayOptions } from "sharp"`. Added `escapeXml` helper for SVG text content to prevent XSS via shop names containing `<`, `>`, `&`, etc. Blueprint's plate blocking logic used a single `composites.length === 0` check for text fallback which would fail if watermark composites were added first — replaced with a dedicated `plateBlocked` boolean. Changed `NextResponse(outputBuffer)` to `NextResponse(new Uint8Array(outputBuffer))` for TypeScript compatibility with `BodyInit`.
+
+**Root cause:** Blueprint was drafted before verifying the exact R2 function export names and Sharp type import patterns. The `OverlayOptions` type is a named export from `sharp`, not `sharp.OverlayOptions`. The Buffer-to-BodyInit issue is a Node.js Buffer not being assignable to web API `BodyInit` in strict TypeScript — wrapping in `Uint8Array` resolves the type mismatch.
+
+**Commit:** `feat: social export with plate blocking and watermark for completed jobs`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
