@@ -41,12 +41,29 @@ so the human reviewer can make the call.
 - .env.local `DATABASE_URL` always points to the dev branch
 - .env.local `DATABASE_URL_PROD` contains the production connection string
 - Vercel `DATABASE_URL` always points to the production branch
-- Every schema change Blueprint must run `drizzle-kit push` against both branches
+- Every schema change Blueprint must run `drizzle-kit migrate` against both branches
 - Run dev first (default `drizzle.config.ts` uses `DATABASE_URL`), then create
   a temporary `drizzle-prod.config.ts` that reads `DATABASE_URL_PROD` from
-  `.env.local`, run `npx drizzle-kit push --config drizzle-prod.config.ts`,
+  `.env.local`, run `npx drizzle-kit migrate --config drizzle-prod.config.ts`,
   then delete the temp config file. Never commit the prod config.
 - Never run migrations from a parent directory
+- Do NOT use `drizzle-kit push` for schema changes -- it bypasses the
+  migration tracking table and causes `drizzle-kit migrate` to fail on
+  subsequent runs
+
+## Schema Migrations
+- Every migration SQL file must be idempotent
+- Use `ADD COLUMN IF NOT EXISTS` for all column additions
+- Use `CREATE TABLE IF NOT EXISTS` for all new tables
+- After generating a migration with `drizzle-kit generate`, verify the output
+  uses `IF NOT EXISTS` patterns -- edit the generated SQL if it does not
+- Run `drizzle-kit migrate` against both Neon dev and main branches
+- Verify `drizzle.__drizzle_migrations` tracking table has the new entry
+  on both branches after migration
+- Drizzle stores SHA256 hashes of SQL file content in the tracking table --
+  if you edit a migration file after it has been applied, the hash will change
+  and Drizzle will try to re-apply it. Only edit migration files that have
+  not yet been applied.
 
 ## Git Workflow
 - Before creating any branch, always sync with remote main first:
