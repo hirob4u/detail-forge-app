@@ -9,6 +9,7 @@ import IntakeForm from "./intake-form";
 // Tailwind's static extractor cannot resolve JS template interpolations.
 // Both sources resolve to the same hex values defined in globals.css.
 import { colors } from "@/lib/design-tokens";
+import { FONT_VARIABLES } from "@/lib/fonts";
 
 export default async function EstimatePage({
   params,
@@ -66,7 +67,7 @@ export default async function EstimatePage({
               className="text-2xl sm:text-3xl font-semibold leading-tight text-[var(--color-text)]"
               style={{
                 fontFamily: org.nameFont
-                  ? `'${org.nameFont}', sans-serif`
+                  ? FONT_VARIABLES[org.nameFont] ?? `'${org.nameFont}', sans-serif`
                   : "inherit",
               }}
             >

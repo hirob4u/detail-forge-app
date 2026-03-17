@@ -2,6 +2,7 @@
 
 import { useState, useRef, type FormEvent } from "react";
 import { X, Loader2, Check } from "lucide-react";
+import { FONT_VARIABLES } from "@/lib/fonts";
 
 interface OrgData {
   id: string;
@@ -501,7 +502,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                     }`}
                   >
                     <span
-                      style={{ fontFamily: `'${font.value}', sans-serif` }}
+                      style={{ fontFamily: FONT_VARIABLES[font.value] ?? `'${font.value}', sans-serif` }}
                       className="text-base font-semibold text-[var(--color-text)] select-none"
                     >
                       Df
@@ -521,7 +522,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
               </p>
               <span
                 style={{
-                  fontFamily: `'${nameFont}', sans-serif`,
+                  fontFamily: FONT_VARIABLES[nameFont] ?? `'${nameFont}', sans-serif`,
                   color: accentColor,
                 }}
                 className="text-2xl font-semibold leading-tight"

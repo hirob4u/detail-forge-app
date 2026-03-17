@@ -748,4 +748,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint fix -- Font Loading via next/font/local
+### Convention: Scoped Font Loading with next/font/local
+
+**Issue:** Manual `@font-face` declarations in globals.css loaded all 13 font files on every page regardless of usage, stalling the render pipeline.
+
+**Root cause:** BP-FONTS-SELF-HOST-01 used raw `@font-face` in globals.css which has no scoping — every declared font is requested by the browser on load. The correct approach for Next.js is `next/font/local` which handles WOFF2 conversion at build time and scopes loading to where CSS variables are referenced.
+
+**Fix applied:** Created `src/lib/fonts.ts` with seven `localFont()` definitions and a `FONT_VARIABLES` map. Root layout applies all font CSS variables to `<body>`. Components reference fonts via `FONT_VARIABLES[fontName]` instead of raw strings. Removed all manual `@font-face` from globals.css (except Lazer84).
+
+**Add to Blueprint:** Never add `@font-face` to globals.css for app fonts — use `next/font/local` in `src/lib/fonts.ts`. Each font gets a `localFont()` export with a `--font-*` CSS variable. The `FONT_VARIABLES` map provides the name-to-variable mapping for `fontFamily` style props. Root layout applies all variables to `<body>`. DM Sans is loaded via `localFont()` alongside org fonts, not from `next/font/google`.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

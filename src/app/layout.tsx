@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
+import {
+  dmSans,
+  inter,
+  syne,
+  barlow,
+  oswald,
+  bebasNeue,
+  montserrat,
+} from "@/lib/fonts";
 import "./globals.css";
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-dm-sans",
-});
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -27,7 +30,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${dmSans.variable} ${jetbrainsMono.variable}`}>
-      <body className="antialiased">{children}</body>
+      <body
+        className={[
+          "antialiased",
+          inter.variable,
+          syne.variable,
+          barlow.variable,
+          oswald.variable,
+          bebasNeue.variable,
+          montserrat.variable,
+        ].join(" ")}
+      >
+        {children}
+      </body>
     </html>
   );
 }

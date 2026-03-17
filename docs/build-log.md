@@ -876,4 +876,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-17 -- Blueprint fix -- fix/font-loading
+
+**Built:** Replaced manual `@font-face` declarations in globals.css with `next/font/local` via a new `src/lib/fonts.ts` module. Seven org name picker fonts defined as `localFont()` instances with CSS variables. Font variables applied to `<body>` in root layout. Removed DM Sans from `next/font/google` — now loaded via `localFont()` alongside the other org fonts. Estimates page and branding form updated to use `FONT_VARIABLES` map for `fontFamily` style props instead of raw font name strings. `next/font/local` handles WOFF2 conversion at build time and scopes font loading to where CSS variables are actually referenced.
+
+**Worked well:** Centralizing all font definitions in `src/lib/fonts.ts` with a `FONT_VARIABLES` map gives components a single import for both font objects and the name-to-variable mapping. The root layout applies all variables but `next/font/local` only loads the actual font files when a variable is referenced in a rendered style.
+
+**Corrected:** BP-FONTS-SELF-HOST-01 placed `@font-face` declarations in globals.css which loaded all fonts on every page. This Blueprint replaces that approach with `next/font/local` for build-time optimization and scoped loading.
+
+**Root cause:** Manual `@font-face` in globals.css has no scoping mechanism — all declared fonts are requested by the browser on every page load regardless of whether they are used.
+
+**Commit:** `fix: use next/font/local for scoped font loading`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
