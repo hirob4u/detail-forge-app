@@ -906,4 +906,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-17 -- Blueprint fix -- fix/logo-size-validation
+
+**Built:** Client-side logo dimension validation in the settings branding form. Added `validateLogoDimensions` helper that loads the file as an `Image` to read `naturalWidth`/`naturalHeight` before any upload. Logos below 400×400px are rejected with an error message showing the actual dimensions. Soft warning shown below the logo preview when plate blocking is enabled, alerting that pre-existing logos may be undersized. The `logoDimensionWarning` state from the blueprint was unnecessary -- the hard rejection uses the existing `error` state, and the soft warning is a static conditional render.
+
+**Worked well:** Using `URL.createObjectURL` + `new Image()` is the standard browser pattern for reading image dimensions without uploading. The validation runs before the presign fetch so no R2 bandwidth is wasted on undersized logos.
+
+**Corrected:** Blueprint specified a `logoDimensionWarning` state variable, but the hard rejection uses the existing `error` state and the soft warning is a static conditional render based on `logoDisplayUrl && plateBlockingEnabled`. Removed the unused state to fix an ESLint warning.
+
+**Root cause:** Blueprint assumed the warning needed dynamic state, but the soft warning condition is fully derivable from existing state (`logoDisplayUrl` truthiness + `plateBlockingEnabled` toggle). The hard rejection error message fits naturally into the existing `error` state pattern.
+
+**Commit:** `fix: validate logo minimum dimensions (400×400) before upload`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
