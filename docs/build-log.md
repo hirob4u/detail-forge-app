@@ -951,4 +951,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-17 -- Blueprint chore -- chore/migration-tracking
+
+**Built:** Formalized the Drizzle migration infrastructure. Seeded the prod Neon branch tracking table (`drizzle.__drizzle_migrations`) with records for migrations 0007-0009 (previously applied via `push`, never tracked). Ran `drizzle-kit migrate` against prod to apply 0010. Both dev and prod now have 11 tracked migrations (0000-0010). Updated AGENTS.md: replaced `drizzle-kit push` workflow with `drizzle-kit migrate`, added Schema Migrations section with idempotent migration rules (`IF NOT EXISTS` for all column additions and table creations), and documented that `drizzle-kit push` must not be used going forward because it bypasses the tracking table.
+
+**Worked well:** The prod branch only needed 0007-0009 seeded (same gap as dev had). The `IF NOT EXISTS` guards on 0010 made it safe to run on prod where the columns hadn't been applied yet, and on dev where they already existed.
+
+**Corrected:** Blueprint specified tag names (e.g. `'0000_curved_molecule_man'`) as hash values for the tracking table. Drizzle actually stores SHA256 hashes of the SQL file content, not tag names. The correct hashes were already seeded in PR #69 using `crypto.createHash('sha256').update(sqlContent).digest('hex')`, matching Drizzle's runtime calculation in `node_modules/drizzle-orm/migrator.js`. Blueprint also placed the tracking table in the public schema; Drizzle creates it in the `drizzle` schema by default.
+
+**Root cause:** Blueprint was written without inspecting Drizzle's migrator source code. The hash column stores a content-addressable hash (SHA256 of the SQL file), not a human-readable tag. The schema is `drizzle`, not `public`. Using tag names as hashes would cause Drizzle to see every migration as unapplied (hash mismatch) and attempt to re-run them all.
+
+**Commit:** `chore: formalize migration tracking and add idempotent migration rules to AGENTS.md`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

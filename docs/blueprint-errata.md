@@ -800,4 +800,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### BP-MIGRATION-INFRA-01 -- Migration Tracking Infrastructure
+### Issue: Blueprint Used Tag Names as Hashes and Wrong Schema
+
+**Issue:** Blueprint specified migration tag names (e.g. `'0000_curved_molecule_man'`) as the `hash` column values for the tracking table and placed the table in the public schema. Both are incorrect.
+
+**Root cause:** Blueprint was written without inspecting Drizzle's migrator source (`node_modules/drizzle-orm/migrator.js`). The hash is SHA256 of the SQL file content: `crypto.createHash('sha256').update(sqlFileContent).digest('hex')`. The tracking table lives in the `drizzle` schema (`drizzle.__drizzle_migrations`), not public. Using tag names would cause every migration to appear unapplied (hash mismatch), and Drizzle would try to re-run all of them.
+
+**Fix applied:** Used correct SHA256 content hashes computed from each migration SQL file. Table was already in `drizzle` schema (created by Drizzle's migrator on the first successful `drizzle-kit migrate` run). Seeded tracking records for push-applied migrations (0007-0009) on both dev and prod branches. Added AGENTS.md rules: never use `drizzle-kit push`, always use `drizzle-kit migrate`, all migration SQL must be idempotent with `IF NOT EXISTS`.
+
+**Add to Blueprint:** Drizzle migration tracking hashes are SHA256 of the SQL file content, NOT tag names. The tracking table is in the `drizzle` schema, NOT public. To compute the correct hash for a migration: `require('crypto').createHash('sha256').update(fs.readFileSync('drizzle/migrations/XXXX_tag.sql').toString()).digest('hex')`. The `created_at` column value comes from the `when` field in `drizzle/migrations/meta/_journal.json`. Never guess hash values — always compute them.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
