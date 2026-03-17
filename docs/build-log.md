@@ -891,4 +891,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-17 -- Blueprint schema -- schema/social-export-toggles
+
+**Built:** Added `plateBlockingEnabled` and `watermarkEnabled` boolean columns to the organizations table (both default `true`). Zod validation schema updated to accept both fields as optional booleans. Settings branding form extended with a Social Export card containing two toggle switches (role="switch" buttons with aria-checked). API route GET, PATCH, and settings page server component all select and persist the new columns. Schema migration generated and pushed via `drizzle-kit push`.
+
+**Worked well:** Toggle switches use the same `rounded-[var(--radius-button)]` + `rounded-[var(--radius-badge)]` pattern and purple-action active state as other UI controls. The Zod schema accepts optional booleans so toggling works with partial PATCH payloads.
+
+**Corrected:** `drizzle-kit migrate` failed on older un-applied migrations (same issue as BP-INVITE-ONLY-SIGNUP). Used `drizzle-kit push` instead.
+
+**Root cause:** Migration journal out of sync -- earlier schema changes applied via `push` left migration files marked as unapplied. Sequential replay of those migrations fails on already-existing columns.
+
+**Commit:** `schema: add social export toggles (plate blocking + watermark) to settings`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

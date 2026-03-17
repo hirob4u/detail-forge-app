@@ -71,6 +71,8 @@ export const organizations = pgTable("organizations", {
   logoUrl: text("logo_url"),
   accentColor: text("accent_color").default("#7C4DFF"),
   nameFont: text("name_font").default("DM Sans"),
+  plateBlockingEnabled: boolean("plate_blocking_enabled").notNull().default(true),
+  watermarkEnabled: boolean("watermark_enabled").notNull().default(true),
   subscriptionStatus: subscriptionStatusEnum("subscription_status")
     .notNull()
     .default("trial"),

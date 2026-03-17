@@ -18,6 +18,8 @@ export const orgProfileUpdateSchema = z.object({
   nameFont: z
     .enum(["DM Sans", "Inter", "Syne", "Barlow", "Oswald", "Bebas Neue", "Montserrat"])
     .optional(),
+  plateBlockingEnabled: z.boolean().optional(),
+  watermarkEnabled: z.boolean().optional(),
 });
 
 export type OrgProfileUpdate = z.infer<typeof orgProfileUpdateSchema>;
