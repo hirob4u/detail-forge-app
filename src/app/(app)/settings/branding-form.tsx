@@ -47,6 +47,32 @@ const ACCENT_COLORS = [
 
 const ALLOWED_HEXES: Set<string> = new Set(ACCENT_COLORS.map((c) => c.hex));
 
+const MIN_LOGO_SIZE = 400; // px -- minimum dimension for social export compositing
+
+function validateLogoDimensions(file: File): Promise<{
+  valid: boolean;
+  width: number;
+  height: number;
+}> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({
+        valid: img.width >= MIN_LOGO_SIZE && img.height >= MIN_LOGO_SIZE,
+        width: img.width,
+        height: img.height,
+      });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({ valid: false, width: 0, height: 0 });
+    };
+    img.src = url;
+  });
+}
+
 export default function BrandingForm({ org }: { org: OrgData }) {
   // Business profile fields
   const [name, setName] = useState(org.name);
@@ -87,6 +113,16 @@ export default function BrandingForm({ org }: { org: OrgData }) {
   async function handleLogoUpload(file: File) {
     setLogoUploading(true);
     setError("");
+
+    // Validate dimensions client-side before presigning
+    const { valid, width, height } = await validateLogoDimensions(file);
+    if (!valid) {
+      setError(
+        `Logo must be at least ${MIN_LOGO_SIZE}\u00d7${MIN_LOGO_SIZE}px for best results on social exports. This image is ${width}\u00d7${height}px.`,
+      );
+      setLogoUploading(false);
+      return;
+    }
 
     try {
       // Get presigned URL
@@ -433,6 +469,14 @@ export default function BrandingForm({ org }: { org: OrgData }) {
             )}
           </div>
         </div>
+
+        {logoDisplayUrl && plateBlockingEnabled && (
+          <p className="mt-2 text-xs text-[var(--color-amber)]">
+            If your logo was uploaded before size validation was added, it may
+            be below the 400×400px minimum for clean plate blocking. Re-upload
+            if the social export result looks pixelated.
+          </p>
+        )}
 
         <input
           ref={logoInputRef}

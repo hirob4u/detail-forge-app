@@ -761,4 +761,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### BP-LOGO-VALIDATION-01 -- Logo Upload Minimum Size Validation
+### Issue: Unnecessary logoDimensionWarning State
+
+**Issue:** Blueprint specified a `logoDimensionWarning` state variable for surfacing the dimension error. ESLint flagged it as assigned but never read.
+
+**Root cause:** The hard rejection uses the existing `error` state (same as all other upload errors). The soft warning for pre-existing logos is a static conditional render (`logoDisplayUrl && plateBlockingEnabled`) with no dynamic state needed. The blueprint over-specified state that was redundant with existing patterns.
+
+**Fix applied:** Removed `logoDimensionWarning` state. Hard rejection sets `error` via `setError()`. Soft warning renders conditionally from existing state.
+
+**Add to Blueprint:** When adding validation errors to forms that already have an `error` state pattern, use the existing error state rather than creating a parallel state variable. Only create new state for warnings that need to be programmatically shown/hidden independent of the error flow.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
