@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { X, Loader2, Check } from "lucide-react";
 
 interface OrgData {
@@ -76,23 +76,6 @@ export default function BrandingForm({ org }: { org: OrgData }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-
-  // Load Google Fonts so swatch cards render in actual typeface
-  useEffect(() => {
-    const fonts = [
-      "DM+Sans",
-      "Inter",
-      "Syne",
-      "Barlow",
-      "Oswald",
-      "Bebas+Neue",
-      "Montserrat",
-    ];
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = `https://fonts.googleapis.com/css2?${fonts.map((f) => `family=${f}:wght@400;600`).join("&")}&display=swap`;
-    document.head.appendChild(link);
-  }, []);
 
   async function handleLogoUpload(file: File) {
     setLogoUploading(true);
