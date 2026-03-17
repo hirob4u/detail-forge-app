@@ -735,4 +735,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### Blueprint chore -- Self-Hosted Fonts
+### Convention: All Fonts Self-Hosted via @font-face
+
+**Issue:** Org name picker fonts loaded at runtime via Google Fonts CDN — `useEffect` in settings and conditional `<link>` on estimates page. Caused FOUT, CDN dependency, and fonts unavailable for server-side Sharp compositing.
+
+**Root cause:** Fonts were added incrementally as the font picker was built. Google Fonts was the quickest path but creates a hard runtime dependency.
+
+**Fix applied:** Downloaded 13 static TTF files to `public/fonts/`. Added `@font-face` declarations to `globals.css`. Removed `GOOGLE_FONTS_URLS`, `fontUrl`, conditional `<link>`, and Google Fonts `useEffect`.
+
+**Add to Blueprint:** All fonts must be self-hosted in `public/fonts/` with `@font-face` declarations in `globals.css`. Never load fonts from external CDNs at runtime. When adding a new font: (1) download static weight TTF files, (2) add `@font-face` declarations with `font-display: swap`, (3) the `font-family` value must exactly match the string used in component `fontFamily` style props. Bebas Neue is single-weight — use the same 400 file for both 400 and 700 `@font-face` declarations.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

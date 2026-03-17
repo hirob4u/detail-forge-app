@@ -10,20 +10,6 @@ import IntakeForm from "./intake-form";
 // Both sources resolve to the same hex values defined in globals.css.
 import { colors } from "@/lib/design-tokens";
 
-const GOOGLE_FONTS_URLS: Record<string, string> = {
-  Inter:
-    "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap",
-  Syne: "https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&display=swap",
-  Barlow:
-    "https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&display=swap",
-  Oswald:
-    "https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&display=swap",
-  "Bebas Neue":
-    "https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap",
-  Montserrat:
-    "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap",
-};
-
 export default async function EstimatePage({
   params,
 }: {
@@ -53,13 +39,6 @@ export default async function EstimatePage({
   const displayName = org.shopName ?? org.name;
   const brandColor = org.accentColor ?? colors.purpleAction;
 
-  const fontUrl =
-    org.nameFont &&
-    org.nameFont !== "DM Sans" &&
-    org.nameFont !== "JetBrains Mono"
-      ? GOOGLE_FONTS_URLS[org.nameFont]
-      : null;
-
   return (
     <div
       style={
@@ -70,8 +49,6 @@ export default async function EstimatePage({
       }
       className="min-h-dvh flex flex-col bg-[var(--color-background)]"
     >
-      {fontUrl && <link rel="stylesheet" href={fontUrl} />}
-
       <main className="flex-1 w-full max-w-2xl mx-auto px-0 sm:px-8 py-6 sm:py-16">
         {/* Identity region */}
         <header className="mb-0 px-4 sm:px-0">

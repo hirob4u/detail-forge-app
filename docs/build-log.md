@@ -861,4 +861,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-17 -- Blueprint chore -- chore/self-hosted-fonts
+
+**Built:** Self-hosted all seven org name picker fonts. Downloaded 13 TTF files (400+700 for six fonts, 400 only for Bebas Neue) to `public/fonts/`. Added 14 `@font-face` declarations to `globals.css` after the existing Lazer84 declaration. Removed `GOOGLE_FONTS_URLS` constant, `fontUrl` derived value, and conditional `<link>` tag from the estimates page. Removed the Google Fonts `useEffect` from branding-form.tsx and the now-unused `useEffect` import.
+
+**Worked well:** Using the Google Fonts CSS API with an old user-agent header returns direct TTF download URLs from `fonts.gstatic.com`, making it straightforward to get the exact static weight files Google serves. The `font-family` values in `@font-face` match the strings used in component `fontFamily` style props, so no component changes needed.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `chore: self-host all org name picker fonts`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
