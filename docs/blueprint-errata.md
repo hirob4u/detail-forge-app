@@ -787,4 +787,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### BP-MIGRATION-FIX-01 -- Migration Fix
+### Issue: drizzle-kit push Leaves Migration Tracking Table Out of Sync
+
+**Issue:** `drizzle-kit migrate` failed on `shop_name already exists` even though migration 0010 was edited to only contain the two new boolean columns. The real failure was on migration 0007, not 0010.
+
+**Root cause:** `drizzle-kit push` applies schema changes directly without recording them in `drizzle.__drizzle_migrations`. When `drizzle-kit migrate` runs, it checks the last `created_at` in the tracking table and replays ALL migrations after that timestamp in a single transaction. Migrations 0007-0009 were applied via `push` but never tracked, so the migrator tried to replay them alongside 0010.
+
+**Fix applied:** (1) Stripped 0010_blue_ma_gnuci.sql to only the two boolean columns with `ADD COLUMN IF NOT EXISTS` guards for idempotency. (2) Seeded `drizzle.__drizzle_migrations` with hash/timestamp records for migrations 0007-0009 by computing SHA256 of each SQL file (matching Drizzle's runtime hash calculation). After seeding, `drizzle-kit migrate` only attempted 0010 and completed successfully.
+
+**Add to Blueprint:** Before running `drizzle-kit generate` for any schema change, verify the migration tracking table is in sync with the actual database state. If any migrations were previously applied via `drizzle-kit push`, their records must be manually inserted into `drizzle.__drizzle_migrations` (schema: `drizzle`) with the SHA256 hash of the SQL file content and the `when` timestamp from `meta/_journal.json`. Failure to do this will cause `drizzle-kit migrate` to replay those migrations, failing on already-existing objects. When writing new migration SQL, always use `IF NOT EXISTS` / `IF EXISTS` guards to make migrations idempotent. Never mix `push` and `migrate` without reconciling the tracking table afterward.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
