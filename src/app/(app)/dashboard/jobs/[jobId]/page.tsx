@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { jobs, vehicles, customers } from "@/lib/db/schema";
+import { jobs, vehicles, customers, organizations } from "@/lib/db/schema";
 import AnalysisStatusPanel from "./analysis-status-panel";
 import StageControls from "./stage-controls";
 import StageHistory from "./stage-history";
+import SocialExportPanel from "./_components/social-export-panel";
 import type { JobStage } from "@/lib/db/schema";
 
 export default async function JobDetailPage({
@@ -25,6 +26,8 @@ export default async function JobDetailPage({
       createdAt: jobs.createdAt,
       vehicleId: jobs.vehicleId,
       customerId: jobs.customerId,
+      orgId: jobs.orgId,
+      qcPhotos: jobs.qcPhotos,
       stageHistory: jobs.stageHistory,
     })
     .from(jobs)
@@ -55,6 +58,18 @@ export default async function JobDetailPage({
     })
     .from(customers)
     .where(eq(customers.id, job.customerId))
+    .limit(1);
+
+  const [org] = await db
+    .select({
+      shopName: organizations.shopName,
+      name: organizations.name,
+      logoUrl: organizations.logoUrl,
+      plateBlockingEnabled: organizations.plateBlockingEnabled,
+      watermarkEnabled: organizations.watermarkEnabled,
+    })
+    .from(organizations)
+    .where(eq(organizations.id, job.orgId))
     .limit(1);
 
   const stageBadgeColor: Record<string, string> = {
@@ -172,6 +187,18 @@ export default async function JobDetailPage({
           </h2>
           <StageControls jobId={job.id} currentStage={job.stage as JobStage} />
         </section>
+
+        {/* Social export -- only for completed jobs */}
+        {job.stage === "complete" && org && (
+          <SocialExportPanel
+            jobId={job.id}
+            afterPhotos={job.qcPhotos ?? []}
+            plateBlockingEnabled={org.plateBlockingEnabled}
+            watermarkEnabled={org.watermarkEnabled}
+            hasLogo={!!org.logoUrl}
+            shopName={org.shopName ?? org.name}
+          />
+        )}
 
         {/* Stage history */}
         <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
