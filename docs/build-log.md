@@ -936,4 +936,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-17 -- Blueprint fix -- fix/social-export-migration
+
+**Built:** Fixed migration 0010_blue_ma_gnuci.sql which contained stale ALTER TABLE statements for columns that already existed. Stripped the file to only the two new boolean columns (`plate_blocking_enabled`, `watermark_enabled`) with `IF NOT EXISTS` guards. Seeded the `drizzle.__drizzle_migrations` tracking table with records for migrations 0007-0009 which had been applied via `drizzle-kit push` but never recorded. After seeding, `drizzle-kit migrate` completed successfully — only 0010 was applied.
+
+**Worked well:** Using `IF NOT EXISTS` on the ALTER TABLE statements makes the migration idempotent — safe to run even when the columns were already applied via `push`. Seeding the tracking table for 0007-0009 required computing SHA256 hashes of the SQL file content to match Drizzle's runtime hash calculation.
+
+**Corrected:** Blueprint assumed the only issue was stale columns in 0010 and that the migration runner was failing on 0010. The actual root cause was deeper: migrations 0007-0009 were also untracked in the `drizzle.__drizzle_migrations` table (applied via `push`, never recorded). The migrator replays all migrations after the last recorded timestamp, so it was failing on 0007 (`shop_name` already exists) before even reaching 0010. Fixed by seeding tracking records for 0007-0009.
+
+**Root cause:** The `drizzle.__drizzle_migrations` tracking table only had records for migrations 0000-0006 (applied via `drizzle-kit migrate`). Migrations 0007-0009 were applied via `drizzle-kit push` which bypasses the tracking table entirely. When `drizzle-kit migrate` runs, it replays all migrations with `created_at` greater than the last tracked record — so it tried to replay 0007, 0008, 0009, and 0010 in a single transaction, failing on the first duplicate column.
+
+**Commit:** `fix: repair migration 0010 and seed tracking table for push-applied migrations`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
