@@ -1,14 +1,6 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
-import {
-  dmSans,
-  inter,
-  syne,
-  barlow,
-  oswald,
-  bebasNeue,
-  montserrat,
-} from "@/lib/fonts";
+import { allOrgFonts } from "@/lib/fonts";
 import "./globals.css";
 
 const jetbrainsMono = JetBrains_Mono({
@@ -29,18 +21,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${jetbrainsMono.variable}`}>
-      <body
-        className={[
-          "antialiased",
-          inter.variable,
-          syne.variable,
-          barlow.variable,
-          oswald.variable,
-          bebasNeue.variable,
-          montserrat.variable,
-        ].join(" ")}
-      >
+    <html
+      lang="en"
+      className={[
+        jetbrainsMono.variable,
+        ...allOrgFonts.map((f) => f.variable),
+      ].join(" ")}
+    >
+      <body className="antialiased bg-[#0A0A0F] text-[#E8E8EF]">
         {children}
       </body>
     </html>

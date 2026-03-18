@@ -9,15 +9,17 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <AppShell
-      wordmark={<SidebarWordmark />}
-      userSlot={
-        <Suspense fallback={null}>
-          <SidebarUser />
-        </Suspense>
-      }
-    >
-      {children}
-    </AppShell>
+    <div className="min-h-dvh bg-[var(--color-background)]">
+      <AppShell
+        wordmark={<SidebarWordmark />}
+        userSlot={
+          <Suspense fallback={null}>
+            <SidebarUser />
+          </Suspense>
+        }
+      >
+        {children}
+      </AppShell>
+    </div>
   );
 }
