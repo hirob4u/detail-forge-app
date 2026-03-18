@@ -966,4 +966,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-17 -- Blueprint fix -- fix/layout-hydration
+
+**Built:** Fixed root layout hydration mismatch caused by font CSS variable classes being split between `<html>` and `<body>`. Consolidated all 8 font variable classes (JetBrains Mono + 7 org fonts) onto `<html>` using the `allOrgFonts` array from `fonts.ts`. Added explicit `bg-[#0A0A0F] text-[#E8E8EF] antialiased` classes to `<body>`. Wrapped AppShell in `(app)/layout.tsx` with `min-h-dvh bg-[var(--color-background)]` div for full-viewport dark background.
+
+**Worked well:** The `allOrgFonts` export already existed in `fonts.ts`, making the consolidation clean — just map `.variable` and spread into the className array alongside `jetbrainsMono.variable`.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `fix: consolidate font variables on html and add base styles to body`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
