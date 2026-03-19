@@ -89,6 +89,25 @@ Before starting any v1.1 Blueprint, read the relevant decision doc:
 - The methodology layer covers: service menu, pricing rules,
   inspection focus, correction protocols, product preferences.
 
+## Crucible Skills
+Four skills from raddue/crucible are installed globally at ~/.claude/skills/.
+Use them during Blueprint execution as follows:
+
+- **cartographer** — Run at the start of every session to build/update the
+  living architectural map. Eliminates cold-start codebase exploration.
+  Invoke: `/cartographer`
+- **quality-gate** — Run before marking any Blueprint complete. Iterative
+  red-teaming with fix memory catches issues before they become correction
+  Blueprints. Invoke: `/quality-gate`
+- **test-driven-development** — Use for all new implementation work.
+  Enforces red-green-refactor discipline. Invoke: `/test-driven-development`
+- **forge** — Run after completing a Blueprint. Extracts lessons and proposes
+  process improvements, automating what Blueprint Errata does manually.
+  Invoke: `/forge`
+
+Do NOT use Crucible's build, design, or planning skills — the Blueprint
+methodology handles orchestration. These four skills augment execution only.
+
 ## Git Workflow
 - Before creating any branch, always sync with remote main first:
   git checkout main && git pull origin main
