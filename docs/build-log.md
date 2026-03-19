@@ -981,4 +981,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-19 -- Blueprint -- chore/crucible-skills-integration
+
+**Built:** Installed 4 cherry-picked Crucible skills (raddue/crucible) to improve Blueprint execution quality. Cloned repo to `~/repos/crucible`. Symlinked `cartographer-skill`, `quality-gate`, `test-driven-development`, and `forge-skill` to `~/.claude/skills/`. Added Crucible Skills section to AGENTS.md documenting when and how to invoke each skill. Skills selected based on eval-tested deltas: quality-gate +68%, TDD +53%, forge automates errata extraction, cartographer eliminates cold-start exploration.
+
+**Worked well:** Crucible uses standardized SKILL.md format compatible with Claude Code's skill system. Symlink approach means skills stay updated when the Crucible repo is pulled.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `chore: install Crucible skills and update agent instructions`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
