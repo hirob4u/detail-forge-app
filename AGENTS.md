@@ -3,7 +3,7 @@
 ## Stack
 Next.js App Router, React, TypeScript (strict), Tailwind v4,
 shadcn/ui, Better Auth, Stripe, Claude API, Neon PostgreSQL,
-Cloudflare Pages + R2.
+Vercel + Cloudflare R2.
 
 ## Working Directory
 - Before writing any code or running any commands, verify you are in the
@@ -64,6 +64,30 @@ so the human reviewer can make the call.
   if you edit a migration file after it has been applied, the hash will change
   and Drizzle will try to re-apply it. Only edit migration files that have
   not yet been applied.
+
+## V1.1 Reference Docs
+Before starting any v1.1 Blueprint, read the relevant decision doc:
+- `docs/v1.1-methodology-engine.md` -- Detailer Methodology Engine,
+  interior/exterior parity, and full Blueprint sequence
+- `docs/v1.1-baseline-architecture.md` -- Baseline-first estimate
+  architecture
+- `docs/v1.1-supply-cabinet.md` -- Supply cabinet via photo,
+  job recommendations, reorder reminders
+
+## AI Assessment Architecture
+- AI prompts are assembled dynamically from three layers:
+  Layer 1 (Foundation) + Layer 2 (Detailer Methodology) +
+  Layer 3 (Learned Adjustments). See `docs/v1.1-methodology-engine.md`.
+- Never hardcode pricing ranges, service names, or correction
+  protocols into the foundation prompt -- these belong in the
+  per-org methodology layer.
+- AI assessment scoring must give interior and exterior equal
+  depth. Interior has 7 scoring dimensions. Exterior has 4.
+  Never collapse interior into a single score.
+- The foundation prompt covers: scoring rubric, output schema,
+  safety guardrails, professional writing standard.
+- The methodology layer covers: service menu, pricing rules,
+  inspection focus, correction protocols, product preferences.
 
 ## Git Workflow
 - Before creating any branch, always sync with remote main first:
