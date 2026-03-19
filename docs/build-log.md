@@ -996,4 +996,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-19 -- Blueprint -- chore/codify-blueprint-errata
+
+**Built:** Codified all 22 "Add to Blueprint" entries from `docs/blueprint-errata.md` into AGENTS.md as permanent agent instructions. Organized into 7 new sections: Non-Negotiable Rules (extended with mobile/color/font errata), Routing & Auth (proxy.ts, route groups, PROTECTED_PREFIXES, invite codes), Org Identity (getDetailForgeOrgId resolution), AI & Photos (prompts in DB, sharp resize, fire-and-forget, photoKeys handling), R2 Storage (private buckets, presigned URLs, CORS, ContentLength), UI Patterns (structured capture, grid layouts, review screens, server/client split), Scripts & Utilities (dynamic imports, deployment config). Previously these lessons existed only in the errata doc which agents don't read by default.
+
+**Worked well:** Grouping errata by domain (routing, org identity, AI, storage, UI, scripts) makes AGENTS.md scannable. Agents now get every hard-won lesson automatically instead of re-making the same mistakes.
+
+**Corrected:** None.
+
+**Root cause:** None.
+
+**Commit:** `chore: codify all blueprint errata into AGENTS.md`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
