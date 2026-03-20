@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   description: "Is your business forged through details?",
   metadataBase: new URL("https://detailforge.io"),
   openGraph: {
-    title: "DetailForge",
-    description: "Is your business forged through details?",
+    title: "Is Your Business Forged Through Details?",
+    description: "DetailForge — AI-powered estimates for detailing professionals.",
     url: "https://detailforge.io",
     siteName: "DetailForge",
     images: [
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DetailForge",
-    description: "Is your business forged through details?",
+    title: "Is Your Business Forged Through Details?",
+    description: "DetailForge — AI-powered estimates for detailing professionals.",
     images: ["/og-image.png"],
   },
 };
