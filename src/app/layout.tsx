@@ -11,8 +11,29 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "DetailForge",
-  description:
-    "AI-powered estimates and cost intelligence for detailing professionals.",
+  description: "Is your business forged through details?",
+  metadataBase: new URL("https://detailforge.io"),
+  openGraph: {
+    title: "DetailForge",
+    description: "Is your business forged through details?",
+    url: "https://detailforge.io",
+    siteName: "DetailForge",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "DetailForge",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DetailForge",
+    description: "Is your business forged through details?",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
