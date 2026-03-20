@@ -528,7 +528,7 @@ export default function ReviewForm({
                 value={feedbackNotes}
                 onChange={(e) => setFeedbackNotes(e.target.value)}
                 rows={3}
-                className="mt-3 w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] resize-none"
+                className="mt-3 w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] resize-none"
               />
             </div>
           )}
@@ -581,7 +581,7 @@ export default function ReviewForm({
                         value={item.name}
                         onChange={(e) => updateItemName(index, e.target.value)}
                         placeholder="Service name"
-                        className="w-full border-0 bg-transparent p-0 text-sm font-semibold text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none"
+                        className="w-full border-0 bg-transparent p-0 text-base font-semibold text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none"
                       />
                     ) : (
                       <p className="text-sm font-semibold text-[var(--color-text)]">
@@ -613,7 +613,7 @@ export default function ReviewForm({
                           value={item.finalPrice}
                           onChange={(e) => updatePrice(index, Number(e.target.value))}
                           disabled={!item.included}
-                          className="w-20 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-right text-sm text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
+                          className="w-20 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-right text-base text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
                           style={{ fontFamily: "var(--font-data)" }}
                         />
                       )}
@@ -665,7 +665,7 @@ export default function ReviewForm({
                 value={detailerNotes}
                 onChange={(e) => setDetailerNotes(e.target.value)}
                 rows={2}
-                className="mb-4 w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] resize-none"
+                className="mb-4 w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] resize-none"
               />
             )}
 
