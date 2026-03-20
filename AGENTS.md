@@ -23,7 +23,7 @@ Vercel + Cloudflare R2.
   task completion.
 - ESLint must pass clean before task completion.
 - DM Sans for all UI text. JetBrains Mono for numbers,
-  metrics, status badges. Lazer 84 for wordmark only.
+  metrics, status badges. Road Rage for wordmark only.
 - Magenta (#E040FB) is reserved for AI-generated content
   indicators. Use it nowhere else.
 - Border radius: 12px cards, 8px buttons/inputs, 6px badges.

@@ -4,13 +4,8 @@
 
 /* DetailForge -- dark mode only. No light mode variants. */
 
-@font-face {
-  font-family: 'Lazer84';
-  src: url('/fonts/Lazer84.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
+/* Road Rage -- Google Fonts, wordmark only */
+@import url('https://fonts.googleapis.com/css2?family=Road+Rage&display=swap');
 
 @theme inline {
   /* DetailForge color tokens */
@@ -76,11 +71,11 @@
 :root {
   --radius: 8px;
 
-  /* Lazer84 self-hosted font variable */
-  --font-lazer84: 'Lazer84';
+  /* Road Rage via Google Fonts */
+  --font-road-rage: 'Road Rage', cursive;
 
   /* DetailForge font tokens */
-  --font-display: var(--font-lazer84);
+  --font-display: var(--font-road-rage);
   --font-ui: var(--font-dm-sans);
   --font-data: var(--font-jetbrains-mono);
 
