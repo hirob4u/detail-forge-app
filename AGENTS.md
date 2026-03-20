@@ -121,6 +121,23 @@ methodology handles orchestration. These four skills augment execution only.
 - If an agent starts coding without an approved Blueprint, stop
   immediately and ask for one.
 
+### Mandatory Skill Checklist
+Every Blueprint execution MUST follow this sequence. Do not skip steps.
+
+1. **Session start** — Run `/cartographer` to build/update the living
+   architectural map. Do this before investigating files manually.
+2. **Before execution** — Consult forge feed-forward (`patterns.md`)
+   for warnings from prior Blueprints relevant to this task.
+3. **During execution** — If the Blueprint includes new implementation
+   code, use `/test-driven-development` (red-green-refactor).
+4. **Before commit** — Run `/quality-gate` to red-team the changes.
+   Do not commit until the gate passes or stagnation is detected.
+5. **After PR created** — Run `/forge` retrospective immediately.
+   Do not end the session without recording the retrospective.
+
+Skipping any step requires explicit approval from Ben. "The task was
+too simple" is not a valid reason — simple tasks are where habits form.
+
 ## Git Workflow
 - Before creating any branch, always sync with remote main first:
   git checkout main && git pull origin main
