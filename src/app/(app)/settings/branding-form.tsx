@@ -3,6 +3,7 @@
 import { useState, useRef, type FormEvent } from "react";
 import { X, Loader2, Check } from "lucide-react";
 import { FONT_VARIABLES } from "@/lib/fonts";
+import { maskPhone, stripPhone } from "@/lib/format";
 
 interface OrgData {
   id: string;
@@ -77,7 +78,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
   // Business profile fields
   const [name, setName] = useState(org.name);
   const [businessEmail, setBusinessEmail] = useState(org.businessEmail);
-  const [phone, setPhone] = useState(org.phone);
+  const [phone, setPhone] = useState(maskPhone(org.phone));
   const [website, setWebsite] = useState(org.website ?? "");
   const [city, setCity] = useState(org.city);
   const [state, setState] = useState(org.state);
@@ -187,7 +188,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
         body: JSON.stringify({
           name,
           businessEmail,
-          phone,
+          phone: stripPhone(phone),
           website: website || undefined,
           city,
           state,
@@ -295,7 +296,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                 type="tel"
                 required
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(maskPhone(e.target.value))}
                 className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
               />
             </div>

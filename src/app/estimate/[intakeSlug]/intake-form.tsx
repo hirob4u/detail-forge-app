@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { maskPhone, stripPhone } from "@/lib/format";
 import StructuredPhotoCapture, {
   REQUIRED_SHOT_AREAS,
   type ShotArea,
@@ -56,7 +57,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
           firstName,
           lastName,
           email,
-          phone,
+          phone: stripPhone(phone),
           vehicleYear: yearNum,
           vehicleMake,
           vehicleModel,
@@ -162,7 +163,7 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
               type="tel"
               required
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(maskPhone(e.target.value))}
               className={inputClass}
               placeholder="(555) 123-4567"
             />

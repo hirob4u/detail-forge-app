@@ -132,7 +132,9 @@ function SignUpForm() {
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
         <h1>
-          <Wordmark className="text-3xl text-[var(--color-text)]" />
+          <Link href="/" className="inline-block transition-opacity hover:opacity-80">
+            <Wordmark className="text-3xl text-[var(--color-text)]" />
+          </Link>
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
           Create your account
@@ -298,7 +300,9 @@ function SignUpFormFallback() {
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
         <h1>
-          <Wordmark className="text-3xl text-[var(--color-text)]" />
+          <Link href="/" className="inline-block transition-opacity hover:opacity-80">
+            <Wordmark className="text-3xl text-[var(--color-text)]" />
+          </Link>
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
           Create your account
