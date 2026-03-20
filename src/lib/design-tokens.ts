@@ -16,7 +16,7 @@ export const colors = {
 };
 
 export const fonts = {
-  display: 'var(--font-lazer84)',
+  display: 'var(--font-road-rage)',
   ui:      'var(--font-dm-sans)',
   data:    'var(--font-jetbrains-mono)',
 };
