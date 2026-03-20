@@ -1011,4 +1011,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-20 -- Blueprint -- chore/enterprise-claude-md
+
+**Built:** Created `CLAUDE.md` at project root — the file Claude Code auto-loads at session start. Includes mandatory session start sequence (read AGENTS.md → run cartographer → read forge patterns → announce ready), Crucible skill checklist as a phase table, security & secrets rules, error handling conventions, architecture quick reference, and visual verification rule. Addresses the 🔴 CRITICAL forge pattern: 9 consecutive Blueprints across 3 sessions where Crucible skills were not invoked because agents didn't read AGENTS.md.
+
+**Worked well:** Moving the skill checklist from AGENTS.md (read-on-demand) to CLAUDE.md (auto-loaded) ensures agents see it before any work begins. The session start sequence is explicit and ordered — no ambiguity about what to do first.
+
+**Corrected:** None.
+
+**Root cause:** None — this is a process improvement Blueprint addressing a systemic deviation tracked by forge.
+
+**Commit:** `chore: upgrade CLAUDE.md with session start sequence and enterprise guardrails`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
