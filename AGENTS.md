@@ -108,6 +108,19 @@ Use them during Blueprint execution as follows:
 Do NOT use Crucible's build, design, or planning skills — the Blueprint
 methodology handles orchestration. These four skills augment execution only.
 
+## Blueprint Discipline (Non-Negotiable)
+- **Every change requires a Blueprint.** No code changes, no doc changes,
+  no config changes without a Blueprint spec reviewed and approved by Ben
+  first. No exceptions for "small" or "chore" tasks.
+- A Blueprint spec must include: branch name, commit message, files
+  affected, errata to apply, and what gets built.
+- The Blueprint can be defined in chat, in the v1.1 plan doc, or in a
+  standalone doc — but it must exist and be approved before execution.
+- After execution, every Blueprint gets a build log entry and a PR
+  reviewed by Ben before merge.
+- If an agent starts coding without an approved Blueprint, stop
+  immediately and ask for one.
+
 ## Git Workflow
 - Before creating any branch, always sync with remote main first:
   git checkout main && git pull origin main
