@@ -261,7 +261,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
             />
           </div>
 
@@ -279,7 +279,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                 required
                 value={businessEmail}
                 onChange={(e) => setBusinessEmail(e.target.value)}
-                className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+                className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
               />
             </div>
 
@@ -296,7 +296,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+                className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
               />
             </div>
           </div>
@@ -313,7 +313,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
               type="url"
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
-              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
               placeholder="https://yourbusiness.com"
             />
           </div>
@@ -332,7 +332,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                 required
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+                className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
               />
             </div>
 
@@ -349,7 +349,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
                 required
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+                className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
               />
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
               type="text"
               value={shopName}
               onChange={(e) => setShopName(e.target.value)}
-              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
               placeholder={org.name}
             />
           </div>
@@ -399,7 +399,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
               value={shopTagline}
               onChange={(e) => setShopTagline(e.target.value)}
               maxLength={120}
-              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
               placeholder="Premium auto detailing services"
             />
             <p

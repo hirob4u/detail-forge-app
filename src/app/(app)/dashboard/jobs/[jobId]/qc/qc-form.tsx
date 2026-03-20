@@ -433,7 +433,7 @@ export default function QcForm({ jobId }: { jobId: string }) {
           onBlur={saveNotes}
           rows={4}
           placeholder="Any notes about the final condition of the vehicle, exceptions, or customer communication..."
-          className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none resize-none"
+          className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none resize-none"
         />
 
         {/* Completion gate */}

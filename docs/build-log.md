@@ -1026,4 +1026,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-20 -- Blueprint -- fix/ios-safari-input-zoom
+
+**Built:** Fixed iOS Safari auto-zoom on input focus across the entire app. iOS Safari zooms the viewport when tapping input fields with font-size below 16px, causing the dashboard to appear zoomed/bleeding after navigation. Changed all input/textarea elements from `text-sm` (14px) to `text-base` (16px) across 7 files: sign-in, sign-up, intake form, branding settings, review form, and QC form. Added a global CSS safety net rule (`input, select, textarea { font-size: 16px; }`) in globals.css to prevent future regressions — unlayered so it beats Tailwind utilities.
+
+**Worked well:** Quality gate caught that the initial fix only covered auth forms, missing the customer-facing intake form (highest-priority mobile surface), branding settings, and review/QC forms. Expanding scope to all inputs app-wide was the right call.
+
+**Corrected:** Initial attempt used `@supports (-webkit-touch-callout: none)` in globals.css — reverted because it couldn't be verified in desktop preview and had specificity concerns with Tailwind v4 layers. Replaced with direct `text-base` class changes + unlayered global rule.
+
+**Root cause:** All inputs used Tailwind `text-sm` (14px). iOS Safari has a hardcoded 16px threshold below which it auto-zooms on focus.
+
+**Commit:** `fix: set all input/textarea font-size to 16px to prevent iOS Safari auto-zoom`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

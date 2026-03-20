@@ -97,6 +97,15 @@ body {
   color: #E8E8EF;
 }
 
+/* Prevent iOS Safari auto-zoom on input focus (triggers at font-size < 16px).
+   Uses absolute 16px because the iOS threshold is absolute, not relative.
+   Explicit text-base classes on each input are intentionally redundant. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
