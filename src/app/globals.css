@@ -4,9 +4,6 @@
 
 /* DetailForge -- dark mode only. No light mode variants. */
 
-/* Road Rage -- Google Fonts, wordmark only */
-@import url('https://fonts.googleapis.com/css2?family=Road+Rage&display=swap');
-
 @theme inline {
   /* DetailForge color tokens */
   --color-background: #0A0A0F;
@@ -71,11 +68,9 @@
 :root {
   --radius: 8px;
 
-  /* Road Rage via Google Fonts */
-  --font-road-rage: 'Road Rage', cursive;
-
   /* DetailForge font tokens */
-  --font-display: var(--font-road-rage);
+  /* --font-road-rage is set by next/font/google via layout.tsx */
+  --font-display: var(--font-road-rage, sans-serif);
   --font-ui: var(--font-dm-sans);
   --font-data: var(--font-jetbrains-mono);
 
