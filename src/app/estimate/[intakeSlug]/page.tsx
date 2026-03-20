@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/db/schema";
 import IntakeForm from "./intake-form";
+import Wordmark from "@/components/wordmark";
 
 // Design tokens imported for inline styles. Tailwind classes reference the
 // equivalent CSS custom properties (e.g. var(--color-background)) because
@@ -113,12 +114,10 @@ export default async function EstimatePage({
           href="https://detailforge.io"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)] opacity-50 transition-opacity hover:opacity-80"
+          className="inline-flex items-center gap-1.5 text-xs text-[var(--color-muted)] transition-opacity hover:opacity-80"
         >
-          <span>Powered by</span>
-          <span className="font-semibold text-[var(--color-text)]">
-            DetailForge.io
-          </span>
+          <span className="opacity-50">Powered by</span>
+          <Wordmark className="text-xs text-[var(--color-text)]" showDotIo />
         </a>
       </footer>
     </div>

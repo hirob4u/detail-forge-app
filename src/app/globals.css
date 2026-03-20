@@ -4,6 +4,14 @@
 
 /* DetailForge -- dark mode only. No light mode variants. */
 
+@font-face {
+  font-family: 'Lazer84';
+  src: url('/fonts/Lazer84.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme inline {
   /* DetailForge color tokens */
   --color-background: #0A0A0F;
@@ -68,9 +76,11 @@
 :root {
   --radius: 8px;
 
+  /* Lazer84 self-hosted font variable */
+  --font-lazer84: 'Lazer84', sans-serif;
+
   /* DetailForge font tokens */
-  /* --font-road-rage is set by next/font/google via layout.tsx */
-  --font-display: var(--font-road-rage, sans-serif);
+  --font-display: var(--font-lazer84);
   --font-ui: var(--font-dm-sans);
   --font-data: var(--font-jetbrains-mono);
 
