@@ -30,6 +30,113 @@ Vercel + Cloudflare R2.
 - No rounded-full pill shapes anywhere.
 - Status badges use JetBrains Mono, 11px, uppercase, with
   semantic neon colors per the Style Guide badge system.
+- Use `dvh` not `vh` for mobile viewport height.
+- Customer-facing pages use `--color-brand` for primary actions.
+  Dashboard pages use `--color-purple-action`. Never hardcode
+  `--color-purple-action` on intake pages.
+- Use `color-mix()` for hover shades. Never compute dark shades
+  in JavaScript.
+- Color customization uses curated swatches, not free-form input.
+  Every swatch must be tested for contrast on the dark background.
+- Font selection uses visual font cards with sample text rendered
+  in the actual typeface. Never use `<select>` dropdowns for font
+  selection -- browsers cannot render custom fonts in `<option>`.
+  Load fonts dynamically via Google Fonts `<link>` injection in
+  `useEffect` with element ID dedup to prevent duplicate loads.
+
+## Routing & Auth
+- This project uses Next.js 16. The middleware file is
+  `src/proxy.ts`, not `src/middleware.ts`. Do not create
+  `middleware.ts`.
+- All authenticated app pages must live inside the `(app)` route
+  group at `src/app/(app)/` to receive the sidebar layout. Pages
+  outside `(app)/` will not receive the sidebar.
+- Every new authenticated route must be added to both
+  `PROTECTED_PREFIXES` and `config.matcher` in `proxy.ts`.
+  Missing a path means no org auto-activation on that route.
+- Public routes (no auth) must be added to `PUBLIC_PREFIXES` in
+  `proxy.ts`.
+- Sign-up requires a valid invite code. The `/sign-up` route
+  redirects to `/waitlist` unless a `?code=` query param is
+  present. Invite validation via `POST /api/invites/validate`
+  does not burn the code -- only `/api/org/create` marks it used.
+
+## Org Identity
+- Always resolve the Better Auth org ID to the DetailForge UUID
+  using `getDetailForgeOrgId()` from `src/lib/org.ts` before
+  querying jobs, customers, vehicles, or any app data table.
+- The session `activeOrganizationId` is always a Better Auth
+  nanoid -- it is never a valid DetailForge `organizations.id`.
+- Never use `activeOrganizationId` directly as a foreign key.
+  `getDetailForgeOrgId()` must be the single point of resolution.
+
+## AI & Photos
+- Store all LLM prompts in the database `prompts` table. Never
+  hardcode prompts in route handlers or constants. Seed via
+  `scripts/seed-prompt.ts` reading from `scripts/prompt-content.txt`.
+- iPhone photos from R2 must be resized with `sharp` before
+  base64 encoding for Claude Vision API. Resize to 800px wide
+  at 75% JPEG quality. Raw iPhone photos exceed Claude's 5MB
+  per image limit.
+- Handle `photoKeys` as both `string[]` and `{ key, area, phase }[]`
+  since intake stores structured objects but manual triggers may
+  pass plain strings. Always extract the key property defensively.
+- Never await long-running AI calls from intake submission routes
+  on Vercel. Use fire-and-forget `fetch` with a dedicated status
+  column and lightweight polling endpoint. Select only status
+  fields in the polling route -- never join photos or full
+  assessment data.
+- Use `stripMarkdownFences()` when parsing JSON from Claude
+  responses. Model is `claude-sonnet-4-5`.
+
+## R2 Storage
+- R2 buckets must be private. Never store public URLs -- store
+  object keys only. Displaying photos requires presigned GET URLs
+  generated on demand via authenticated API routes.
+- Never include ContentLength in PutObjectCommand for presigned
+  uploads. Browser upload content-length never matches a
+  pre-signed value.
+- The R2 bucket requires a CORS policy configured in the
+  Cloudflare dashboard. Verify the CORS policy includes the
+  current environment origin before testing uploads.
+- When a Blueprint stores files that need public display (logos),
+  document whether the bucket requires a public domain.
+
+## UI Patterns
+- Photo upload for AI analysis must use structured capture with
+  labeled shots and area tags. Never use a generic upload zone
+  when the AI needs to assess specific areas.
+- Grid layouts for photo tiles work at 150px+ (desktop). For
+  mobile-first intake, use guided mode (one shot at a time, full
+  width) as default with batch mode for power users.
+- The "add" tile in upload zones sits in the photo grid at the
+  same size as thumbnails. Dashed borders only on the "add" tile,
+  never wrapping the entire upload area.
+- Review screens that evaluate AI output must display the source
+  media alongside the assessment. Photo display requires presigned
+  GET URLs via an auth-verified API route.
+- The review screen does not display raw AI scores. Scores are
+  stored in `aiAssessment` for analytics but the UI shows
+  actionable flags. Do not add score display without product
+  approval.
+- When a Blueprint changes the payload shape from client to API,
+  the validation schema and route handler are affected files even
+  if the route architecture stays the same.
+- When a layout needs both client interactivity and server data,
+  split into: server layout, client shell (receives server content
+  as React node props), server data components. Never import async
+  server components into `"use client"` files. Wrap server
+  components in `Suspense` when passed to client components.
+
+## Scripts & Utilities
+- Standalone scripts (seed, migration, utility) must use dynamic
+  `await import()` for modules that read env vars at init time.
+  Pattern: `import dotenv from "dotenv"; dotenv.config({ path:
+  ".env.local" }); async function main() { const { db } = await
+  import("../src/lib/db"); ... }`.
+- Do not add deployment adapter infrastructure until the deploy
+  target is finalized. Deployment config should be its own
+  Blueprint, not a fix task.
 
 ## When You Are Unsure
 If a spec detail is ambiguous, use the most conservative
