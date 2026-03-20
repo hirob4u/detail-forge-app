@@ -8,9 +8,8 @@ export default function LandingPage() {
       <div className="flex flex-col items-center gap-8 text-center">
         <Wordmark className="text-4xl sm:text-6xl md:text-8xl text-[var(--color-text)]" />
 
-        <p className="max-w-md text-lg text-[var(--color-muted)]">
-          AI-powered estimates and cost intelligence for detailing
-          professionals.
+        <p className="text-base tracking-wide text-[var(--color-muted)]">
+          Is your business forged through details?
         </p>
 
         <Link
