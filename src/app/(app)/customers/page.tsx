@@ -6,6 +6,7 @@ import { Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { customers, jobs } from "@/lib/db/schema";
 import { getDetailForgeOrgId } from "@/lib/org";
+import { formatPhone, stripPhone } from "@/lib/format";
 
 export default async function CustomersPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -71,10 +72,10 @@ export default async function CustomersPage() {
                   </a>
                   {customer.phone && (
                     <a
-                      href={`tel:${customer.phone}`}
+                      href={`tel:${stripPhone(customer.phone)}`}
                       className="mt-0.5 block text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
                     >
-                      {customer.phone}
+                      {formatPhone(customer.phone)}
                     </a>
                   )}
                 </div>

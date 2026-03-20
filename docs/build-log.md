@@ -1041,4 +1041,19 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-20 -- Blueprint 1 -- fix/ux-navigation-polish
+
+**Built:** UX navigation polish across 8 files. (1) Mobile header bar made fully tappable — semantic `<button>` inside `<header>` landmark spans full width with `aria-expanded` for screen reader state. (2) Wordmark on sign-in and sign-up pages wrapped in `<Link href="/">` so users can navigate to marketing page. Sign-up fallback component also updated. (3) New `src/lib/format.ts` utility with `formatPhone`, `maskPhone`, and `stripPhone` functions — formats US 10-digit numbers as `(xxx) xxx-xxxx`, live input masking with progressive formatting, strips leading country code `1`, caps at 10 digits. (4) Phone input masking applied to intake form and branding settings form. (5) Digits stripped via `stripPhone` on form submit for clean DB storage. (6) Phone display formatted on customers page and job detail page. (7) `tel:` href uses `stripPhone` for clean dial links. (8) Null-safe phone display on job detail page with conditional middot separator.
+
+**Worked well:** Quality gate caught four issues across 4 rounds: header `role="button"` overriding landmark semantics (fixed with semantic button inside header), `tel:` href using raw phone string, `maskPhone` not capping at 10 digits, and country code round-trip mismatch in branding form initialization. All resolved before commit.
+
+**Corrected:** Initial implementation used `role="button"` on `<header>` element — accessibility regression that overrides landmark semantics. Replaced with `<button>` inside `<header>`. Branding form initially used `formatPhone` for init which preserved 11-digit country codes; changed to `maskPhone` for consistent 10-digit handling.
+
+**Root cause:** Making a landmark element (`<header>`) interactive via `role="button"` overrides its landmark role for assistive technology. The correct pattern is nesting an interactive element inside the landmark.
+
+**Commit:** `fix: navigation polish — clickable mobile header, wordmark links, phone formatting`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

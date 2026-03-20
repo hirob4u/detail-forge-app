@@ -8,6 +8,7 @@ import StageControls from "./stage-controls";
 import StageHistory from "./stage-history";
 import SocialExportPanel from "./_components/social-export-panel";
 import type { JobStage } from "@/lib/db/schema";
+import { formatPhone } from "@/lib/format";
 
 export default async function JobDetailPage({
   params,
@@ -107,7 +108,7 @@ export default async function JobDetailPage({
             {customer.firstName} {customer.lastName}
           </p>
           <p className="mt-1 text-sm text-[var(--color-muted)]">
-            {customer.email} &middot; {customer.phone}
+            {customer.email}{customer.phone ? <> &middot; {formatPhone(customer.phone)}</> : null}
           </p>
         </div>
 

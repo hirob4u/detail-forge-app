@@ -104,20 +104,24 @@ export default function AppShell({
 
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-        {/* Mobile header with hamburger */}
-        <header className="flex h-16 items-center border-b border-[var(--color-border)] px-4 md:hidden">
+        {/* Mobile header with hamburger — entire bar is tappable to open nav */}
+        <header className="border-b border-[var(--color-border)] md:hidden">
           <button
+            type="button"
+            className="flex h-16 w-full items-center bg-transparent border-none px-4 cursor-pointer select-none"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="rounded-[var(--radius-button)] p-2 text-[var(--color-muted)] hover:bg-[var(--color-hover)] hover:text-[var(--color-text)]"
-            aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+            aria-label="Toggle menu"
+            aria-expanded={sidebarOpen}
           >
-            {sidebarOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
+            <div className="rounded-[var(--radius-button)] p-2 text-[var(--color-muted)]">
+              {sidebarOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </div>
+            <div className="ml-3">{wordmark}</div>
           </button>
-          <div className="ml-3">{wordmark}</div>
         </header>
 
         {/* Page content */}
