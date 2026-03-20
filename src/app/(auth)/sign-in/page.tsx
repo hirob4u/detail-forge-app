@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 import Wordmark from "@/components/wordmark";
 
@@ -18,18 +19,24 @@ export default function SignInPage() {
     setError("");
     setLoading(true);
 
-    const { error: signInError } = await signIn.email({
-      email,
-      password,
-    });
+    try {
+      const { error: signInError } = await signIn.email({
+        email,
+        password,
+      });
 
-    if (signInError) {
-      setError(signInError.message ?? "Sign in failed. Please try again.");
+      if (signInError) {
+        setError(signInError.message ?? "Sign in failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      router.refresh();
+      router.push("/dashboard");
+    } catch {
+      setError("Network error. Please check your connection and try again.");
       setLoading(false);
-      return;
     }
-
-    router.push("/dashboard");
   }
 
   return (
@@ -98,7 +105,14 @@ export default function SignInPage() {
           disabled={loading}
           className="mt-6 w-full rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-purple-deep)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
         >
-          {loading ? "Signing in..." : "Sign in"}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Signing in...
+            </span>
+          ) : (
+            "Sign in"
+          )}
         </button>
 
         <p className="mt-4 text-center text-sm text-[var(--color-muted)]">

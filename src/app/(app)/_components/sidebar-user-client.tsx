@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 
 function getInitials(name: string): string {
@@ -26,8 +26,14 @@ export default function SidebarUserClient({
 
   async function handleLogout() {
     setLoggingOut(true);
-    await signOut();
-    router.push("/sign-in");
+    try {
+      await signOut();
+      router.refresh();
+      router.push("/sign-in");
+    } catch (err) {
+      console.error("Sign out failed:", err);
+      setLoggingOut(false);
+    }
   }
 
   return (
@@ -51,10 +57,15 @@ export default function SidebarUserClient({
           type="button"
           onClick={handleLogout}
           disabled={loggingOut}
+          aria-label="Sign out"
           title="Sign out"
           className="flex-shrink-0 rounded-[var(--radius-button)] p-1.5 text-[var(--color-muted)] transition-colors hover:bg-[var(--color-hover)] hover:text-[var(--color-text)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
         >
-          <LogOut className="h-4 w-4" />
+          {loggingOut ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <LogOut className="h-4 w-4" />
+          )}
         </button>
       </div>
     </div>
