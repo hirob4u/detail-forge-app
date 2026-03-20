@@ -1056,4 +1056,17 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-20 -- Blueprint -- fix/auth-loading-spinners
+
+**Built:** Added `Loader2` spinning indicators to sign-in button and logout button. Sign-in shows spinner + "Signing in..." text during auth. Logout swaps `LogOut` icon for spinner during sign-out. Both buttons were already disabled during loading but lacked visual progress indication, making them feel broken.
+
+**Worked well:** Quality gate caught three real issues across 3 rounds: (1) sign-in had no try/catch for network-level exceptions (fetch abort, CORS) — button would freeze permanently, (2) logout catch was completely silent — no console.error, no feedback, (3) logout missing router.refresh() before router.push, inconsistent with sign-in. Also caught try/finally overcorrection in Round 2 that re-enabled the button before navigation completed.
+
+**Corrected:** Initial try/finally approach reset loading on success path, creating a double-tap window. Replaced with error-only reset — on success, component unmounts during navigation. Added aria-label to logout button (was title-only). Changed spinner from inline-block to flex alignment for codebase consistency.
+
+**Commit:** `fix: add loading spinners to sign-in and logout buttons`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
