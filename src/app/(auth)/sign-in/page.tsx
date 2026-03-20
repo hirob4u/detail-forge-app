@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "@/lib/auth-client";
+import Wordmark from "@/components/wordmark";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -34,8 +35,8 @@ export default function SignInPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-[var(--color-purple-text)]">
-          DetailForge
+        <h1>
+          <Wordmark className="text-3xl text-[var(--color-text)]" />
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
           Sign in to your account

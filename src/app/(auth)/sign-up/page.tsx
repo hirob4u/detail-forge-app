@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Wordmark from "@/components/wordmark";
 import { Loader2, CircleCheck } from "lucide-react";
 import { signUp, organization } from "@/lib/auth-client";
 
@@ -130,8 +131,8 @@ function SignUpForm() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-[var(--color-purple-text)]">
-          DetailForge
+        <h1>
+          <Wordmark className="text-3xl text-[var(--color-text)]" />
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
           Create your account
@@ -296,8 +297,8 @@ function SignUpFormFallback() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-[var(--color-purple-text)]">
-          DetailForge
+        <h1>
+          <Wordmark className="text-3xl text-[var(--color-text)]" />
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
           Create your account

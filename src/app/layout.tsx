@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Road_Rage } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import { allOrgFonts } from "@/lib/fonts";
 import "./globals.css";
 
@@ -7,12 +7,6 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
   variable: "--font-jetbrains-mono",
-});
-
-const roadRage = Road_Rage({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-road-rage",
 });
 
 export const metadata: Metadata = {
@@ -31,7 +25,6 @@ export default function RootLayout({
       lang="en"
       className={[
         jetbrainsMono.variable,
-        roadRage.variable,
         ...allOrgFonts.map((f) => f.variable),
       ].join(" ")}
     >
