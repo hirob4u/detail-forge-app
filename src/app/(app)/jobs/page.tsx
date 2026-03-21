@@ -5,22 +5,18 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Car } from "lucide-react";
 import { db } from "@/lib/db";
-import { jobs, customers, vehicles } from "@/lib/db/schema";
-import type { jobStageEnum } from "@/lib/db/schema";
+import { jobs, customers, vehicles, jobStageEnum } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { getDetailForgeOrgId } from "@/lib/org";
+import { STAGE_CONFIG, STAGE_ORDER } from "../_components/stage-config";
 import JobCard from "../_components/job-card";
 
-// TODO: VERIFY -- consider deriving tabs from STAGE_CONFIG
 const tabs: Array<{ label: string; value: string | null }> = [
   { label: "All", value: null },
-  { label: "New", value: "created" },
-  { label: "Quoted", value: "quoted" },
-  { label: "Sent", value: "sent" },
-  { label: "Approved", value: "approved" },
-  { label: "In Progress", value: "inProgress" },
-  { label: "QC", value: "qc" },
-  { label: "Complete", value: "complete" },
+  ...STAGE_ORDER.map((key) => ({
+    label: STAGE_CONFIG[key].label,
+    value: key,
+  })),
 ];
 
 export default async function JobsPage({
@@ -40,7 +36,11 @@ export default async function JobsPage({
   }
 
   const { stage: stageParam } = await searchParams;
-  const activeStage = (stageParam as (typeof jobStageEnum.enumValues)[number]) || null;
+  const validStages: readonly string[] = jobStageEnum.enumValues;
+  const activeStage =
+    stageParam && validStages.includes(stageParam)
+      ? (stageParam as (typeof jobStageEnum.enumValues)[number])
+      : null;
 
   const whereConditions = activeStage
     ? and(eq(jobs.orgId, orgId), eq(jobs.stage, activeStage))

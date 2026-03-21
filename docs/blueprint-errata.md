@@ -826,4 +826,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### feat/job-stage-ux -- Stage Transition Feedback and Reopen Flow
+### Convention: Server-Side Enforcement of UI-Level Constraints
+
+**Issue:** Stage transition controls had no loading feedback (TODO comment in catch block), no error recovery, and hardcoded badge covering only 4/8 stages. The `complete` stage was a dead-end with no path back. Quality gate found the `requireNote` constraint was client-only — any API caller could bypass the audit trail requirement. Also found pre-existing security gap: DB UPDATE not scoped to `orgId`.
+
+**Root cause:** UI-level constraints (requireNote, stage validation) were not mirrored server-side. The PATCH handler validated transition legality but not transition-specific invariants. The UPDATE query inherited a `WHERE` clause from an earlier version that only filtered by `jobId`.
+
+**Fix applied:** Added server-side `requireNote` enforcement (API returns 400 if note is empty). Scoped UPDATE to `orgId` via `and()`. Added `jobId` UUID format validation before DB query. Added `to` stage validation against `jobStageEnum.enumValues` before any logic. Added `STAGE_ORDER` export for explicit iteration ordering. Added `ring` field to `STAGE_CONFIG` to avoid fragile string replacement. Changed `inProgress` color from magenta (reserved for AI) to purple-action. Added `isRefreshing` state to keep buttons disabled until `currentStage` prop changes after `router.refresh()`.
+
+**Add to Blueprint:** When a stage transition has a `requireNote: true` or similar UI constraint, always enforce it server-side in the API handler — never rely on the client alone. Audit trail invariants (required notes, mandatory fields) must be validated at the API boundary. When adding new `STAGE_CONFIG` entries, also add them to `STAGE_ORDER` for explicit iteration ordering. Use `config.ring` for ring colors instead of deriving from `config.border` via string manipulation. After `router.refresh()`, keep UI in a "refreshing" state until the server-delivered prop changes — `router.refresh()` is fire-and-forget, so buttons re-enable before new data arrives otherwise.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

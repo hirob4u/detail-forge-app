@@ -6,7 +6,9 @@ import { jobs, vehicles, customers, organizations } from "@/lib/db/schema";
 import AnalysisStatusPanel from "./analysis-status-panel";
 import StageControls from "./stage-controls";
 import StageHistory from "./stage-history";
+import StagePipeline from "./stage-pipeline";
 import SocialExportPanel from "./_components/social-export-panel";
+import StageBadge from "@/app/(app)/_components/stage-badge";
 import type { JobStage } from "@/lib/db/schema";
 import { formatPhone } from "@/lib/format";
 
@@ -73,13 +75,6 @@ export default async function JobDetailPage({
     .where(eq(organizations.id, job.orgId))
     .limit(1);
 
-  const stageBadgeColor: Record<string, string> = {
-    created: "text-[var(--color-amber)] border-[var(--color-amber)]",
-    quoted: "text-[var(--color-cyan)] border-[var(--color-cyan)]",
-    sent: "text-[var(--color-purple-text)] border-[var(--color-purple-text)]",
-    approved: "text-[var(--color-green)] border-[var(--color-green)]",
-  };
-
   // Build retry payload from stored photos and vehicle info
   const photoKeys = (job.photos || []).map((p) => p.key);
 
@@ -87,15 +82,13 @@ export default async function JobDetailPage({
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-bold text-[var(--color-text)]">Job Detail</h1>
-        <span
-          className={`inline-block rounded-[var(--radius-badge)] border px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider ${stageBadgeColor[job.stage] || "text-[var(--color-muted)] border-[var(--color-border)]"}`}
-          style={{ fontFamily: "var(--font-data)" }}
-        >
-          {job.stage}
-        </span>
+        <StageBadge stage={job.stage} analysisStatus={job.analysisStatus ?? ""} />
       </div>
 
-      <div className="space-y-4">
+      {/* Pipeline progress indicator */}
+      <StagePipeline currentStage={job.stage as JobStage} />
+
+      <div className="mt-6 space-y-4">
         {/* Customer info */}
         <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
           <p
