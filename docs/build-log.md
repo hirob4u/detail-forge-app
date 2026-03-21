@@ -1069,4 +1069,21 @@ signed headers. Browser upload content-length never matches a pre-signed value.
 
 ---
 
+### 2026-03-20 -- Blueprint 2 -- feat/streamlined-photo-capture
+
+**Built:** Major refactor of the intake form photo capture component (`structured-photo-capture.tsx`). Added new "Rapid" capture mode as the default — two big buttons (Take Photo + From Gallery with multi-select), photos appear in a horizontally scrollable filmstrip with auto-assigned areas. Users can reassign areas via native `<select>` dropdowns on each thumbnail. Auto-assignment fills required areas first, then optional, before falling back to damage-area. Preserved existing Guided (step-by-step) and Batch (all at once) modes as secondary options. Removed `capture="environment"` from guided/batch file inputs so OS can offer camera or gallery choice. Batch mode now supports multiple photos per area (shows existing + "More" button instead of replace-only).
+
+Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CONCURRENCY=3 batching via Promise.race pool, AbortController for fetch cancellation on unmount (created fresh per mount cycle, abort errors distinguished from real failures), presign response runtime validation, 200ms debounced onPhotosChange to prevent parent re-render storms during batch uploads. Added resource management: blob URL revocation on unmount via ref, validation feedback for rejected files (type/size). Fixed guided mode error retry being dead code (currentPhoto filtered out errors). Accessibility: filmstrip has role="list"/listitem, aria-labels on retry buttons and area selectors, mode toggle has role="group" with aria-pressed.
+
+**Worked well:** Quality gate ran 4 rounds (score 8→7→6→5 adjusted) catching real issues: blob URL leak on unmount, stale closure in retryPhoto, auto-assignment skipping optional areas, unsafe ShotArea cast, unbounded concurrent uploads, unvalidated presign response, guided mode ignoring in-flight uploads, filmstrip accessibility gaps, setState-inside-setState anti-pattern, guided error retry dead code, AbortController reuse on remount, missing upload cancellation. All genuine issues resolved.
+
+**Corrected:** Round 2 fix moved rapid mode logic into setPhotos functional updater but called setLimitNotice inside it (setState during setState). Extracted to pendingNotice variable. Round 3 reviewer flagged entriesToUpload race as Fatal — verified as false positive (React functional updaters run synchronously). Round 4 flagged pre-existing presign endpoint security as Fatal — correctly scoped as out-of-Blueprint.
+
+**Root cause:** Original component was designed for single-photo-per-area with forced rear camera. The paradigm of "pick area first, then capture" is fundamentally slow for mobile. Flipping to "capture first, assign later" required rethinking state management for concurrent multi-file uploads.
+
+**Commit:** `feat: streamlined photo capture with rapid-fire mode and bulk upload`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
