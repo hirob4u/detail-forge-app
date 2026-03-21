@@ -26,11 +26,12 @@ No changes without an approved Blueprint. Spec must include: branch name, commit
 | During code | `/test-driven-development` | Write tests before implementation (skip only for doc-only changes) |
 | Before commit | `/quality-gate` | Red-team changes. Do not commit until gate passes or stagnation detected |
 | After PR | `/forge` retrospective | Record lessons immediately. Do not end session without it |
+| After PR | Errata + patterns | Update `docs/blueprint-errata.md` and `forge/patterns.md` in the repo. Commit to the PR branch |
 
 If skipping any step, state which and why. Silence is not consent to skip.
 
-### 3. Build Log
-Every PR gets an entry in `docs/build-log.md`. No PR without a build log entry.
+### 3. Build Log + Errata
+Every PR gets an entry in `docs/build-log.md`. Every Blueprint that produces a lesson gets an entry in `docs/blueprint-errata.md` and `forge/patterns.md`. These files live in the repo (not just agent memory) so future sessions and agents can read them. No PR without a build log entry.
 
 ### 4. Visual Verification
 All font, icon, image, and asset changes must be visually verified before committing. Render → inspect → confirm → then commit. Never assume rendering is correct.
