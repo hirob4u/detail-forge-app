@@ -5,6 +5,8 @@ export type StageTransition = {
   label: string;
   direction: "forward" | "backward";
   confirmMessage?: string;
+  /** When true, the confirmation dialog includes a required note input. */
+  requireNote?: boolean;
 };
 
 export const STAGE_TRANSITIONS: Record<JobStage, StageTransition[]> = {
@@ -89,7 +91,16 @@ export const STAGE_TRANSITIONS: Record<JobStage, StageTransition[]> = {
         "Send this job back to In Progress? Use this when QC reveals work that still needs doing.",
     },
   ],
-  complete: [],
+  complete: [
+    {
+      to: "inProgress",
+      label: "Reopen Job",
+      direction: "backward",
+      confirmMessage:
+        "Reopen this job and send it back to In Progress? A reason is required for the audit trail.",
+      requireNote: true,
+    },
+  ],
   archived: [
     {
       to: "created",

@@ -3,16 +3,21 @@ import { headers } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { jobs } from "@/lib/db/schema";
+import { jobs, jobStageEnum } from "@/lib/db/schema";
 import type { JobStage } from "@/lib/db/schema";
 import { getDetailForgeOrgId } from "@/lib/org";
 import { STAGE_TRANSITIONS } from "@/lib/stage-transitions";
+
+const VALID_STAGES: readonly string[] = jobStageEnum.enumValues;
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ jobId: string }> },
 ) {
   const { jobId } = await params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId)) {
+    return NextResponse.json({ error: "Invalid job ID" }, { status: 400 });
+  }
   const body = await request.json().catch(() => null);
   if (!body || !body.to) {
     return NextResponse.json(
@@ -22,6 +27,10 @@ export async function PATCH(
   }
 
   const { to, note } = body as { to: string; note?: string };
+
+  if (!VALID_STAGES.includes(to)) {
+    return NextResponse.json({ error: "Invalid stage" }, { status: 400 });
+  }
 
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -64,11 +73,19 @@ export async function PATCH(
     );
   }
 
+  if (transition.requireNote && (!note || note.trim() === "")) {
+    return NextResponse.json(
+      { error: "A reason is required for this transition." },
+      { status: 400 },
+    );
+  }
+
+  const trimmedNote = note?.trim();
   const historyEntry = {
     from: job.stage,
     to,
     at: new Date().toISOString(),
-    ...(note ? { note } : {}),
+    ...(trimmedNote ? { note: trimmedNote } : {}),
   };
 
   const updatedHistory = [...(job.stageHistory ?? []), historyEntry];
@@ -80,7 +97,7 @@ export async function PATCH(
       stageHistory: updatedHistory,
       updatedAt: new Date(),
     })
-    .where(eq(jobs.id, jobId));
+    .where(and(eq(jobs.id, jobId), eq(jobs.orgId, orgId)));
 
   return NextResponse.json({ success: true, stage: to });
 }
