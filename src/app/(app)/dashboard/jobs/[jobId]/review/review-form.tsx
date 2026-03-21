@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { QuoteLineItem, FinalQuote } from "@/lib/types/quote";
@@ -13,10 +13,14 @@ import {
   Plus,
   Loader2,
   X,
+  Trash2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import PhotoThumbnail from "@/app/(app)/_components/photo-thumbnail";
+import CollapsibleSection from "@/app/(app)/_components/collapsible-section";
+import StageBadge from "@/app/(app)/_components/stage-badge";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -72,6 +76,146 @@ interface ReviewFormProps {
   isQuoted: boolean;
   existingQuote: FinalQuote | null;
   hasPhotos: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// ServiceLineItem — compact row with collapsible note
+// ---------------------------------------------------------------------------
+
+function ServiceLineItem({
+  item,
+  index,
+  isQuoted,
+  onToggle,
+  onUpdatePrice,
+  onUpdateName,
+  onUpdateDescription,
+  onRemove,
+}: {
+  item: QuoteLineItem;
+  index: number;
+  isQuoted: boolean;
+  onToggle: (i: number) => void;
+  onUpdatePrice: (i: number, p: number) => void;
+  onUpdateName: (i: number, n: string) => void;
+  onUpdateDescription: (i: number, d: string) => void;
+  onRemove: (i: number) => void;
+}) {
+  const [noteOpen, setNoteOpen] = useState(false);
+  const isManual = item.basePrice === 0 && !item.note;
+
+  return (
+    <div
+      className={cn(
+        "rounded-[var(--radius-button)] border p-3 transition-colors",
+        item.included
+          ? "border-[var(--color-border)] bg-[var(--color-elevated)]"
+          : "border-[var(--color-border)] bg-[var(--color-surface)] opacity-50",
+      )}
+    >
+      {/* Main row: toggle + name + price + remove */}
+      <div className="flex items-center gap-2">
+        {!isQuoted && (
+          <button
+            type="button"
+            onClick={() => onToggle(index)}
+            className="shrink-0"
+            aria-label={item.included ? "Exclude service" : "Include service"}
+          >
+            {item.included ? (
+              <CircleCheck className="h-4 w-4 text-[var(--color-purple-action)]" />
+            ) : (
+              <Circle className="h-4 w-4 text-[var(--color-muted)]" />
+            )}
+          </button>
+        )}
+
+        <div className="min-w-0 flex-1">
+          {!isQuoted && isManual ? (
+            <input
+              type="text"
+              value={item.name}
+              onChange={(e) => onUpdateName(index, e.target.value)}
+              placeholder="Service name"
+              className="w-full border-0 bg-transparent p-0 text-sm font-semibold text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none"
+            />
+          ) : (
+            <span className="text-sm font-semibold text-[var(--color-text)]">
+              {item.name}
+            </span>
+          )}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          <span className="text-xs text-[var(--color-muted)]">$</span>
+          {isQuoted ? (
+            <span
+              className="text-sm text-[var(--color-text)]"
+              style={{ fontFamily: "var(--font-data)" }}
+            >
+              {item.finalPrice.toFixed(2)}
+            </span>
+          ) : (
+            <input
+              type="number"
+              value={item.finalPrice}
+              onChange={(e) => onUpdatePrice(index, Number(e.target.value))}
+              disabled={!item.included}
+              className="w-20 rounded-[var(--radius-badge)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-right text-sm text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
+              style={{ fontFamily: "var(--font-data)" }}
+            />
+          )}
+        </div>
+
+        {/* Remove button */}
+        {!isQuoted && (
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="shrink-0 text-[var(--color-muted)] transition-colors hover:text-red-400"
+            aria-label="Remove service"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Description field for manually added items */}
+      {!isQuoted && isManual && (
+        <input
+          type="text"
+          value={item.description ?? ""}
+          onChange={(e) => onUpdateDescription(index, e.target.value)}
+          placeholder="Description (optional)"
+          className="mt-2 w-full border-0 bg-transparent p-0 text-xs text-[var(--color-muted)] placeholder:text-[var(--color-muted)]/60 focus:outline-none"
+        />
+      )}
+
+      {/* AI note — tap to expand */}
+      {item.note && (
+        <div className="mt-1">
+          <button
+            type="button"
+            onClick={() => setNoteOpen((prev) => !prev)}
+            className="flex items-center gap-1 text-[10px] text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
+          >
+            <ChevronDown
+              className={cn(
+                "h-3 w-3 transition-transform duration-150",
+                noteOpen && "rotate-180",
+              )}
+            />
+            AI note
+          </button>
+          {noteOpen && (
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
+              {item.note}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -180,12 +324,19 @@ export default function ReviewForm({
   const [feedbackRating, setFeedbackRating] = useState<"helpful" | "needs_work" | null>(null);
   const [feedbackNotes, setFeedbackNotes] = useState("");
 
+  // Stable key counter for line items (avoids index-as-key bugs on removal)
+  const nextKeyRef = useRef(0);
+  function getNextKey() {
+    return nextKeyRef.current++;
+  }
+
   // Quote line items -- initialize from AI recommended services or existing quote
-  const [lineItems, setLineItems] = useState<QuoteLineItem[]>(() => {
+  const [lineItems, setLineItems] = useState<(QuoteLineItem & { _key: number })[]>(() => {
     if (existingQuote) {
-      return existingQuote.lineItems;
+      return existingQuote.lineItems.map((item) => ({ ...item, _key: getNextKey() }));
     }
     return assessment.recommendedServices.map((svc) => ({
+      _key: getNextKey(),
       name: svc.name,
       note: svc.note || "",
       basePrice: svc.basePrice,
@@ -223,11 +374,19 @@ export default function ReviewForm({
     );
   }
 
+  function updateItemDescription(index: number, description: string) {
+    if (isQuoted) return;
+    setLineItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, description } : item)),
+    );
+  }
+
   function addLineItem() {
     if (isQuoted) return;
     setLineItems((prev) => [
       ...prev,
       {
+        _key: getNextKey(),
         name: "",
         note: "",
         basePrice: 0,
@@ -236,6 +395,11 @@ export default function ReviewForm({
         included: true,
       },
     ]);
+  }
+
+  function removeLineItem(index: number) {
+    if (isQuoted) return;
+    setLineItems((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleFinalize() {
@@ -248,7 +412,7 @@ export default function ReviewForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           finalQuote: {
-            lineItems,
+            lineItems: lineItems.map(({ _key, ...rest }) => rest),
             totalPrice,
             detailerNotes,
           },
@@ -271,85 +435,59 @@ export default function ReviewForm({
     }
   }
 
-  const stageBadgeColor: Record<string, string> = {
-    created: "text-[var(--color-amber)] border-[var(--color-amber)]",
-    quoted: "text-[var(--color-cyan)] border-[var(--color-cyan)]",
-    sent: "text-[var(--color-purple-text)] border-[var(--color-purple-text)]",
-    approved: "text-[var(--color-green)] border-[var(--color-green)]",
-  };
-
   return (
     <div className="space-y-6">
-      {/* SECTION 1 -- Vehicle and customer header */}
+      {/* SECTION 1 -- Vehicle and customer header (compact) */}
       <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <div>
-            <p className="text-sm text-[var(--color-muted)]">Customer</p>
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-[var(--color-text)]">
               {customer.firstName} {customer.lastName}
+              <span className="font-normal text-[var(--color-muted)]">
+                {" "}&middot; {vehicle.year} {vehicle.make} {vehicle.model} &mdash; {vehicle.color}
+              </span>
             </p>
-          </div>
-          <div>
-            <p className="text-sm text-[var(--color-muted)]">Vehicle</p>
-            <p className="text-sm font-semibold text-[var(--color-text)]">
-              {vehicle.year} {vehicle.make} {vehicle.model} &mdash; {vehicle.color}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-[var(--color-muted)]">Created</p>
             <p
-              className="text-sm text-[var(--color-text)]"
+              className="mt-0.5 text-xs text-[var(--color-muted)]"
               style={{ fontFamily: "var(--font-data)" }}
             >
-              {new Date(createdAt).toLocaleDateString()}
+              Created {new Date(createdAt).toLocaleDateString()}
             </p>
           </div>
-          <div>
-            <span
-              className={cn(
-                "inline-block rounded-[var(--radius-badge)] border px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider",
-                stageBadgeColor[stage] || "text-[var(--color-muted)] border-[var(--color-border)]",
-              )}
-              style={{ fontFamily: "var(--font-data)" }}
-            >
-              {stage}
-            </span>
-          </div>
+          <StageBadge stage={stage} analysisStatus="" />
         </div>
       </div>
 
-      {/* SECTION -- Customer photos */}
+      {/* SECTION -- Customer photos (filmstrip) */}
       {hasPhotos && (
         <div>
           <h2 className="text-lg font-semibold text-[var(--color-text)]">
             Customer Photos
           </h2>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">
-            Photos submitted with the intake form. Click to enlarge.
-          </p>
 
           {metaLoading ? (
-            <div className="mt-4 flex items-center gap-2 text-sm text-[var(--color-muted)]">
+            <div className="mt-3 flex items-center gap-2 text-sm text-[var(--color-muted)]">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Loading photos...</span>
             </div>
           ) : photoMeta.length === 0 ? (
-            <p className="mt-4 text-sm text-[var(--color-muted)]">
+            <p className="mt-3 text-sm text-[var(--color-muted)]">
               No photos were submitted with this job.
             </p>
           ) : (
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
               {photoMeta.map((photo, index) => {
                 const url = photoUrls[photo.key] ?? null;
                 return (
-                  <PhotoThumbnail
-                    key={photo.key}
-                    src={url}
-                    alt={formatAreaLabel(photo.area)}
-                    label={formatAreaLabel(photo.area)}
-                    loading={urlsLoading && !url}
-                    onClick={url ? () => setSelectedIndex(index) : undefined}
-                  />
+                  <div key={photo.key} className="h-20 w-20 shrink-0">
+                    <PhotoThumbnail
+                      src={url}
+                      alt={formatAreaLabel(photo.area)}
+                      label={formatAreaLabel(photo.area)}
+                      loading={urlsLoading && !url}
+                      onClick={url ? () => setSelectedIndex(index) : undefined}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -435,25 +573,35 @@ export default function ReviewForm({
         </div>
       )}
 
+      {/* Vehicle mismatch warning — always visible */}
+      {assessment.vehicleVerification &&
+        !assessment.vehicleVerification.appearsToMatch && (
+          <div className="rounded-[var(--radius-card)] border border-red-800 bg-red-950/40 p-4">
+            <p className="mb-1 text-sm font-semibold text-red-400">
+              Vehicle Mismatch Detected
+            </p>
+            <p className="text-sm text-[var(--color-muted)]">
+              {assessment.vehicleVerification.mismatchNote}
+            </p>
+          </div>
+        )}
+
       {/* Two-column layout on desktop */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* LEFT COLUMN -- Flags + Feedback */}
-        <div className="space-y-6">
-          {/* SECTION 2 -- AI Flags panel */}
-          <div>
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">
-              AI Assessment Flags
-            </h2>
-            <p className="mt-1 text-sm text-[var(--color-muted)]">
-              Items to verify in person before finalizing the quote.
-            </p>
-
-            <div className="mt-4 space-y-3">
+        <div className="space-y-4">
+          {/* AI Flags — collapsible, open if flags exist */}
+          <CollapsibleSection
+            title="AI Flags"
+            count={assessment.flags?.length ?? 0}
+            defaultOpen={(assessment.flags?.length ?? 0) > 0}
+          >
+            <div className="space-y-3">
               {assessment.flags && assessment.flags.length > 0 ? (
                 assessment.flags.map((flag, i) => (
                   <div
                     key={i}
-                    className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-4"
+                    className="rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-3"
                   >
                     <div className="flex gap-3">
                       <div className="mt-0.5 flex-shrink-0">
@@ -467,70 +615,55 @@ export default function ReviewForm({
                 ))
               ) : (
                 <p className="text-sm text-[var(--color-muted)]">
-                  No flags from the AI assessment. Review the vehicle in person before
-                  finalizing.
+                  No flags from the AI assessment.
                 </p>
               )}
             </div>
+          </CollapsibleSection>
 
-            {/* Vehicle mismatch warning */}
-            {assessment.vehicleVerification &&
-              !assessment.vehicleVerification.appearsToMatch && (
-                <div className="mt-3 rounded-[var(--radius-card)] border border-red-800 bg-red-950/40 p-4">
-                  <p className="mb-1 text-sm font-semibold text-red-400">
-                    Vehicle Mismatch Detected
-                  </p>
-                  <p className="text-sm text-[var(--color-muted)]">
-                    {assessment.vehicleVerification.mismatchNote}
-                  </p>
-                </div>
-              )}
-          </div>
-
-          {/* AI Assessment Feedback */}
+          {/* AI Feedback — collapsible, collapsed by default */}
           {!isQuoted && (
-            <div>
-              <p className="text-sm font-medium text-[var(--color-text)]">
-                How was the AI assessment?
-              </p>
-              <div className="mt-2 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFeedbackRating("helpful")}
-                  className={cn(
-                    "flex items-center gap-2 rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition-colors",
-                    feedbackRating === "helpful"
-                      ? "border-[var(--color-green)] bg-[var(--color-green)]/10 text-[var(--color-green)]"
-                      : "border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
-                  )}
-                >
-                  <ThumbsUp className="h-4 w-4" />
-                  Helpful
-                </button>
+            <CollapsibleSection title="Leave Feedback" defaultOpen={false}>
+              <div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackRating("helpful")}
+                    className={cn(
+                      "flex items-center gap-2 rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition-colors",
+                      feedbackRating === "helpful"
+                        ? "border-[var(--color-green)] bg-[var(--color-green)]/10 text-[var(--color-green)]"
+                        : "border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
+                    )}
+                  >
+                    <ThumbsUp className="h-4 w-4" />
+                    Helpful
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => setFeedbackRating("needs_work")}
-                  className={cn(
-                    "flex items-center gap-2 rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition-colors",
-                    feedbackRating === "needs_work"
-                      ? "border-[var(--color-amber)] bg-[var(--color-amber)]/10 text-[var(--color-amber)]"
-                      : "border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
-                  )}
-                >
-                  <ThumbsDown className="h-4 w-4" />
-                  Needs Work
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackRating("needs_work")}
+                    className={cn(
+                      "flex items-center gap-2 rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition-colors",
+                      feedbackRating === "needs_work"
+                        ? "border-[var(--color-amber)] bg-[var(--color-amber)]/10 text-[var(--color-amber)]"
+                        : "border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
+                    )}
+                  >
+                    <ThumbsDown className="h-4 w-4" />
+                    Needs Work
+                  </button>
+                </div>
+
+                <textarea
+                  placeholder="What was wrong or missing? Your feedback improves future assessments."
+                  value={feedbackNotes}
+                  onChange={(e) => setFeedbackNotes(e.target.value)}
+                  rows={3}
+                  className="mt-3 w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] resize-none"
+                />
               </div>
-
-              <textarea
-                placeholder="What was wrong or missing? Your feedback improves future assessments."
-                value={feedbackNotes}
-                onChange={(e) => setFeedbackNotes(e.target.value)}
-                rows={3}
-                className="mt-3 w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] resize-none"
-              />
-            </div>
+            </CollapsibleSection>
           )}
         </div>
 
@@ -545,82 +678,20 @@ export default function ReviewForm({
               : "AI-recommended services are pre-loaded. Adjust prices and toggle services on or off before finalizing."}
           </p>
 
-          {/* Line items */}
-          <div className="mt-4 space-y-3">
+          {/* Line items — compact rows */}
+          <div className="mt-4 space-y-2">
             {lineItems.map((item, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "rounded-[var(--radius-card)] border p-4 transition-colors",
-                  item.included
-                    ? "border-[var(--color-border)] bg-[var(--color-elevated)]"
-                    : "border-[var(--color-border)] bg-[var(--color-surface)] opacity-50",
-                )}
-              >
-                <div className="flex items-start gap-3">
-                  {/* Toggle included */}
-                  {!isQuoted && (
-                    <button
-                      type="button"
-                      onClick={() => toggleItem(index)}
-                      className="mt-0.5 flex-shrink-0"
-                    >
-                      {item.included ? (
-                        <CircleCheck className="h-5 w-5 text-[var(--color-purple-action)]" />
-                      ) : (
-                        <Circle className="h-5 w-5 text-[var(--color-muted)]" />
-                      )}
-                    </button>
-                  )}
-
-                  <div className="min-w-0 flex-1">
-                    {/* Service name -- editable if blank (manually added) */}
-                    {!isQuoted && item.basePrice === 0 && !item.note ? (
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(e) => updateItemName(index, e.target.value)}
-                        placeholder="Service name"
-                        className="w-full border-0 bg-transparent p-0 text-base font-semibold text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:outline-none"
-                      />
-                    ) : (
-                      <p className="text-sm font-semibold text-[var(--color-text)]">
-                        {item.name}
-                      </p>
-                    )}
-                    {/* AI note */}
-                    {item.note && (
-                      <p className="mt-0.5 text-xs leading-relaxed text-[var(--color-muted)]">
-                        {item.note}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Price input */}
-                  <div className="flex-shrink-0">
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm text-[var(--color-muted)]">$</span>
-                      {isQuoted ? (
-                        <span
-                          className="text-sm text-[var(--color-text)]"
-                          style={{ fontFamily: "var(--font-data)" }}
-                        >
-                          {item.finalPrice.toFixed(2)}
-                        </span>
-                      ) : (
-                        <input
-                          type="number"
-                          value={item.finalPrice}
-                          onChange={(e) => updatePrice(index, Number(e.target.value))}
-                          disabled={!item.included}
-                          className="w-20 rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-right text-base text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[var(--color-purple-action)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
-                          style={{ fontFamily: "var(--font-data)" }}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ServiceLineItem
+                key={item._key}
+                item={item}
+                index={index}
+                isQuoted={isQuoted}
+                onToggle={toggleItem}
+                onUpdatePrice={updatePrice}
+                onUpdateName={updateItemName}
+                onUpdateDescription={updateItemDescription}
+                onRemove={removeLineItem}
+              />
             ))}
           </div>
 

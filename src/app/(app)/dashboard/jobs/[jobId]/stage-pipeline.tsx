@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { STAGE_CONFIG } from "@/app/(app)/_components/stage-config";
 import type { JobStage } from "@/lib/db/schema";
@@ -73,16 +74,25 @@ export default function StagePipeline({
               className="flex flex-1 items-center"
               role="listitem"
             >
-              <div
-                role="img"
-                aria-label={`${config.label}: ${stateLabel}`}
-                className={cn(
-                  "h-2.5 w-2.5 shrink-0 rounded-[var(--radius-badge)] transition-colors",
-                  isCurrent && `${config.bg} ring-2 ${config.ring}`,
-                  isPast && "bg-[var(--color-green)]",
-                  !isPast && !isCurrent && "bg-[var(--color-border)]",
-                )}
-              />
+              {isPast ? (
+                <div
+                  role="img"
+                  aria-label={`${config.label}: ${stateLabel}`}
+                  className="flex h-4 w-4 shrink-0 items-center justify-center rounded-[var(--radius-badge)] bg-[var(--color-green)]/20"
+                >
+                  <Check className="h-3 w-3 text-[var(--color-green)]" strokeWidth={3} />
+                </div>
+              ) : (
+                <div
+                  role="img"
+                  aria-label={`${config.label}: ${stateLabel}`}
+                  className={cn(
+                    "h-2.5 w-2.5 shrink-0 rounded-[var(--radius-badge)] transition-colors",
+                    isCurrent && `${config.bg} ring-2 ${config.ring}`,
+                    !isCurrent && "bg-[var(--color-border)]",
+                  )}
+                />
+              )}
 
               {/* Connector line (not after last step) */}
               {i < PIPELINE_STAGES.length - 1 && (

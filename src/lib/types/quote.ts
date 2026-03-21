@@ -1,5 +1,6 @@
 export interface QuoteLineItem {
   name: string;
+  description?: string;
   note: string;
   basePrice: number;
   adjustedPrice: number;
