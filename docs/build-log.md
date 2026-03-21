@@ -1086,4 +1086,19 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-20 -- fix/stage-badge-colors
+
+**Built:** Unified stage badge color system across dashboard summary cards and job card badges. Replaced incoherent color mapping (3 duplicate pairs: amber for New+QC, purple for Sent+In Progress, green for Approved+Complete) with a sequential warmth gradient through the job pipeline: muted (New) → cyan (Quoted) → purple (Sent) → green (Approved) → magenta (In Progress) → amber (QC) → green (Complete) → muted (Archived). All hardcoded Tailwind palette colors (`bg-yellow-900/20`, `text-red-400`, `bg-red-900/40`, etc.) replaced with design token CSS variable references (`bg-[var(--color-*)]/10`). Added missing `archived` stage. Extracted `ANALYSIS_STATUS_CONFIG` as separate export for analysis sub-statuses. Made `stage-config.ts` the single source of truth — `stage-badge.tsx` now imports and consumes config instead of maintaining its own duplicate color map.
+
+**Worked well:** Quality gate passed round 1 with zero Fatal/Significant. Reviewer flagged 4 Significants — all dismissed as false positives (CSS vars verified in globals.css, `analysisStatus` is `.notNull()` in schema, green shared between Approved/Complete is intentional). Visual verification confirmed all 8 stages render with distinct colors on dashboard.
+
+**Corrected:** Minor fix — fallback badge bg changed from `bg-[var(--color-elevated)]` (near-invisible on surface) to `bg-[var(--color-muted)]/10` for consistent contrast.
+
+**Root cause:** Original implementation assigned colors ad hoc without a pipeline progression model. No design rationale for which stage got which color, leading to 3 duplicate pairs across 7 stages.
+
+**Commit:** `fix: coherent stage badge colors with sequential warmth gradient`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
