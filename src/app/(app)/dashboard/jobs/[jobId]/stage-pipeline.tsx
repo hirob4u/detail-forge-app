@@ -46,13 +46,16 @@ export default function StagePipeline({
     );
   }
 
+  const currentConfig = STAGE_CONFIG[currentStage];
+
   return (
     <div
       className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3"
       role="list"
       aria-label="Job pipeline"
     >
-      <div className="flex items-center gap-1">
+      {/* Dots + connector lines */}
+      <div className="flex items-center">
         {PIPELINE_STAGES.map((stage, i) => {
           const config = STAGE_CONFIG[stage];
           const isPast = i < currentIndex;
@@ -70,30 +73,16 @@ export default function StagePipeline({
               className="flex flex-1 items-center"
               role="listitem"
             >
-              {/* Step dot + label */}
-              <div className="flex flex-col items-center gap-1">
-                <div
-                  role="img"
-                  aria-label={`${config.label}: ${stateLabel}`}
-                  className={cn(
-                    "h-2.5 w-2.5 rounded-[var(--radius-badge)] transition-colors",
-                    isCurrent && `${config.bg} ring-2 ${config.ring}`,
-                    isPast && "bg-[var(--color-green)]",
-                    !isPast && !isCurrent && "bg-[var(--color-border)]",
-                  )}
-                />
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "text-[10px] font-medium uppercase tracking-wider whitespace-nowrap",
-                    isCurrent ? config.color : "text-[var(--color-muted)]",
-                    isPast && "text-[var(--color-green)]",
-                  )}
-                  style={{ fontFamily: "var(--font-data)" }}
-                >
-                  {config.label}
-                </span>
-              </div>
+              <div
+                role="img"
+                aria-label={`${config.label}: ${stateLabel}`}
+                className={cn(
+                  "h-2.5 w-2.5 shrink-0 rounded-[var(--radius-badge)] transition-colors",
+                  isCurrent && `${config.bg} ring-2 ${config.ring}`,
+                  isPast && "bg-[var(--color-green)]",
+                  !isPast && !isCurrent && "bg-[var(--color-border)]",
+                )}
+              />
 
               {/* Connector line (not after last step) */}
               {i < PIPELINE_STAGES.length - 1 && (
@@ -110,6 +99,21 @@ export default function StagePipeline({
           );
         })}
       </div>
+
+      {/* Current stage label — centered below dots */}
+      <p
+        className={cn(
+          "mt-2 text-center text-[10px] font-medium uppercase tracking-wider",
+          currentConfig.color,
+        )}
+        style={{ fontFamily: "var(--font-data)" }}
+      >
+        {currentConfig.label}
+        <span className="text-[var(--color-muted)]">
+          {" "}
+          — {currentIndex + 1} of {PIPELINE_STAGES.length}
+        </span>
+      </p>
     </div>
   );
 }
