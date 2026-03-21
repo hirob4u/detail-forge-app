@@ -2,6 +2,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Exclude docs and forge directories from Tailwind content scanning.
+   These files contain class-name-like patterns in prose (e.g. bg-[var(--color-*)])
+   that break the CSS parser when Tailwind tries to generate utilities for them. */
+@source not "../../docs";
+@source not "../../forge";
+
 /* DetailForge -- dark mode only. No light mode variants. */
 
 @font-face {
