@@ -839,4 +839,19 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### feat/progressive-disclosure-ux — 2026-03-21
+
+**Trigger:** Quality gate round 2 found pre-existing issues in job detail page (not introduced by this Blueprint).
+
+**Issues discovered:**
+1. Job detail page (`page.tsx`) queries by `jobs.id` without org-scoping — any authenticated user can view any job's customer PII. Needs `eq(jobs.orgId, orgId)` in WHERE clause.
+2. Job detail page has no UUID validation on `jobId` param.
+3. No null guards on vehicle/customer after DB query — crashes if FK is orphaned.
+4. `toLocaleDateString()` on server uses indeterminate Node locale — hydration risk.
+5. Lightbox overlay missing `role="dialog"`, `aria-modal`, focus trap.
+
+**Add to Blueprint:** When modifying an existing page, audit the page's existing authorization pattern. If the page queries data without org-scoping, flag it as a pre-existing security issue and create a separate fix Blueprint. Every Collapsible/accordion must use the `inert` attribute on the collapsed panel to prevent keyboard users from tabbing into hidden content. When using `useState` to track "dirty" state against a server-provided initial value, always track `lastSaved` separately — comparing against the initial prop breaks after the first save. When using array index as React key for lists that support removal, use a counter-ref to generate stable keys instead.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

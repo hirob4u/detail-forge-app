@@ -83,3 +83,33 @@ Root cause: Pipeline progress indicator used `flex-1` with `whitespace-nowrap` l
 Action required: After implementing any visual component, use `preview_resize` with mobile preset (375x812) and take a screenshot before committing. This is especially critical for flex layouts with many items, horizontal arrangements, and text labels.
 
 ---
+
+## [2026-03-21] Collapsible content must be inert when collapsed (feat/progressive-disclosure-ux)
+
+**Warning: CSS-only collapse (grid-rows-[0fr] + overflow-hidden) hides content visually but leaves it in the tab order. Keyboard users can tab into invisible buttons/links.**
+
+Root cause: CollapsibleSection used `aria-hidden` on the collapsed panel but did not set the `inert` attribute. Screen readers and keyboard navigation could still reach focusable children inside the collapsed region.
+
+Action required: Always add `inert={!open}` alongside `aria-hidden={!open}` on collapsible content panels. This prevents keyboard focus from entering hidden content.
+
+---
+
+## [2026-03-21] Track lastSaved state, not initialProps, for dirty detection (feat/progressive-disclosure-ux)
+
+**Warning: Comparing editable field state against a server-provided initial prop breaks dirty detection after the first save.**
+
+Root cause: JobNotes compared `notes !== initialNotes` to determine dirty state. After a successful save, `initialNotes` still held the original server render value, so the Save button stayed enabled even though nothing changed. The user could save indefinitely.
+
+Action required: When building save-in-place UI, track a `lastSaved` state value updated on successful save. Derive `isDirty` from `notes !== lastSaved`, not from the initial prop.
+
+---
+
+## [2026-03-21] Use stable keys for removable list items (feat/progressive-disclosure-ux)
+
+**Warning: Using array index as React key for lists that support item removal causes state to migrate to the wrong component.**
+
+Root cause: ServiceLineItem used `key={index}`. When item at index 0 was removed, the component at index 1 inherited index 0's internal state (like `noteOpen`). This is a known React anti-pattern but easy to miss.
+
+Action required: Use a counter ref (`useRef(0)`) to generate monotonically increasing keys assigned at item creation time. Strip the `_key` field before serializing to the API.
+
+---

@@ -8,6 +8,8 @@ import StageControls from "./stage-controls";
 import StageHistory from "./stage-history";
 import StagePipeline from "./stage-pipeline";
 import SocialExportPanel from "./_components/social-export-panel";
+import JobNotes from "./_components/job-notes";
+import CollapsibleSection from "@/app/(app)/_components/collapsible-section";
 import StageBadge from "@/app/(app)/_components/stage-badge";
 import type { JobStage } from "@/lib/db/schema";
 import { formatPhone } from "@/lib/format";
@@ -30,6 +32,7 @@ export default async function JobDetailPage({
       vehicleId: jobs.vehicleId,
       customerId: jobs.customerId,
       orgId: jobs.orgId,
+      notes: jobs.notes,
       qcPhotos: jobs.qcPhotos,
       stageHistory: jobs.stageHistory,
     })
@@ -89,51 +92,28 @@ export default async function JobDetailPage({
       <StagePipeline currentStage={job.stage as JobStage} />
 
       <div className="mt-6 space-y-4">
-        {/* Customer info */}
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-          <p
-            className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-muted)]"
-            style={{ fontFamily: "var(--font-data)" }}
-          >
-            Customer
-          </p>
+        {/* Compact metadata — customer + vehicle + created in one card */}
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-1">
           <p className="text-sm font-semibold text-[var(--color-text)]">
             {customer.firstName} {customer.lastName}
+            <span className="font-normal text-[var(--color-muted)]">
+              {customer.phone ? <> &middot; {formatPhone(customer.phone)}</> : null}
+            </span>
           </p>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">
-            {customer.email}{customer.phone ? <> &middot; {formatPhone(customer.phone)}</> : null}
-          </p>
-        </div>
-
-        {/* Vehicle info */}
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-          <p
-            className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-muted)]"
-            style={{ fontFamily: "var(--font-data)" }}
-          >
-            Vehicle
-          </p>
-          <p className="text-sm font-semibold text-[var(--color-text)]">
+          <p className="text-sm text-[var(--color-text)]">
             {vehicle.year} {vehicle.make} {vehicle.model}
+            <span className="text-[var(--color-muted)]"> &mdash; {vehicle.color}</span>
           </p>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">{vehicle.color}</p>
+          <p
+            className="text-xs text-[var(--color-muted)]"
+            style={{ fontFamily: "var(--font-data)" }}
+          >
+            Created {job.createdAt.toLocaleDateString()}
+          </p>
         </div>
 
-        {/* Created date */}
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
-          <p
-            className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-muted)]"
-            style={{ fontFamily: "var(--font-data)" }}
-          >
-            Created
-          </p>
-          <p
-            className="text-sm text-[var(--color-text)]"
-            style={{ fontFamily: "var(--font-data)" }}
-          >
-            {job.createdAt.toLocaleDateString()}
-          </p>
-        </div>
+        {/* Persistent notes */}
+        <JobNotes jobId={job.id} initialNotes={job.notes ?? ""} />
 
         {/* Analysis status / action panel */}
         <AnalysisStatusPanel
@@ -194,16 +174,14 @@ export default async function JobDetailPage({
           />
         )}
 
-        {/* Stage history */}
-        <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
-          <h2
-            className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
-            style={{ fontFamily: "var(--font-data)" }}
-          >
-            History
-          </h2>
+        {/* Stage history — collapsed by default */}
+        <CollapsibleSection
+          title="History"
+          count={(job.stageHistory ?? []).length}
+          defaultOpen={false}
+        >
           <StageHistory history={job.stageHistory ?? []} />
-        </section>
+        </CollapsibleSection>
       </div>
     </div>
   );

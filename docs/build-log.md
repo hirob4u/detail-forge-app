@@ -1116,4 +1116,29 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### feat/progressive-disclosure-ux
+
+**Date:** 2026-03-21
+**Commit:** `feat: progressive disclosure UX with collapsible sections, compact metadata, notes, filmstrip photos`
+**Branch:** `feat/progressive-disclosure-ux`
+
+**What was built:**
+- CollapsibleSection reusable component (CSS grid animation, aria-expanded, aria-controls, inert)
+- Job notes PATCH API endpoint with auth, org-scoping, length validation
+- JobNotes client component with save/error feedback, dirty tracking via lastSaved
+- Job detail: 3 cards merged into 1 compact metadata card, notes section added, history collapsible
+- Pipeline: checkmarks (Check icon) for past stages, filled dot for current, empty for future
+- Review page: filmstrip photos (80px horizontal scroll), collapsible AI flags with count, collapsible feedback
+- Review page: compact service rows with remove button, collapsible AI notes, description for manual items
+- Review page: replaced hardcoded stageBadgeColor map with StageBadge component
+- Stable key counter for line items (avoids index-as-key bugs on removal)
+
+**Corrected:** Quality gate round 1 found 6 Significant issues. Fixed: notes API length limit (10k chars), stale dirty check (lastSaved state), silent error swallowing on save, JSON parse error differentiation, collapsible section accessibility (aria-controls, inert), line item index-as-key. Round 2 found pre-existing issues (org-scoping, lightbox a11y) — noted in errata for future Blueprint.
+
+**Root cause:** Missing server-side length validation. Client-side dirty tracking compared against initial prop instead of last-saved value. Collapsible content stayed in tab order when visually hidden.
+
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
