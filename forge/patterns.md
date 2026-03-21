@@ -43,3 +43,33 @@ Root cause: Stage badges had two separate color maps (stage-config.ts for dashbo
 Action required: When writing `text-[var(--color-*)]` or `bg-[var(--color-*)]` patterns, grep globals.css for the exact variable name first. Establish a single canonical config file before refactoring consumers — don't update two files in parallel.
 
 ---
+
+## [2026-03-21] Server-side enforcement of UI constraints (feat/job-stage-ux)
+
+**Warning: Any constraint enforced in the UI (requireNote, field validation, transition rules) must also be enforced in the API handler.**
+
+Root cause: The "Reopen Job" transition required a note for the audit trail, but this was only checked client-side. The API accepted the transition without a note, meaning any direct API caller could bypass the audit trail. Quality gate caught this as Fatal in round 1.
+
+Action required: When adding a new UI constraint to a form or action (required fields, conditional validation, mandatory notes), immediately add the same check to the API handler. Search for the API route and add the validation before writing the client-side code.
+
+---
+
+## [2026-03-21] router.refresh() is fire-and-forget (feat/job-stage-ux)
+
+**Warning: After calling `router.refresh()` in Next.js App Router, buttons re-enable immediately because the refresh is not awaitable. Users can click again before server data arrives.**
+
+Root cause: `setPendingTo(null)` in the `finally` block ran after the fetch resolved, but `router.refresh()` was already called without await. Buttons re-enabled while stale data was still displayed. A quick double-click during this window would submit a second PATCH against the old stage.
+
+Action required: After `router.refresh()`, set an `isRefreshing` state that keeps buttons disabled. Clear it in a `useEffect` keyed on the server-delivered prop that changes after refresh (e.g., `currentStage`).
+
+---
+
+## [2026-03-21] Magenta reservation enforcement (feat/job-stage-ux)
+
+**Warning: Magenta (#E040FB / `--color-magenta`) is reserved for AI-generated content indicators only. Do not use it for stage badges, status indicators, or any non-AI UI element.**
+
+Root cause: The stage badge color Blueprint assigned magenta to `inProgress` for visual warmth in the gradient, violating the AGENTS.md rule. Quality gate caught this as Significant in round 2.
+
+Action required: Before using `--color-magenta` in any new component, verify it relates to AI-generated content. If not, use `--color-purple-action` or `--color-purple-text` for "active/interactive" semantics.
+
+---

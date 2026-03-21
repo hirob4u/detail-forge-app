@@ -1101,4 +1101,19 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-21 -- feat/job-stage-ux
+
+**Built:** Polished job stage transition UX with visual pipeline progress, transition feedback, and "Reopen Job" break-glass flow. Replaced hardcoded 4-stage badge on job detail with StageBadge component (single source of truth). Added pipeline progress indicator showing all 7 active stages with current/past/future visual states. Stage controls now show per-button spinners during transitions, success flash on completion, and persistent error banner with retry. Added "Reopen Job" backward transition from complete to inProgress with required reason note for audit trail, enforced both client-side (textarea + disabled button) and server-side (API rejects empty note). Color-coded stage history entries using STAGE_CONFIG. Derived jobs page filter tabs from explicit STAGE_ORDER array with Archived tab. Security hardening: scoped DB UPDATE to orgId, added UUID validation on jobId, and enum validation on stage value.
+
+**Worked well:** Quality gate ran 3 rounds with score progression 15 → 13 → 7, catching 3 Fatal and 13+ Significant issues across rounds. Key catches: timer leak on unmount, retry dropping required note, no server-side requireNote enforcement, magenta reservation violation (inProgress), fragile border.replace hack for ring colors, race condition where buttons re-enabled before router.refresh settled.
+
+**Corrected:** Changed inProgress color from magenta (reserved for AI content) to purple-action. Added explicit `ring` field to STAGE_CONFIG instead of deriving from border via string replacement. Added `isRefreshing` state to keep buttons disabled until server data refreshes. Made error flash persistent (no auto-hide) so users have time to read and retry. Added safeTimeAgo wrapper for malformed date strings in stage history.
+
+**Root cause:** Original stage controls had no feedback (TODO comment in catch block), hardcoded badge covering only 4/8 stages, and no break-glass path from complete stage. Quality gate found pre-existing security gaps (UPDATE not scoped to orgId, no jobId/enum validation) that were fixed opportunistically.
+
+**Commit:** `feat: polished job stage transitions with feedback, pipeline progress, and reopen flow`
+**Time to merge:**
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
