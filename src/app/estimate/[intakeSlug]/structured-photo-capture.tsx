@@ -17,8 +17,12 @@ import {
   Loader2,
   Check,
   Upload,
+  Camera,
+  ImagePlus,
+  X,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -58,6 +62,8 @@ interface CapturedPhoto {
   r2Key?: string;
   status: "uploading" | "done" | "error";
 }
+
+type CaptureMode = "rapid" | "guided" | "batch";
 
 /* ------------------------------------------------------------------ */
 /*  Shot definitions                                                   */
@@ -133,9 +139,9 @@ const REQUIRED_SHOTS: ShotDefinition[] = [
 const OPTIONAL_SHOTS: ShotDefinition[] = [
   {
     area: "damage-area",
-    label: "Damage or Problem Area",
+    label: "Damage / Problem Area",
     guidance:
-      "Close-up of any specific scratch, dent, stain, or area of concern. Add multiple if needed.",
+      "Close-up of any specific scratch, dent, stain, or area of concern.",
     required: false,
     Icon: CircleAlert,
   },
@@ -149,7 +155,7 @@ const OPTIONAL_SHOTS: ShotDefinition[] = [
   },
   {
     area: "trunk",
-    label: "Trunk or Cargo Area",
+    label: "Trunk / Cargo Area",
     guidance:
       "Open the trunk or hatch and capture the full cargo area including carpet and liner.",
     required: false,
@@ -180,6 +186,8 @@ export const REQUIRED_SHOT_AREAS = REQUIRED_SHOTS.map((s) => s.area);
 /* ------------------------------------------------------------------ */
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_PHOTOS = 20;
+const UPLOAD_CONCURRENCY = 3;
 const ACCEPTED_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -189,6 +197,12 @@ const ACCEPTED_TYPES = new Set([
 ]);
 
 const ALL_SHOTS = [...REQUIRED_SHOTS, ...OPTIONAL_SHOTS];
+const ALL_SHOT_AREAS = new Set<string>(ALL_SHOTS.map((s) => s.area));
+
+/** Map from area to human label for dropdowns */
+const AREA_LABELS: Record<ShotArea, string> = Object.fromEntries(
+  ALL_SHOTS.map((s) => [s.area, s.label]),
+) as Record<ShotArea, string>;
 
 /* ------------------------------------------------------------------ */
 /*  StructuredPhotoCapture                                             */
@@ -206,23 +220,46 @@ export default function StructuredPhotoCapture({
   onPhotosChange,
 }: StructuredPhotoCaptureProps) {
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
-  const [mode, setMode] = useState<"guided" | "batch">("guided");
+  const [mode, setMode] = useState<CaptureMode>("rapid");
   const [currentStep, setCurrentStep] = useState(0);
-  const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [limitNotice, setLimitNotice] = useState<string | null>(null);
+
+  // Refs for file inputs
+  const rapidInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const guidedInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  // Filmstrip scroll ref
+  const filmstripRef = useRef<HTMLDivElement | null>(null);
+
+  // AbortController for cancelling in-flight uploads on unmount
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  /* ---- Sync done photos upstream (debounced) ---- */
+  const onPhotosChangeRef = useRef(onPhotosChange);
+  onPhotosChangeRef.current = onPhotosChange;
 
   useEffect(() => {
-    const donePhotos = photos
-      .filter((p) => p.status === "done" && p.r2Key)
-      .map((p) => ({
-        key: p.r2Key!,
-        area: p.shotArea,
-        phase: "before" as const,
-      }));
-    onPhotosChange(donePhotos);
-  }, [photos, onPhotosChange]);
+    const timer = setTimeout(() => {
+      const donePhotos = photos
+        .filter((p) => p.status === "done" && p.r2Key)
+        .map((p) => ({
+          key: p.r2Key!,
+          area: p.shotArea,
+          phase: "before" as const,
+        }));
+      onPhotosChangeRef.current(donePhotos);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [photos]);
+
+  /* ---- Upload logic ---- */
 
   async function uploadFile(entry: CapturedPhoto) {
     try {
+      const controller = abortControllerRef.current;
+      if (!controller) return; // component unmounted before upload started
+      const signal = controller.signal;
       const presignRes = await fetch("/api/uploads/presign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -231,18 +268,32 @@ export default function StructuredPhotoCapture({
           fileName: entry.file.name,
           contentType: entry.file.type,
         }),
+        signal,
       });
 
       if (!presignRes.ok) {
         throw new Error("Failed to get upload URL");
       }
 
-      const { presignedUrl, key } = await presignRes.json();
+      const presignData: unknown = await presignRes.json();
+      if (
+        typeof presignData !== "object" ||
+        presignData === null ||
+        typeof (presignData as Record<string, unknown>).presignedUrl !== "string" ||
+        typeof (presignData as Record<string, unknown>).key !== "string"
+      ) {
+        throw new Error("Invalid presign response shape");
+      }
+      const { presignedUrl, key } = presignData as {
+        presignedUrl: string;
+        key: string;
+      };
 
       const uploadRes = await fetch(presignedUrl, {
         method: "PUT",
         headers: { "Content-Type": entry.file.type },
         body: entry.file,
+        signal,
       });
 
       if (!uploadRes.ok) {
@@ -256,7 +307,9 @@ export default function StructuredPhotoCapture({
             : p,
         ),
       );
-    } catch {
+    } catch (err: unknown) {
+      // If aborted (component unmounting), skip the state update entirely
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setPhotos((prev) =>
         prev.map((p) =>
           p.id === entry.id ? { ...p, status: "error" as const } : p,
@@ -265,7 +318,28 @@ export default function StructuredPhotoCapture({
     }
   }
 
-  function handleFileForShot(area: ShotArea, file: File, replaceId?: string) {
+  function addPhoto(area: ShotArea, file: File) {
+    const newEntry: CapturedPhoto = {
+      id: crypto.randomUUID(),
+      shotArea: area,
+      file,
+      previewUrl: URL.createObjectURL(file),
+      status: "uploading",
+    };
+
+    setPhotos((prev) => [...prev, newEntry]);
+    uploadFile(newEntry);
+
+    // Scroll filmstrip to end after a tick
+    requestAnimationFrame(() => {
+      filmstripRef.current?.scrollTo({
+        left: filmstripRef.current.scrollWidth,
+        behavior: "smooth",
+      });
+    });
+  }
+
+  function replacePhoto(replaceId: string, area: ShotArea, file: File) {
     const newEntry: CapturedPhoto = {
       id: crypto.randomUUID(),
       shotArea: area,
@@ -275,20 +349,30 @@ export default function StructuredPhotoCapture({
     };
 
     setPhotos((prev) => {
-      let updated = prev;
-      if (replaceId) {
-        const old = prev.find((p) => p.id === replaceId);
-        if (old) URL.revokeObjectURL(old.previewUrl);
-        updated = prev.filter((p) => p.id !== replaceId);
-      }
-      return [...updated, newEntry];
+      const old = prev.find((p) => p.id === replaceId);
+      if (old) URL.revokeObjectURL(old.previewUrl);
+      return [...prev.filter((p) => p.id !== replaceId), newEntry];
     });
 
     uploadFile(newEntry);
   }
 
+  function removePhoto(id: string) {
+    setPhotos((prev) => {
+      const old = prev.find((p) => p.id === id);
+      if (old) URL.revokeObjectURL(old.previewUrl);
+      return prev.filter((p) => p.id !== id);
+    });
+  }
+
+  function reassignPhoto(id: string, newArea: ShotArea) {
+    setPhotos((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, shotArea: newArea } : p)),
+    );
+  }
+
   function retryPhoto(id: string) {
-    const entry = photos.find((p) => p.id === id);
+    const entry = photosRef.current.find((p) => p.id === id);
     if (!entry) return;
     setPhotos((prev) =>
       prev.map((p) =>
@@ -298,64 +382,450 @@ export default function StructuredPhotoCapture({
     uploadFile(entry);
   }
 
-  function handleInputChange(
+  // Need a stable ref to current photos for multi-file assignment
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
+
+  // Create AbortController on mount, abort + cleanup on unmount
+  useEffect(() => {
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    return () => {
+      controller.abort();
+      abortControllerRef.current = null;
+      for (const p of photosRef.current) {
+        URL.revokeObjectURL(p.previewUrl);
+      }
+    };
+  }, []);
+
+  async function uploadBatch(entries: CapturedPhoto[]) {
+    const queue = [...entries];
+    const active: Promise<void>[] = [];
+
+    while (queue.length > 0 || active.length > 0) {
+      while (active.length < UPLOAD_CONCURRENCY && queue.length > 0) {
+        const entry = queue.shift()!;
+        const p = uploadFile(entry).then(() => {
+          const idx = active.indexOf(p);
+          if (idx >= 0) active.splice(idx, 1);
+        });
+        active.push(p);
+      }
+      if (active.length > 0) {
+        await Promise.race(active);
+      }
+    }
+  }
+
+  function handleRapidFilesWithTracking(files: FileList | null) {
+    if (!files) return;
+
+    // Separate valid and rejected files for user feedback
+    const validFiles: File[] = [];
+    const rejectedReasons: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!ACCEPTED_TYPES.has(file.type)) {
+        rejectedReasons.push(`"${file.name}" — unsupported format`);
+      } else if (file.size > MAX_SIZE) {
+        rejectedReasons.push(`"${file.name}" — exceeds 10 MB limit`);
+      } else {
+        validFiles.push(file);
+      }
+    }
+
+    if (validFiles.length === 0 && rejectedReasons.length > 0) {
+      setLimitNotice(`Files rejected: ${rejectedReasons.join("; ")}`);
+      return;
+    }
+
+    // Use functional updater to read latest state (prevents double-tap race)
+    let entriesToUpload: CapturedPhoto[] = [];
+    let pendingNotice: string | null = null;
+
+    setPhotos((prev) => {
+      const available = MAX_PHOTOS - prev.length;
+      if (available <= 0) {
+        pendingNotice = `Maximum of ${MAX_PHOTOS} photos reached.`;
+        return prev;
+      }
+
+      const filesToProcess = validFiles.slice(0, available);
+      const notices: string[] = [];
+
+      if (rejectedReasons.length > 0) {
+        notices.push(`Rejected: ${rejectedReasons.join("; ")}`);
+      }
+      if (validFiles.length > available) {
+        notices.push(
+          `Only ${available} more photo${available !== 1 ? "s" : ""} allowed (max ${MAX_PHOTOS}). Some files were skipped.`,
+        );
+      }
+      pendingNotice = notices.length > 0 ? notices.join(" ") : null;
+
+      // Track assignments across the batch so each file gets a different area
+      const pendingAreas = new Set(
+        prev
+          .filter((p) => p.status === "done" || p.status === "uploading")
+          .map((p) => p.shotArea),
+      );
+
+      const newEntries: CapturedPhoto[] = [];
+
+      for (const file of filesToProcess) {
+        // Find next unfilled area: required first, then optional, fallback damage-area
+        let area: ShotArea = "damage-area";
+        for (const shot of [...REQUIRED_SHOTS, ...OPTIONAL_SHOTS]) {
+          if (!pendingAreas.has(shot.area)) {
+            area = shot.area;
+            break;
+          }
+        }
+
+        pendingAreas.add(area);
+
+        const newEntry: CapturedPhoto = {
+          id: crypto.randomUUID(),
+          shotArea: area,
+          file,
+          previewUrl: URL.createObjectURL(file),
+          status: "uploading",
+        };
+        newEntries.push(newEntry);
+      }
+
+      if (newEntries.length === 0) return prev;
+
+      entriesToUpload = newEntries;
+      return [...prev, ...newEntries];
+    });
+
+    // Set limit notice outside the state updater to avoid setState-in-setState
+    setLimitNotice(pendingNotice);
+
+    // Fire uploads in batches of UPLOAD_CONCURRENCY (after state update)
+    if (entriesToUpload.length > 0) {
+      uploadBatch(entriesToUpload);
+    }
+
+    // Scroll filmstrip to end
+    requestAnimationFrame(() => {
+      filmstripRef.current?.scrollTo({
+        left: filmstripRef.current.scrollWidth,
+        behavior: "smooth",
+      });
+    });
+  }
+
+  /* ---- Guided mode: handle file for specific shot ---- */
+
+  function handleGuidedInputChange(
     area: ShotArea,
     e: React.ChangeEvent<HTMLInputElement>,
   ) {
     const file = e.target.files?.[0];
-    if (file && ACCEPTED_TYPES.has(file.type) && file.size <= MAX_SIZE) {
-      const existing = photos.find(
-        (p) => p.shotArea === area && p.status === "done",
-      );
-      handleFileForShot(area, file, existing?.id);
+    if (!file) {
+      e.target.value = "";
+      return;
     }
+
+    // Validate file type and size with user feedback
+    if (!ACCEPTED_TYPES.has(file.type)) {
+      setLimitNotice(`"${file.name}" — unsupported format. Use JPEG, PNG, WebP, or HEIC.`);
+      e.target.value = "";
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      setLimitNotice(`"${file.name}" — exceeds 10 MB limit.`);
+      e.target.value = "";
+      return;
+    }
+
+    const existing = photos.find(
+      (p) => p.shotArea === area && (p.status === "done" || p.status === "uploading"),
+    );
+    if (existing) {
+      replacePhoto(existing.id, area, file);
+    } else {
+      // Enforce MAX_PHOTOS for new photos (replacements don't increase count)
+      if (photos.length >= MAX_PHOTOS) {
+        setLimitNotice(`Maximum of ${MAX_PHOTOS} photos reached.`);
+        e.target.value = "";
+        return;
+      }
+      addPhoto(area, file);
+    }
+    setLimitNotice(null);
     e.target.value = "";
   }
 
-  /* ---- Derived values used by both modes ---- */
+  /* ---- Derived values ---- */
 
   const completedRequired = REQUIRED_SHOTS.filter((s) =>
     photos.some((p) => p.shotArea === s.area && p.status === "done"),
   ).length;
 
+  const totalPhotos = photos.length;
+  const uploading = photos.filter((p) => p.status === "uploading").length;
+  const errors = photos.filter((p) => p.status === "error").length;
+
+  // For guided mode
   const shot = ALL_SHOTS[currentStep];
-  const currentPhoto = photos.find(
-    (p) => p.shotArea === shot.area && p.status !== "error",
+  const currentPhoto = shot
+    ? photos.find((p) => p.shotArea === shot.area && p.status !== "error")
+    : undefined;
+  const currentErrorPhoto = shot
+    ? photos.find((p) => p.shotArea === shot.area && p.status === "error")
+    : undefined;
+
+  // Which required areas are still missing (only "done" counts as filled)
+  const missingRequired = REQUIRED_SHOTS.filter(
+    (s) => !photos.some((p) => p.shotArea === s.area && p.status === "done"),
   );
 
   /* ---- Render ---- */
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Mode toggle */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setMode("guided")}
-          className={cn(
-            "flex items-center gap-2 rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors",
-            mode === "guided"
-              ? "bg-[var(--color-brand)] text-white"
-              : "bg-[var(--color-elevated)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
-          )}
-        >
-          Step-by-step
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("batch")}
-          className={cn(
-            "flex items-center gap-2 rounded-[var(--radius-button)] px-4 py-2 text-sm font-medium transition-colors",
-            mode === "batch"
-              ? "bg-[var(--color-brand)] text-white"
-              : "bg-[var(--color-elevated)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
-          )}
-        >
-          Upload all at once
-        </button>
+      <div className="flex items-center gap-1.5" role="group" aria-label="Capture mode">
+        {(
+          [
+            ["rapid", "Rapid"],
+            ["guided", "Step-by-step"],
+            ["batch", "All at once"],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setMode(key)}
+            aria-pressed={mode === key}
+            className={cn(
+              "rounded-[var(--radius-button)] px-3 py-1.5 text-xs font-medium transition-colors",
+              mode === key
+                ? "bg-[var(--color-brand)] text-white"
+                : "bg-[var(--color-elevated)] text-[var(--color-muted)] hover:text-[var(--color-text)]",
+            )}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
-      {/* Guided Mode */}
+      {/* ============================================================ */}
+      {/*  RAPID MODE                                                   */}
+      {/* ============================================================ */}
+      {mode === "rapid" && (
+        <div className="space-y-4">
+          {/* Progress bar */}
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-medium text-[var(--color-text)]">
+                {completedRequired} of {REQUIRED_SHOTS.length} required
+              </span>
+              {uploading > 0 && (
+                <span className="flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Uploading {uploading}
+                </span>
+              )}
+              {errors > 0 && (
+                <span className="flex items-center gap-1.5 text-xs text-[var(--color-amber)]">
+                  <AlertTriangle className="h-3 w-3" />
+                  {errors} failed
+                </span>
+              )}
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-elevated)]">
+              <div
+                className="h-full rounded-full bg-[var(--color-brand)] transition-all duration-300"
+                style={{
+                  width: `${(completedRequired / REQUIRED_SHOTS.length) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Capture buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => rapidInputRef.current?.click()}
+              className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] py-6 transition-colors hover:border-[var(--color-brand)]"
+            >
+              <Camera className="h-8 w-8 text-[var(--color-brand)]" />
+              <span className="text-sm font-medium text-[var(--color-text)]">
+                Take Photo
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => galleryInputRef.current?.click()}
+              className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] py-6 transition-colors hover:border-[var(--color-brand)]"
+            >
+              <ImagePlus className="h-8 w-8 text-[var(--color-brand)]" />
+              <span className="text-sm font-medium text-[var(--color-text)]">
+                From Gallery
+              </span>
+              <span className="text-[10px] text-[var(--color-muted)]">
+                Select multiple
+              </span>
+            </button>
+          </div>
+
+          {/* Photo limit notice */}
+          {limitNotice && (
+            <div className="rounded-[var(--radius-card)] border border-[var(--color-amber)] bg-[var(--color-elevated)] px-3 py-2 text-xs text-[var(--color-amber)]">
+              {limitNotice}
+            </div>
+          )}
+
+          {/* Hidden inputs for rapid mode */}
+          <input
+            ref={rapidInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              handleRapidFilesWithTracking(e.target.files);
+              e.target.value = "";
+            }}
+          />
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              handleRapidFilesWithTracking(e.target.files);
+              e.target.value = "";
+            }}
+          />
+
+          {/* Filmstrip */}
+          {totalPhotos > 0 && (
+            <div className="space-y-3">
+              <span className="text-xs font-medium uppercase tracking-wider text-[var(--color-muted)]">
+                {totalPhotos} photo{totalPhotos !== 1 ? "s" : ""} — tap to assign area
+              </span>
+              <div
+                ref={filmstripRef}
+                role="list"
+                aria-label="Captured photos"
+                className="flex gap-3 overflow-x-auto pb-2"
+                style={{ scrollSnapType: "x mandatory" }}
+              >
+                {photos.map((p) => (
+                  <div
+                    key={p.id}
+                    role="listitem"
+                    className="relative flex-shrink-0"
+                    style={{ scrollSnapAlign: "start" }}
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative h-24 w-24 overflow-hidden rounded-[var(--radius-button)]">
+                      <img
+                        src={p.previewUrl}
+                        alt={AREA_LABELS[p.shotArea]}
+                        className="h-full w-full object-cover"
+                      />
+
+                      {/* Status overlay */}
+                      {p.status === "uploading" && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                          <Loader2 className="h-6 w-6 animate-spin text-white" />
+                        </div>
+                      )}
+                      {p.status === "done" && (
+                        <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-green)]">
+                          <Check className="h-3 w-3 text-black" />
+                        </div>
+                      )}
+                      {p.status === "error" && (
+                        <button
+                          type="button"
+                          onClick={() => retryPhoto(p.id)}
+                          aria-label={`Retry upload for ${AREA_LABELS[p.shotArea]}`}
+                          className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60"
+                        >
+                          <AlertTriangle className="h-5 w-5 text-[var(--color-amber)]" />
+                          <span className="text-[10px] font-medium text-white">
+                            Retry
+                          </span>
+                        </button>
+                      )}
+
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(p.id)}
+                        className="absolute left-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 transition-colors hover:bg-black/80"
+                        aria-label="Remove photo"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
+
+                    {/* Area selector */}
+                    <select
+                      value={p.shotArea}
+                      aria-label={`Assign area for photo ${AREA_LABELS[p.shotArea]}`}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (ALL_SHOT_AREAS.has(val)) {
+                          reassignPhoto(p.id, val as ShotArea);
+                        }
+                      }}
+                      className="mt-1.5 w-24 truncate rounded-[var(--radius-badge)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-1.5 py-1 text-[10px] text-[var(--color-text)]"
+                    >
+                      {ALL_SHOTS.map((s) => (
+                        <option key={s.area} value={s.area}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Missing required areas hint */}
+          {totalPhotos > 0 && missingRequired.length > 0 && (
+            <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-3">
+              <span className="mb-2 block text-xs font-medium text-[var(--color-muted)]">
+                Still needed:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {missingRequired.map((s) => (
+                  <span
+                    key={s.area}
+                    className="rounded-[var(--radius-badge)] border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-muted)]"
+                    style={{ fontFamily: "var(--font-data)" }}
+                  >
+                    {s.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Accepted formats note */}
+          {totalPhotos === 0 && (
+            <p className="text-center text-xs text-[var(--color-muted)]">
+              JPEG, PNG, WebP, or HEIC &middot; max 10 MB each
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/*  GUIDED MODE                                                  */}
+      {/* ============================================================ */}
       {mode === "guided" && (
         <div className="space-y-4">
           {/* Progress */}
@@ -374,7 +844,9 @@ export default function StructuredPhotoCapture({
             <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-elevated)]">
               <div
                 className="h-full rounded-full bg-[var(--color-brand)] transition-all"
-                style={{ width: `${(completedRequired / REQUIRED_SHOTS.length) * 100}%` }}
+                style={{
+                  width: `${(completedRequired / REQUIRED_SHOTS.length) * 100}%`,
+                }}
               />
             </div>
           </div>
@@ -421,7 +893,7 @@ export default function StructuredPhotoCapture({
                 </div>
                 <button
                   type="button"
-                  onClick={() => inputRefs.current[shot.area]?.click()}
+                  onClick={() => guidedInputRefs.current[shot.area]?.click()}
                   className="absolute bottom-3 right-3 rounded-[var(--radius-badge)] bg-black/60 px-3 py-1.5 text-xs text-white"
                 >
                   Replace
@@ -430,7 +902,7 @@ export default function StructuredPhotoCapture({
             ) : (
               <button
                 type="button"
-                onClick={() => inputRefs.current[shot.area]?.click()}
+                onClick={() => guidedInputRefs.current[shot.area]?.click()}
                 className="flex w-full flex-col items-center justify-center gap-3 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] py-12 transition-colors hover:border-[var(--color-brand)]"
               >
                 {currentPhoto?.status === "uploading" ? (
@@ -442,7 +914,7 @@ export default function StructuredPhotoCapture({
                       Tap to upload
                     </span>
                     <span className="text-xs text-[var(--color-muted)]">
-                      JPEG, PNG, WebP, or HEIC · max 10MB
+                      JPEG, PNG, WebP, or HEIC &middot; max 10 MB
                     </span>
                   </>
                 )}
@@ -450,11 +922,11 @@ export default function StructuredPhotoCapture({
             )}
 
             {/* Error state inline */}
-            {currentPhoto?.status === "error" && (
+            {currentErrorPhoto && (
               <button
                 type="button"
-                onClick={() => retryPhoto(currentPhoto.id)}
-                className="mt-2 w-full rounded-[var(--radius-button)] bg-red-900/30 px-4 py-2 text-sm text-white transition-colors hover:bg-red-900/50"
+                onClick={() => retryPhoto(currentErrorPhoto.id)}
+                className="mt-2 w-full rounded-[var(--radius-button)] bg-[var(--color-destructive)]/20 px-4 py-2 text-sm text-white transition-colors hover:bg-[var(--color-destructive)]/30"
               >
                 Upload failed — tap to retry
               </button>
@@ -463,8 +935,6 @@ export default function StructuredPhotoCapture({
 
           {/* Navigation */}
           <div className="flex items-center justify-between gap-3">
-
-            {/* Previous button */}
             <button
               type="button"
               onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
@@ -480,7 +950,6 @@ export default function StructuredPhotoCapture({
               Previous
             </button>
 
-            {/* Step counter */}
             <div className="flex flex-col items-center gap-1">
               <span
                 className="text-sm font-medium text-[var(--color-text)]"
@@ -496,7 +965,6 @@ export default function StructuredPhotoCapture({
               </span>
             </div>
 
-            {/* Skip / Next button */}
             <button
               type="button"
               onClick={() =>
@@ -515,12 +983,13 @@ export default function StructuredPhotoCapture({
               {currentPhoto?.status === "done" ? "Next" : "Skip"}
               <ChevronRight className="h-4 w-4" />
             </button>
-
           </div>
         </div>
       )}
 
-      {/* Batch Mode */}
+      {/* ============================================================ */}
+      {/*  BATCH MODE                                                   */}
+      {/* ============================================================ */}
       {mode === "batch" && (
         <div className="space-y-6">
           {/* Required shots */}
@@ -543,7 +1012,7 @@ export default function StructuredPhotoCapture({
             </div>
             <div className="space-y-2">
               {REQUIRED_SHOTS.map((s) => {
-                const photo = photos.find(
+                const areaPhotos = photos.filter(
                   (p) => p.shotArea === s.area && p.status === "done",
                 );
                 const uploading = photos.find(
@@ -562,9 +1031,9 @@ export default function StructuredPhotoCapture({
                         {s.guidance}
                       </p>
                     </div>
-                    <div className="flex-shrink-0">
-                      {photo ? (
-                        <div className="relative h-16 w-16">
+                    <div className="flex flex-shrink-0 gap-1.5">
+                      {areaPhotos.map((photo) => (
+                        <div key={photo.id} className="relative h-16 w-16">
                           <img
                             src={photo.previewUrl}
                             alt={s.label}
@@ -574,24 +1043,23 @@ export default function StructuredPhotoCapture({
                             <Check className="h-3 w-3 text-black" />
                           </div>
                         </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => inputRefs.current[s.area]?.click()}
-                          className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-brand)]"
-                        >
-                          {uploading ? (
-                            <Loader2 className="h-5 w-5 animate-spin text-[var(--color-brand)]" />
-                          ) : (
-                            <>
-                              <Upload className="h-4 w-4 text-[var(--color-muted)]" />
-                              <span className="text-[9px] text-[var(--color-muted)]">
-                                Add
-                              </span>
-                            </>
-                          )}
-                        </button>
-                      )}
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => guidedInputRefs.current[s.area]?.click()}
+                        className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-brand)]"
+                      >
+                        {uploading ? (
+                          <Loader2 className="h-5 w-5 animate-spin text-[var(--color-brand)]" />
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 text-[var(--color-muted)]" />
+                            <span className="text-[10px] text-[var(--color-muted)]">
+                              {areaPhotos.length > 0 ? "More" : "Add"}
+                            </span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 );
@@ -612,7 +1080,7 @@ export default function StructuredPhotoCapture({
             </div>
             <div className="space-y-2">
               {OPTIONAL_SHOTS.map((s) => {
-                const photo = photos.find(
+                const areaPhotos = photos.filter(
                   (p) => p.shotArea === s.area && p.status === "done",
                 );
                 const uploading = photos.find(
@@ -631,9 +1099,9 @@ export default function StructuredPhotoCapture({
                         {s.guidance}
                       </p>
                     </div>
-                    <div className="flex-shrink-0">
-                      {photo ? (
-                        <div className="relative h-16 w-16">
+                    <div className="flex flex-shrink-0 gap-1.5">
+                      {areaPhotos.map((photo) => (
+                        <div key={photo.id} className="relative h-16 w-16">
                           <img
                             src={photo.previewUrl}
                             alt={s.label}
@@ -643,24 +1111,23 @@ export default function StructuredPhotoCapture({
                             <Check className="h-3 w-3 text-black" />
                           </div>
                         </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => inputRefs.current[s.area]?.click()}
-                          className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-brand)]"
-                        >
-                          {uploading ? (
-                            <Loader2 className="h-5 w-5 animate-spin text-[var(--color-brand)]" />
-                          ) : (
-                            <>
-                              <Upload className="h-4 w-4 text-[var(--color-muted)]" />
-                              <span className="text-[9px] text-[var(--color-muted)]">
-                                Add
-                              </span>
-                            </>
-                          )}
-                        </button>
-                      )}
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => guidedInputRefs.current[s.area]?.click()}
+                        className="flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-[var(--radius-button)] border-2 border-dashed border-[var(--color-border)] bg-[var(--color-surface)] transition-colors hover:border-[var(--color-brand)]"
+                      >
+                        {uploading ? (
+                          <Loader2 className="h-5 w-5 animate-spin text-[var(--color-brand)]" />
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 text-[var(--color-muted)]" />
+                            <span className="text-[10px] text-[var(--color-muted)]">
+                              {areaPhotos.length > 0 ? "More" : "Add"}
+                            </span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 );
@@ -670,18 +1137,34 @@ export default function StructuredPhotoCapture({
         </div>
       )}
 
-      {/* Hidden file inputs for all shots */}
+      {/* Uploads-in-progress indicator (all modes) */}
+      {uploading > 0 && (
+        <div className="flex items-center gap-2 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-xs text-[var(--color-muted)]">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-[var(--color-brand)]" />
+          <span>
+            {uploading} upload{uploading !== 1 ? "s" : ""} in progress — please wait before submitting.
+          </span>
+        </div>
+      )}
+
+      {/* Photo limit notice (guided/batch modes) */}
+      {mode !== "rapid" && limitNotice && (
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-amber)] bg-[var(--color-elevated)] px-3 py-2 text-xs text-[var(--color-amber)]">
+          {limitNotice}
+        </div>
+      )}
+
+      {/* Hidden file inputs for guided/batch modes */}
       {ALL_SHOTS.map((s) => (
         <input
           key={s.area}
           ref={(el) => {
-            inputRefs.current[s.area] = el;
+            guidedInputRefs.current[s.area] = el;
           }}
           type="file"
           accept="image/*"
-          capture="environment"
           className="hidden"
-          onChange={(e) => handleInputChange(s.area, e)}
+          onChange={(e) => handleGuidedInputChange(s.area, e)}
         />
       ))}
     </div>
