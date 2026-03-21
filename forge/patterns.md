@@ -73,3 +73,13 @@ Root cause: The stage badge color Blueprint assigned magenta to `inProgress` for
 Action required: Before using `--color-magenta` in any new component, verify it relates to AI-generated content. If not, use `--color-purple-action` or `--color-purple-text` for "active/interactive" semantics.
 
 ---
+
+## [2026-03-21] Mobile-first visual verification (feat/job-stage-ux)
+
+**Warning: Every UI component must be visually verified at mobile width (375px) before committing. TypeScript and ESLint do not catch layout overflow.**
+
+Root cause: Pipeline progress indicator used `flex-1` with `whitespace-nowrap` labels on 7 items — worked fine on desktop but labels overflowed and truncated on mobile. Shipped without visual verification at mobile viewport. Quality gate reviews code, not rendered pixels.
+
+Action required: After implementing any visual component, use `preview_resize` with mobile preset (375x812) and take a screenshot before committing. This is especially critical for flex layouts with many items, horizontal arrangements, and text labels.
+
+---
