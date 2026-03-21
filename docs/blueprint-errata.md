@@ -813,4 +813,17 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+### fix/stage-badge-colors -- Stage Badge Color Coherence
+### Convention: Design Token Colors as Single Source of Truth
+
+**Issue:** Dashboard stage pills used incoherent colors — 3 duplicate pairs (amber for New+QC, purple for Sent+In Progress, green for Approved+Complete) across 7 stages. Two separate color maps existed in `stage-config.ts` (dashboard cards) and `stage-badge.tsx` (job card pills) with different opacity values (20% vs 40%) and hardcoded Tailwind palette colors mixed with design token references.
+
+**Root cause:** Colors were assigned ad hoc without a pipeline progression model. No single source of truth — each component maintained its own color map independently, leading to drift and inconsistency.
+
+**Fix applied:** Replaced all colors with a sequential warmth gradient: muted (New) → cyan (Quoted) → purple (Sent) → green (Approved) → magenta (In Progress) → amber (QC) → green (Complete) → muted (Archived). Made `stage-config.ts` the single canonical config. Refactored `stage-badge.tsx` to import from config instead of maintaining its own map. Replaced all hardcoded Tailwind bg/border colors (`bg-yellow-900/20`, `text-red-400`, `bg-red-900/40`) with design token CSS variable references (`bg-[var(--color-*)]/10`). Added missing `archived` stage. Extracted `ANALYSIS_STATUS_CONFIG` for analysis sub-statuses.
+
+**Add to Blueprint:** When adding stage/status-driven UI elements, use `STAGE_CONFIG` from `src/app/(app)/_components/stage-config.ts` as the single source of truth — never define a parallel color map. All stage colors must use CSS custom property references (`var(--color-*)`) with Tailwind arbitrary value syntax — no hardcoded Tailwind palette colors (`bg-yellow-900`, `text-red-400`). When introducing a new stage, add it to `STAGE_CONFIG` and `ANALYSIS_STATUS_CONFIG` (if it has sub-statuses) and all downstream consumers inherit automatically. Before writing any `text-[var(--color-*)]` or `bg-[var(--color-*)]` pattern, grep `globals.css` for the exact CSS variable name — the variable names are kebab-case (`--color-purple-text`) not camelCase (`purpleText`).
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

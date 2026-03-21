@@ -1,57 +1,29 @@
 import { cn } from "@/lib/utils";
+import { STAGE_CONFIG, ANALYSIS_STATUS_CONFIG } from "./stage-config";
 
 function getStageBadge(stage: string, analysisStatus: string) {
-  if (stage === "created" && analysisStatus === "processing") {
+  // Analysis sub-statuses override the default "created" badge
+  if (stage === "created" && analysisStatus in ANALYSIS_STATUS_CONFIG) {
+    const status = ANALYSIS_STATUS_CONFIG[analysisStatus];
     return {
-      label: "Analyzing...",
-      className:
-        "text-[var(--color-purple-text)] bg-[var(--color-purple-deep)]",
+      label: status.label,
+      className: `${status.color} ${status.bg}`,
     };
   }
-  if (stage === "created" && analysisStatus === "complete") {
+
+  const config = STAGE_CONFIG[stage];
+  if (config) {
     return {
-      label: "Ready to Review",
-      className: "text-[var(--color-amber)] bg-yellow-900/40",
+      label: config.label,
+      className: `${config.color} ${config.bg}`,
     };
   }
-  if (stage === "created" && analysisStatus === "failed") {
-    return {
-      label: "Analysis Failed",
-      className: "text-red-400 bg-red-900/40",
-    };
-  }
-  const map: Record<string, { label: string; className: string }> = {
-    quoted: {
-      label: "Quoted",
-      className: "text-[var(--color-cyan)] bg-cyan-900/40",
-    },
-    sent: {
-      label: "Sent",
-      className: "text-[var(--color-purple-text)] bg-purple-900/40",
-    },
-    approved: {
-      label: "Approved",
-      className: "text-[var(--color-green)] bg-green-900/40",
-    },
-    inProgress: {
-      label: "In Progress",
-      className: "text-[var(--color-purple-action)] bg-purple-900/40",
-    },
-    qc: {
-      label: "QC",
-      className: "text-[var(--color-amber)] bg-amber-900/40",
-    },
-    complete: {
-      label: "Complete",
-      className: "text-[var(--color-green)] bg-green-900/40",
-    },
+
+  // Fallback for unknown stages
+  return {
+    label: stage,
+    className: "text-[var(--color-muted)] bg-[var(--color-muted)]/10",
   };
-  return (
-    map[stage] ?? {
-      label: stage,
-      className: "text-[var(--color-muted)] bg-[var(--color-elevated)]",
-    }
-  );
 }
 
 export default function StageBadge({
