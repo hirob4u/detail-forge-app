@@ -113,3 +113,23 @@ Root cause: ServiceLineItem used `key={index}`. When item at index 0 was removed
 Action required: Use a counter ref (`useRef(0)`) to generate monotonically increasing keys assigned at item creation time. Strip the `_key` field before serializing to the API.
 
 ---
+
+## [2026-03-22] `--color-brand` is page-scoped, not global (fix/waitlist-confirmation-polish)
+
+**Warning: `--color-brand` and `--color-brand-hover` CSS variables are set via inline style on the intake page root element — they are NOT globally defined in CSS.**
+
+Root cause: Confirmation page used `bg-[var(--color-brand)]` but the variable was undefined because it's only set on the intake page's wrapper div. The button rendered with a transparent background.
+
+Action required: Any page that uses brand color outside the intake layout must fetch `accentColor` from DB and set `--color-brand` (and `--color-brand-hover` via `color-mix()`) as inline style on that page's root element, matching the established pattern in `estimate/[intakeSlug]/page.tsx`.
+
+---
+
+## [2026-03-22] Agent must not write code before Blueprint approval (fix/waitlist-confirmation-polish)
+
+**Warning: No code changes without an approved Blueprint. The agent must self-enforce this gate before any Edit/Write tool use.**
+
+Root cause: Agent implemented both changes before presenting a Blueprint for approval. User had to stop the agent and require a revert. This wasted time and violated the project's non-negotiable rules.
+
+Action required: Before using Edit, Write, or creating any file, verify that a Blueprint has been presented and explicitly approved by the user in the current session.
+
+---

@@ -5,7 +5,9 @@ export default function WaitlistPage() {
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
         <h1>
-          <Wordmark className="text-3xl text-[var(--color-text)]" />
+          <a href="https://detailforge.io">
+            <Wordmark className="text-3xl text-[var(--color-text)]" />
+          </a>
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">Early Access</p>
       </div>
@@ -17,9 +19,9 @@ export default function WaitlistPage() {
         <p className="text-sm text-[var(--color-muted)]">
           We are onboarding a small group of detailers during our early access
           period. Reach out to us at{" "}
-          <span className="text-[var(--color-purple-text)]">
+          <a href="mailto:hello@detailforge.io" className="text-[var(--color-purple-text)]">
             hello@detailforge.io
-          </span>{" "}
+          </a>{" "}
           to request access and we will be in touch.
         </p>
         <p className="mt-4 text-xs text-[var(--color-muted)]">
