@@ -133,3 +133,33 @@ Root cause: Agent implemented both changes before presenting a Blueprint for app
 Action required: Before using Edit, Write, or creating any file, verify that a Blueprint has been presented and explicitly approved by the user in the current session.
 
 ---
+
+## [2026-03-22] auth.ts static imports bleed into middleware bundle (feat/password-reset)
+
+**Warning: `auth.ts` is imported by `proxy.ts` (middleware). Any top-level import in `auth.ts` gets pulled into the middleware edge bundle, which cannot resolve Node.js-only or React dependencies.**
+
+Root cause: Adding `import { render } from "@react-email/components"` and the email template import at the top of `auth.ts` caused the middleware bundle to fail with "Module not found" errors on every page load.
+
+Action required: When adding functionality to `auth.ts` that requires heavy dependencies (email rendering, React components, Node.js APIs), use dynamic `await import()` inside the callback instead of top-level imports. This defers loading to runtime and keeps the middleware bundle clean.
+
+---
+
+## [2026-03-22] Anti-enumeration: password reset must always show success (feat/password-reset)
+
+**Warning: Any endpoint that operates on account existence (forgot-password, email verification) must always return the same response regardless of whether the account exists.**
+
+Root cause: First implementation surfaced API errors from `requestPasswordReset` to the UI, which could reveal whether an email is registered. Combined with fire-and-forget on the server side, this still leaked information through the client-side error path.
+
+Action required: For forgot-password flows, always show the "check your email" success state after submission. Only surface network/connection errors, which don't reveal account existence. The server-side callback should be fire-and-forget to prevent timing attacks.
+
+---
+
+## [2026-03-22] useSearchParams requires Suspense boundary (feat/password-reset)
+
+**Warning: Any client component using `useSearchParams()` MUST be wrapped in a `<Suspense>` boundary. Without it, `next build` fails with a prerender error — but `next dev` silently allows it.**
+
+Root cause: Added `useSearchParams()` to sign-in and reset-password pages. Local dev server showed no error. Vercel production build failed because Next.js requires Suspense for static prerendering of pages that read search params. Quality gate flagged this as Minor (M1) but it's actually build-breaking.
+
+Action required: When adding `useSearchParams()` to any page, immediately wrap the component in `<Suspense fallback={null}>` using the inner-component pattern: default export renders `<Suspense>` wrapping a named inner component that contains the actual hooks and UI.
+
+---

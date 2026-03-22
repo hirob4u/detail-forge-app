@@ -12,7 +12,7 @@ const PUBLIC_PREFIXES = [
   "/api/quote/",
 ];
 
-const AUTH_PATHS = ["/sign-in", "/sign-up", "/waitlist"];
+const AUTH_PATHS = ["/sign-in", "/sign-up", "/waitlist", "/forgot-password", "/reset-password"];
 
 const PROTECTED_PREFIXES = [
   "/dashboard",
