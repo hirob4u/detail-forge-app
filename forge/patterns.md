@@ -163,3 +163,13 @@ Root cause: Added `useSearchParams()` to sign-in and reset-password pages. Local
 Action required: When adding `useSearchParams()` to any page, immediately wrap the component in `<Suspense fallback={null}>` using the inner-component pattern: default export renders `<Suspense>` wrapping a named inner component that contains the actual hooks and UI.
 
 ---
+
+## [2026-03-22] Never reuse auth env vars as generic app URLs (fix/ai-analysis-url)
+
+**Warning: `BETTER_AUTH_URL` is an auth-specific env var. Do not use it as a generic base URL for internal API calls. Use `NEXT_PUBLIC_APP_URL` with a hardcoded fallback instead.**
+
+Root cause: Intake submit used `BETTER_AUTH_URL` for the fire-and-forget AI analysis callback. After domain migration, analysis silently broke — jobs stuck in "processing" forever with no error. The fire-and-forget `.catch()` pattern swallowed the failure completely.
+
+Action required: For any internal fetch to the app's own API routes, use `process.env.NEXT_PUBLIC_APP_URL ?? "https://detailforge.io"`. Never use `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, or other service-specific env vars for unrelated purposes. When writing fire-and-forget fetches, ensure the `.catch()` handler logs enough context to diagnose failures (URL, job ID, error message).
+
+---
