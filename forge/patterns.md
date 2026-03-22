@@ -153,3 +153,13 @@ Root cause: First implementation surfaced API errors from `requestPasswordReset`
 Action required: For forgot-password flows, always show the "check your email" success state after submission. Only surface network/connection errors, which don't reveal account existence. The server-side callback should be fire-and-forget to prevent timing attacks.
 
 ---
+
+## [2026-03-22] useSearchParams requires Suspense boundary (feat/password-reset)
+
+**Warning: Any client component using `useSearchParams()` MUST be wrapped in a `<Suspense>` boundary. Without it, `next build` fails with a prerender error — but `next dev` silently allows it.**
+
+Root cause: Added `useSearchParams()` to sign-in and reset-password pages. Local dev server showed no error. Vercel production build failed because Next.js requires Suspense for static prerendering of pages that read search params. Quality gate flagged this as Minor (M1) but it's actually build-breaking.
+
+Action required: When adding `useSearchParams()` to any page, immediately wrap the component in `<Suspense fallback={null}>` using the inner-component pattern: default export renders `<Suspense>` wrapping a named inner component that contains the actual hooks and UI.
+
+---
