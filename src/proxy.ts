@@ -8,6 +8,7 @@ const PUBLIC_PREFIXES = [
   "/api/intake/",
   "/api/uploads/",
   "/api/invites/",
+  "/api/estimates/",
   "/quote/",
   "/api/quote/",
 ];

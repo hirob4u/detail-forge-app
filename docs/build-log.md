@@ -1252,4 +1252,24 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-22 -- fix/ai-analysis-auth
+
+**Branch:** `fix/ai-analysis-auth`
+**Commit:** `fix: internal API secret for AI analysis bypassing proxy auth`
+**Date:** 2026-03-22
+**Status:** PR pending review
+
+**What was built:**
+- Added `/api/estimates/` to PUBLIC_PREFIXES so the fire-and-forget analysis fetch bypasses proxy session check
+- Added `INTERNAL_API_SECRET` header validation in the analyze route to prevent unauthorized external access
+- Intake submit passes the secret in the `x-internal-secret` header
+
+**Files modified (3):** proxy.ts, analyze/route.ts, intake/submit/route.ts
+
+**Corrected:** N/A — new approach to fix the silent auth failure.
+
+**Root cause:** The fire-and-forget fetch from intake submit to the analyze endpoint had no session cookie. The proxy redirected it to /sign-in, returning "Redirecting..." which was swallowed by .catch(). Analysis never ran. This was the second layer of the AI analysis bug (first was the wrong base URL, fixed in PR #98).
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
