@@ -20,7 +20,7 @@ export default function WaitlistPage() {
           We are onboarding a small group of detailers during our early access
           period. Reach out to us at{" "}
           <a
-            href="mailto:hello@detailforge.io?subject=Request%20Access%20to%20DetailForge&body=Hi%20DetailForge%20team%2C%0A%0AI%27d%20like%20to%20request%20early%20access.%0A%0AShop%20Name%3A%20%0ALocation%3A%20%0A%0AThanks!"
+            href="mailto:hello@detailforge.io?subject=Request%20Access%20to%20DetailForge&body=Hi%20DetailForge%20team%2C%0A%0AI%27d%20like%20to%20request%20early%20access.%0A%0AShop%20Name%3A%20%0AHow%20I%20heard%20about%20DetailForge%3A%20%0A%0AThanks!"
             className="text-[var(--color-purple-text)]"
           >
             hello@detailforge.io
