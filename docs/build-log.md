@@ -1252,6 +1252,22 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-22 -- fix/waitlist-mailto
+
+**Branch:** `fix/waitlist-mailto`
+**Commit:** `fix: auto-populate waitlist mailto with subject and body`
+**Date:** 2026-03-22
+**Status:** PR pending review
+
+**What was built:**
+- Waitlist mailto link auto-populates subject ("Request Access to DetailForge") and body with shop name/location placeholders so prospective detailers just hit send
+
+**Files modified (1):** waitlist/page.tsx
+
+**Corrected:** N/A — UX improvement to reduce onboarding friction.
+
+---
+
 ### 2026-03-22 -- fix/ai-analysis-auth
 
 **Branch:** `fix/ai-analysis-auth`
