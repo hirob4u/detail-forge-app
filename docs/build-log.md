@@ -1173,4 +1173,33 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-22 -- fix/waitlist-confirmation-polish
+
+**Branch:** `fix/waitlist-confirmation-polish`
+**Commit:** `fix: clickable wordmark on waitlist and CTA on estimate confirmation`
+**Date:** 2026-03-22
+**Status:** PR pending review
+
+**What was built:**
+- Waitlist wordmark links to https://detailforge.io (was static text)
+- Email address on waitlist is now a clickable mailto link
+- Estimate confirmation page shows "Visit {OrgName}" CTA button when org has a website, plus "You can safely close this page" text
+- CTA uses org's brand color via --color-brand CSS custom property with hex validation fallback
+
+**Quality gate findings addressed:**
+- `min-h-screen` → `min-h-dvh` (mobile viewport)
+- Open redirect prevention: protocol validation on org.website
+- CSS injection prevention: hex color regex on accentColor
+- `rel="noopener noreferrer"` on external link
+- `color-mix()` hover via `--color-brand-hover` custom property (matching existing pattern)
+- `focus-visible` outline on CTA for keyboard accessibility
+
+**Files modified (2):** waitlist/page.tsx, confirmation/page.tsx
+
+**Corrected:** Quality gate caught 3 Significant issues in round 1 (min-h-screen, open redirect, CSS injection), 2 in round 2 (hover shades rule, missing rel), 1 in round 3 (trust model documentation). All resolved in 3 rounds.
+
+**Root cause:** Confirmation page was outside the app layout, so `--color-brand` CSS variable was undefined. Pattern from intake page (inline style with accentColor fallback) was the proven fix.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
