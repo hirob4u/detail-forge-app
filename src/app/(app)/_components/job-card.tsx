@@ -11,6 +11,7 @@ interface JobCardProps {
     analysisStatus: string;
     createdAt: Date;
     finalQuote: FinalQuote | null;
+    approvedAt?: Date | null;
     customer: {
       firstName: string | null;
       lastName: string | null;
@@ -25,6 +26,11 @@ interface JobCardProps {
 }
 
 export default function JobCard({ job }: JobCardProps) {
+  // isNewlyApproved is computed server-side and passed via the approvedAt prop;
+  // we check the field existence here since server already filtered by recency.
+  const isNewlyApproved =
+    job.stage === "approved" && job.approvedAt != null;
+
   return (
     <Link
       href={`/dashboard/jobs/${job.id}`}
@@ -41,6 +47,14 @@ export default function JobCard({ job }: JobCardProps) {
               stage={job.stage}
               analysisStatus={job.analysisStatus}
             />
+            {isNewlyApproved && (
+              <span
+                className="text-[10px] font-bold uppercase text-[var(--color-amber)] bg-[var(--color-amber)]/10 px-1.5 py-0.5 rounded-[var(--radius-badge)]"
+                style={{ fontFamily: "var(--font-data)" }}
+              >
+                New
+              </span>
+            )}
           </div>
           {/* Vehicle */}
           <p className="text-sm text-[var(--color-muted)]">

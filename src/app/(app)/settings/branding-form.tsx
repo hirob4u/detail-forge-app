@@ -20,9 +20,18 @@ interface OrgData {
   logoUrl: string | null;
   accentColor: string | null;
   nameFont: string | null;
+  contactPreference: string | null;
   plateBlockingEnabled: boolean;
   watermarkEnabled: boolean;
 }
+
+type ContactPreference = "email" | "phone" | "both";
+
+const CONTACT_PREFERENCES: { value: ContactPreference; label: string }[] = [
+  { value: "both", label: "Email & Phone" },
+  { value: "phone", label: "Phone Only" },
+  { value: "email", label: "Email Only" },
+];
 
 const FONTS = [
   { value: "DM Sans" },
@@ -93,6 +102,11 @@ export default function BrandingForm({ org }: { org: OrgData }) {
   );
   const [nameFont, setNameFont] = useState(
     org.nameFont && ALLOWED_FONT_NAMES.has(org.nameFont) ? org.nameFont : "DM Sans",
+  );
+
+  // Contact preference
+  const [contactPreference, setContactPreference] = useState<ContactPreference>(
+    (org.contactPreference as ContactPreference) ?? "both",
   );
 
   // Social export toggles
@@ -197,6 +211,7 @@ export default function BrandingForm({ org }: { org: OrgData }) {
           logoKey,
           accentColor,
           nameFont,
+          contactPreference,
           plateBlockingEnabled,
           watermarkEnabled,
         }),
@@ -354,6 +369,35 @@ export default function BrandingForm({ org }: { org: OrgData }) {
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Section 1b: Customer Contact Preference */}
+      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+        <legend
+          className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
+          style={{ fontFamily: "var(--font-data)" }}
+        >
+          Customer Contact Method
+        </legend>
+        <p className="mb-3 text-xs text-[var(--color-muted)]">
+          How customers can reach you from the quote page
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {CONTACT_PREFERENCES.map((pref) => (
+            <button
+              key={pref.value}
+              type="button"
+              onClick={() => setContactPreference(pref.value)}
+              className={`rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition-colors ${
+                contactPreference === pref.value
+                  ? "border-[var(--color-purple-action)] bg-[var(--color-purple-action)]/10 text-[var(--color-purple-text)]"
+                  : "border-[var(--color-border)] text-[var(--color-muted)] hover:bg-[var(--color-hover)]"
+              }`}
+            >
+              {pref.label}
+            </button>
+          ))}
         </div>
       </div>
 

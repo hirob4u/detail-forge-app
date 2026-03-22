@@ -1141,4 +1141,36 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+## Blueprint CP-1: Quote Send + Customer Approval Flow
+
+**Branch:** `feat/quote-send-flow`
+**Date:** 2026-03-21
+**Status:** PR pending review
+
+**What was built:**
+- Full quote-to-approval loop: detailer sends quote → customer views/approves → detailer notified
+- Resend email integration with React Email templates (dark theme, org branding, DetailForge wordmark)
+- Send Quote API (POST /api/jobs/[jobId]/send-quote) — generates crypto token, sends email, transitions stage
+- Public quote page (/quote/[token]) — org-branded, mobile-first, line items + total + approve CTA
+- Customer approval API (POST /api/quote/[token]/approve) — public endpoint, validates stage, sends notification
+- Approval confirmation page with branded success message
+- Dashboard notification: amber banner for recently approved quotes + "NEW" badge on job cards
+- Resend support: if already sent, "Resend Quote" re-sends email with [Updated] subject prefix
+- Contact preference setting (email/phone/both) configurable per org in settings
+- Stage transition guard: `requiresQuoteSend` flag blocks generic stage API, forces email delivery path
+
+**Schema changes:**
+- `jobs.quote_token` (varchar 64, unique) — crypto random hex for public access
+- `jobs.quote_sent_at` (timestamp) — when quote was last sent
+- `jobs.approved_at` (timestamp) — when customer approved
+- `organizations.contact_preference` (text, default "both") — controls "Have Questions?" on quote page
+
+**Files created (9):** email.ts, 2 email templates, send-quote API, approve API, public quote page + approve button + approved page, approval banner component
+
+**Files modified (12):** schema.ts, stage-transitions.ts, stage API (guard), stage-controls.tsx, job detail page, dashboard page, job card, proxy.ts, org-profile validation, org profile API, branding form, settings page
+
+**Forge warnings applied:** Server-side enforcement, router.refresh fire-and-forget, mobile-first verification, magenta reservation, CSS var verification
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

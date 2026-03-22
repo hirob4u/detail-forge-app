@@ -7,6 +7,9 @@ export type StageTransition = {
   confirmMessage?: string;
   /** When true, the confirmation dialog includes a required note input. */
   requireNote?: boolean;
+  /** When true, this transition must go through the dedicated send-quote API,
+   *  not the generic stage PATCH endpoint. */
+  requiresQuoteSend?: boolean;
 };
 
 export const STAGE_TRANSITIONS: Record<JobStage, StageTransition[]> = {
@@ -21,7 +24,7 @@ export const STAGE_TRANSITIONS: Record<JobStage, StageTransition[]> = {
     },
   ],
   quoted: [
-    { to: "sent", label: "Mark Sent", direction: "forward" },
+    { to: "sent", label: "Send Quote", direction: "forward", requiresQuoteSend: true },
     {
       to: "created",
       label: "Back to New",
@@ -38,6 +41,7 @@ export const STAGE_TRANSITIONS: Record<JobStage, StageTransition[]> = {
     },
   ],
   sent: [
+    { to: "sent", label: "Resend Quote", direction: "forward", requiresQuoteSend: true },
     { to: "approved", label: "Mark Approved", direction: "forward" },
     {
       to: "quoted",

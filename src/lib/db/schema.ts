@@ -71,6 +71,9 @@ export const organizations = pgTable("organizations", {
   logoUrl: text("logo_url"),
   accentColor: text("accent_color").default("#7C4DFF"),
   nameFont: text("name_font").default("DM Sans"),
+  contactPreference: text("contact_preference")
+    .$type<"email" | "phone" | "both">()
+    .default("both"),
   plateBlockingEnabled: boolean("plate_blocking_enabled").notNull().default(true),
   watermarkEnabled: boolean("watermark_enabled").notNull().default(true),
   subscriptionStatus: subscriptionStatusEnum("subscription_status")
@@ -200,6 +203,9 @@ export const jobs = pgTable(
         }[]
       >()
       .default([]),
+    quoteToken: varchar("quote_token", { length: 64 }).unique(),
+    quoteSentAt: timestamp("quote_sent_at", { withTimezone: true }),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
     stageHistory: jsonb("stage_history")
       .$type<{ from: string; to: string; at: string; note?: string }[]>()
       .notNull()

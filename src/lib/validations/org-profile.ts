@@ -18,6 +18,7 @@ export const orgProfileUpdateSchema = z.object({
   nameFont: z
     .enum(["DM Sans", "Inter", "Syne", "Barlow", "Oswald", "Bebas Neue", "Montserrat"])
     .optional(),
+  contactPreference: z.enum(["email", "phone", "both"]).optional(),
   plateBlockingEnabled: z.boolean().optional(),
   watermarkEnabled: z.boolean().optional(),
 });

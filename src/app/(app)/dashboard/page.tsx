@@ -7,7 +7,9 @@ import { db } from "@/lib/db";
 import { jobs, customers, vehicles } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { getDetailForgeOrgId } from "@/lib/org";
+import { Suspense } from "react";
 import JobCard from "../_components/job-card";
+import ApprovalBanner from "../_components/approval-banner";
 import { STAGE_CONFIG } from "../_components/stage-config";
 
 export default async function DashboardPage() {
@@ -52,6 +54,7 @@ export default async function DashboardPage() {
       analysisStatus: jobs.analysisStatus,
       createdAt: jobs.createdAt,
       finalQuote: jobs.finalQuote,
+      approvedAt: jobs.approvedAt,
       customer: {
         firstName: customers.firstName,
         lastName: customers.lastName,
@@ -75,6 +78,11 @@ export default async function DashboardPage() {
       <h1 className="mb-6 text-xl font-semibold text-[var(--color-text)]">
         Dashboard
       </h1>
+
+      {/* Approval notification banner */}
+      <Suspense fallback={null}>
+        <ApprovalBanner orgId={orgId} />
+      </Suspense>
 
       {/* Stage summary cards */}
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">
