@@ -871,4 +871,18 @@ ESLint's `react-hooks/purity` rule flags `Date.now()` as impure during render. F
 
 ---
 
+## Fix: AI Analysis Retry with DB Photo Fallback (2026-03-22)
+
+**Branch:** `fix/ai-analysis-retry`
+
+**Lesson: Internal-only routes called from the client silently fail after auth changes.**
+The analyze endpoint was made public with an `x-internal-secret` guard. The existing retry button in the UI called this endpoint directly from the browser — which has no secret. The fix: create a separate auth'd retry endpoint that the UI calls, which then makes the internal call server-side with the secret.
+
+**Lesson: Fire-and-forget payloads must be recoverable from DB.**
+The original analyze call received `photoKeys` in the request body from intake submit. If that fire-and-forget failed, the photo keys were lost — there was no way to retry without re-submitting the intake form. Now the analyze route falls back to `jobs.photos` stored in DB.
+
+**Add to Blueprint:** When an endpoint serves both internal server-to-server and user-initiated calls, create two separate routes: one public with a shared secret for internal use, and one auth'd for user-initiated actions. Never assume fire-and-forget payloads will arrive — always have a DB fallback for retry scenarios.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

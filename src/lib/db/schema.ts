@@ -206,6 +206,7 @@ export const jobs = pgTable(
     quoteToken: varchar("quote_token", { length: 64 }).unique(),
     quoteSentAt: timestamp("quote_sent_at", { withTimezone: true }),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
+    analysisRetryCount: integer("analysis_retry_count").notNull().default(0),
     stageHistory: jsonb("stage_history")
       .$type<{ from: string; to: string; at: string; note?: string }[]>()
       .notNull()

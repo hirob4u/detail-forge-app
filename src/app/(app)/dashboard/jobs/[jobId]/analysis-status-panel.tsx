@@ -8,20 +8,20 @@ import {
   CircleAlert,
   RefreshCw,
   ArrowRight,
+  Mail,
 } from "lucide-react";
+
+const MAX_RETRIES = 3;
+const STUCK_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
 
 interface AnalysisStatusPanelProps {
   jobId: string;
   initialAnalysisStatus: "processing" | "complete" | "failed";
   initialStage: string;
   initialHasAssessment: boolean;
-  retryPayload: {
-    photoKeys: string[];
-    vehicleYear: number;
-    vehicleMake: string;
-    vehicleModel: string;
-    vehicleColor: string;
-  };
+  initialRetryCount: number;
+  initialUpdatedAt: string;
+  photoCount: number;
 }
 
 export default function AnalysisStatusPanel({
@@ -29,14 +29,26 @@ export default function AnalysisStatusPanel({
   initialAnalysisStatus,
   initialStage,
   initialHasAssessment,
-  retryPayload,
+  initialRetryCount,
+  initialUpdatedAt,
+  photoCount,
 }: AnalysisStatusPanelProps) {
   const [analysisStatus, setAnalysisStatus] = useState(initialAnalysisStatus);
   const [stage, setStage] = useState(initialStage);
   const [hasAssessment, setHasAssessment] = useState(initialHasAssessment);
+  const [retryCount, setRetryCount] = useState(initialRetryCount);
+  const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt);
   const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
 
   const shouldPoll = analysisStatus === "processing";
+
+  const isStuck =
+    analysisStatus === "processing" &&
+    updatedAt &&
+    Date.now() - new Date(updatedAt).getTime() > STUCK_THRESHOLD_MS;
+
+  const hasRetriesLeft = retryCount < MAX_RETRIES;
 
   const poll = useCallback(async () => {
     try {
@@ -46,6 +58,8 @@ export default function AnalysisStatusPanel({
       setAnalysisStatus(data.analysisStatus);
       setStage(data.stage);
       setHasAssessment(data.hasAssessment);
+      setRetryCount(data.analysisRetryCount ?? 0);
+      if (data.updatedAt) setUpdatedAt(data.updatedAt);
     } catch {
       // Silently ignore poll errors -- will retry on next interval
     }
@@ -60,25 +74,35 @@ export default function AnalysisStatusPanel({
 
   async function handleRetryAnalysis() {
     setRetrying(true);
+    setRetryError(null);
     setAnalysisStatus("processing");
 
     try {
-      await fetch(`/api/estimates/analyze`, {
+      const res = await fetch(`/api/jobs/${jobId}/retry-analysis`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobId,
-          ...retryPayload,
-        }),
       });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const msg = data?.error ?? "Retry failed. Please try again.";
+        setRetryError(msg);
+        setAnalysisStatus("failed");
+      } else {
+        const data = await res.json();
+        setRetryCount(data.retryCount);
+        setUpdatedAt(new Date().toISOString());
+      }
     } catch (err) {
       console.error("Retry analysis failed:", err);
+      setRetryError("Network error. Please check your connection.");
+      setAnalysisStatus("failed");
     } finally {
       setRetrying(false);
     }
   }
 
-  // State 4 -- quoted
+  // State: Quoted — analysis complete and quote finalized
   if (stage === "quoted") {
     return (
       <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-6">
@@ -106,8 +130,8 @@ export default function AnalysisStatusPanel({
     );
   }
 
-  // State 1 -- processing
-  if (analysisStatus === "processing") {
+  // State: Processing (not stuck) — spinner with photo count
+  if (analysisStatus === "processing" && !isStuck) {
     return (
       <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-6">
         <div className="flex items-center gap-4">
@@ -116,7 +140,7 @@ export default function AnalysisStatusPanel({
           </div>
           <div>
             <p className="text-sm font-semibold text-[var(--color-text)]">
-              Analyzing photos...
+              Analyzing {photoCount} photo{photoCount !== 1 ? "s" : ""}...
             </p>
             <p className="mt-0.5 text-xs text-[var(--color-muted)]">
               The AI is reviewing the vehicle photos. This usually takes 15-30
@@ -134,7 +158,59 @@ export default function AnalysisStatusPanel({
     );
   }
 
-  // State 2 -- complete
+  // State: Stuck (processing > 2 min)
+  if (analysisStatus === "processing" && isStuck) {
+    return (
+      <div className="rounded-[var(--radius-card)] border border-amber-700 bg-amber-950/40 p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CircleAlert className="h-6 w-6 text-amber-400" />
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text)]">
+                Analysis is taking longer than expected
+              </p>
+              <p className="mt-0.5 text-xs text-[var(--color-muted)]">
+                {hasRetriesLeft
+                  ? "This can happen occasionally. Try restarting the analysis."
+                  : "We've been unable to complete the analysis. Please contact support."}
+              </p>
+            </div>
+          </div>
+          {hasRetriesLeft ? (
+            <button
+              type="button"
+              onClick={handleRetryAnalysis}
+              disabled={retrying}
+              className="flex items-center gap-2 rounded-[var(--radius-button)] border border-amber-700 px-4 py-2 text-sm font-medium text-amber-300 transition-colors hover:border-amber-500 hover:text-amber-200 disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${retrying ? "animate-spin" : ""}`}
+              />
+              {retrying ? "Retrying..." : "Retry Analysis"}
+            </button>
+          ) : (
+            <a
+              href="mailto:support@detailforge.io?subject=Analysis stuck&body=Job ID: ${jobId}"
+              className="flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-purple-action)]"
+            >
+              <Mail className="h-4 w-4" />
+              Contact Support
+            </a>
+          )}
+        </div>
+        {retryCount > 0 && hasRetriesLeft && (
+          <p
+            className="mt-3 text-xs text-[var(--color-muted)]"
+            style={{ fontFamily: "var(--font-data)" }}
+          >
+            Attempt {retryCount} of {MAX_RETRIES}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // State: Complete — assessment ready
   if (analysisStatus === "complete" && hasAssessment) {
     return (
       <div className="rounded-[var(--radius-card)] border border-[var(--color-purple-action)]/30 bg-[var(--color-purple-deep)]/20 p-6">
@@ -162,7 +238,7 @@ export default function AnalysisStatusPanel({
     );
   }
 
-  // State 3 -- failed
+  // State: Failed — with retry or support contact
   return (
     <div className="rounded-[var(--radius-card)] border border-red-800 bg-red-950/40 p-6">
       <div className="flex items-center justify-between">
@@ -173,21 +249,45 @@ export default function AnalysisStatusPanel({
               Analysis Failed
             </p>
             <p className="mt-0.5 text-xs text-[var(--color-muted)]">
-              The AI assessment did not complete. You can try again or build the
-              quote manually.
+              {hasRetriesLeft
+                ? "The AI assessment did not complete. You can try again or build the quote manually."
+                : "We were unable to complete the analysis after multiple attempts. Please contact support for assistance."}
             </p>
+            {retryError && (
+              <p className="mt-1 text-xs text-red-400">{retryError}</p>
+            )}
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleRetryAnalysis}
-          disabled={retrying}
-          className="flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-purple-action)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Retry Analysis
-        </button>
+        {hasRetriesLeft ? (
+          <button
+            type="button"
+            onClick={handleRetryAnalysis}
+            disabled={retrying}
+            className="flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-purple-action)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${retrying ? "animate-spin" : ""}`}
+            />
+            {retrying ? "Retrying..." : "Retry Analysis"}
+          </button>
+        ) : (
+          <a
+            href={`mailto:support@detailforge.io?subject=Analysis%20failed&body=Job%20ID%3A%20${jobId}`}
+            className="flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-purple-action)]"
+          >
+            <Mail className="h-4 w-4" />
+            Contact Support
+          </a>
+        )}
       </div>
+      {retryCount > 0 && hasRetriesLeft && (
+        <p
+          className="mt-3 text-xs text-[var(--color-muted)]"
+          style={{ fontFamily: "var(--font-data)" }}
+        >
+          Attempt {retryCount} of {MAX_RETRIES}
+        </p>
+      )}
     </div>
   );
 }
