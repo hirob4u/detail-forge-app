@@ -84,6 +84,14 @@ function stripMarkdownFences(text: string): string {
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
+  // Validate internal API secret — this route is in PUBLIC_PREFIXES
+  // so the proxy doesn't enforce session auth. The secret ensures only
+  // our own intake submit route can trigger analysis.
+  const secret = request.headers.get("x-internal-secret");
+  if (!process.env.INTERNAL_API_SECRET || secret !== process.env.INTERNAL_API_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   // Parse request body
   const body = await request.json().catch(() => null);
   if (!body) {
