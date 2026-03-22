@@ -33,6 +33,8 @@ export default async function JobDetailPage({
       customerId: jobs.customerId,
       orgId: jobs.orgId,
       notes: jobs.notes,
+      finalQuote: jobs.finalQuote,
+      quoteSentAt: jobs.quoteSentAt,
       qcPhotos: jobs.qcPhotos,
       stageHistory: jobs.stageHistory,
     })
@@ -159,7 +161,13 @@ export default async function JobDetailPage({
           >
             Stage
           </h2>
-          <StageControls jobId={job.id} currentStage={job.stage as JobStage} />
+          <StageControls
+            jobId={job.id}
+            currentStage={job.stage as JobStage}
+            customerEmail={customer.email}
+            quoteTotal={job.finalQuote?.totalPrice}
+            quoteSentAt={job.quoteSentAt}
+          />
         </section>
 
         {/* Social export -- only for completed jobs */}

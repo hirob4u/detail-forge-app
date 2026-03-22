@@ -854,4 +854,21 @@ content-length -- signing it will always cause a 403.
 
 ---
 
+## CP-1: Quote Send + Customer Approval Flow (2026-03-21)
+
+**Branch:** `feat/quote-send-flow`
+
+**Lesson: Public endpoints need stage-gated idempotency.**
+The approve endpoint must reject duplicate approvals (stage !== "sent") and return 409 to prevent race conditions if a customer double-taps. Similarly, the send-quote endpoint must accept both "quoted" and "sent" stages to support resend without requiring a rollback.
+
+**Lesson: Block generic stage transitions that require side effects.**
+The `requiresQuoteSend` flag on the transition config prevents the generic stage PATCH from advancing quoted→sent without actually sending the email. Without this guard, any API caller could bypass the email delivery. This pattern should be used for any future transition that requires side effects (e.g., scheduling → calendar invite).
+
+**Lesson: React strict mode prohibits Date.now() during render.**
+ESLint's `react-hooks/purity` rule flags `Date.now()` as impure during render. For time-based display logic (e.g., "is this job recently approved?"), either compute the value server-side or use a `useMemo` with a stable dependency.
+
+**Add to Blueprint:** When adding public-facing endpoints that modify state (like approval), always validate the current stage and return appropriate HTTP status codes for idempotent behavior (409 for already-done, 400 for invalid state). When a stage transition requires a side effect (email, webhook, etc.), add a `requiresSideEffect` flag to the transition config and guard the generic stage API against it.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

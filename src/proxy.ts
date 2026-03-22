@@ -8,6 +8,8 @@ const PUBLIC_PREFIXES = [
   "/api/intake/",
   "/api/uploads/",
   "/api/invites/",
+  "/quote/",
+  "/api/quote/",
 ];
 
 const AUTH_PATHS = ["/sign-in", "/sign-up", "/waitlist"];

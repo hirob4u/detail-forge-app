@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
       logoUrl: organizations.logoUrl,
       accentColor: organizations.accentColor,
       nameFont: organizations.nameFont,
+      contactPreference: organizations.contactPreference,
       plateBlockingEnabled: organizations.plateBlockingEnabled,
       watermarkEnabled: organizations.watermarkEnabled,
     })
@@ -114,6 +115,7 @@ export async function PATCH(request: NextRequest) {
         logoUrl: organizations.logoUrl,
         accentColor: organizations.accentColor,
         nameFont: organizations.nameFont,
+        contactPreference: organizations.contactPreference,
       })
       .from(organizations)
       .where(eq(organizations.id, orgId))

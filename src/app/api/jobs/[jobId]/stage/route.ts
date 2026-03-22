@@ -73,6 +73,15 @@ export async function PATCH(
     );
   }
 
+  // Transitions that require email delivery must go through the dedicated
+  // /api/jobs/[jobId]/send-quote endpoint, not this generic stage handler.
+  if (transition.requiresQuoteSend) {
+    return NextResponse.json(
+      { error: "Use the Send Quote action to transition this job." },
+      { status: 400 },
+    );
+  }
+
   if (transition.requireNote && (!note || note.trim() === "")) {
     return NextResponse.json(
       { error: "A reason is required for this transition." },

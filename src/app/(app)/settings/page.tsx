@@ -35,6 +35,7 @@ export default async function SettingsPage() {
       logoUrl: organizations.logoUrl,
       accentColor: organizations.accentColor,
       nameFont: organizations.nameFont,
+      contactPreference: organizations.contactPreference,
       plateBlockingEnabled: organizations.plateBlockingEnabled,
       watermarkEnabled: organizations.watermarkEnabled,
     })
