@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import Anthropic from "@anthropic-ai/sdk";
 import sharp from "sharp";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobs, prompts } from "@/lib/db/schema";
 import { r2, PHOTOS_BUCKET } from "@/lib/r2";
@@ -119,16 +119,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "jobId is required" }, { status: 400 });
   }
 
-  if (!Array.isArray(photoKeys) || photoKeys.length === 0) {
-    return NextResponse.json(
-      { error: "At least one photo is required" },
-      { status: 400 },
-    );
-  }
-
-  // Verify job exists
+  // Verify job exists and fetch stored photos as fallback
   const [job] = await db
-    .select({ id: jobs.id })
+    .select({
+      id: jobs.id,
+      photos: jobs.photos,
+      analysisRetryCount: jobs.analysisRetryCount,
+    })
     .from(jobs)
     .where(eq(jobs.id, jobId))
     .limit(1);
@@ -137,10 +134,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
 
-  // Confirm processing has begun
+  // Use photoKeys from request body, or fall back to DB photos
+  const resolvedPhotoKeys: Array<string | { key: string; area: string; phase: string }> =
+    Array.isArray(photoKeys) && photoKeys.length > 0
+      ? photoKeys
+      : (job.photos ?? []);
+
+  if (resolvedPhotoKeys.length === 0) {
+    return NextResponse.json(
+      { error: "No photos available for analysis" },
+      { status: 400 },
+    );
+  }
+
+  // Confirm processing has begun and increment retry count
   await db
     .update(jobs)
-    .set({ analysisStatus: "processing" })
+    .set({
+      analysisStatus: "processing",
+      analysisRetryCount: sql`${jobs.analysisRetryCount} + 1`,
+    })
     .where(eq(jobs.id, jobId));
 
   try {
@@ -163,7 +176,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch photos from R2 (max 8)
-    const keysToFetch = photoKeys
+    const keysToFetch = resolvedPhotoKeys
       .slice(0, MAX_PHOTOS)
       .map((k) => (typeof k === "string" ? k : k.key));
     const photoResults = await Promise.all(keysToFetch.map(fetchPhotoAsBase64));

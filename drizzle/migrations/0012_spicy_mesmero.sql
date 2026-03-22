@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ADD COLUMN "analysis_retry_count" integer DEFAULT 0 NOT NULL;

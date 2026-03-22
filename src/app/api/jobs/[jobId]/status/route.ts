@@ -20,6 +20,8 @@ export async function GET(
       analysisStatus: jobs.analysisStatus,
       stage: jobs.stage,
       aiAssessment: jobs.aiAssessment,
+      analysisRetryCount: jobs.analysisRetryCount,
+      updatedAt: jobs.updatedAt,
     })
     .from(jobs)
     .where(eq(jobs.id, jobId))
@@ -33,5 +35,7 @@ export async function GET(
     analysisStatus: job.analysisStatus,
     stage: job.stage,
     hasAssessment: job.aiAssessment !== null,
+    analysisRetryCount: job.analysisRetryCount,
+    updatedAt: job.updatedAt?.toISOString() ?? null,
   });
 }

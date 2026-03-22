@@ -37,6 +37,8 @@ export default async function JobDetailPage({
       quoteSentAt: jobs.quoteSentAt,
       qcPhotos: jobs.qcPhotos,
       stageHistory: jobs.stageHistory,
+      analysisRetryCount: jobs.analysisRetryCount,
+      updatedAt: jobs.updatedAt,
     })
     .from(jobs)
     .where(eq(jobs.id, jobId))
@@ -80,9 +82,6 @@ export default async function JobDetailPage({
     .where(eq(organizations.id, job.orgId))
     .limit(1);
 
-  // Build retry payload from stored photos and vehicle info
-  const photoKeys = (job.photos || []).map((p) => p.key);
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
@@ -123,13 +122,9 @@ export default async function JobDetailPage({
           initialAnalysisStatus={job.analysisStatus}
           initialStage={job.stage}
           initialHasAssessment={job.aiAssessment !== null}
-          retryPayload={{
-            photoKeys,
-            vehicleYear: vehicle.year,
-            vehicleMake: vehicle.make,
-            vehicleModel: vehicle.model,
-            vehicleColor: vehicle.color,
-          }}
+          initialRetryCount={job.analysisRetryCount}
+          initialUpdatedAt={job.updatedAt.toISOString()}
+          photoCount={(job.photos ?? []).length}
         />
 
         {/* QC link -- visible when job is in qc stage */}

@@ -1288,4 +1288,29 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-22 -- Blueprint: AI Analysis Retry with DB Photo Fallback
+
+**Branch:** `fix/ai-analysis-retry`
+**Commit:** `fix: AI analysis retry with DB photo fallback, stuck detection, and retry limit UX`
+**Date:** 2026-03-22
+**Status:** PR pending review
+
+**What was built:**
+- Analyze route falls back to DB photos when `photoKeys` missing from request body (enables retry without original payload)
+- New auth'd `/api/jobs/[jobId]/retry-analysis` endpoint replaces direct client-to-analyze calls
+- `analysisRetryCount` column on jobs table (max 3 retries)
+- 5-state AnalysisStatusPanel: processing (with photo count), stuck (>2min amber warning), complete, failed (with retries left), failed (contact support)
+- Status polling endpoint returns retry count and updatedAt for stuck detection
+- "Contact Support" mailto replaces retry button after 3 failed attempts
+
+**Files created (1):** retry-analysis/route.ts
+**Files modified (4):** analyze/route.ts, status/route.ts, analysis-status-panel.tsx, job detail page.tsx
+**Schema:** Added `analysis_retry_count` integer column to jobs
+
+**Corrected:** Discovered the existing retry button was calling `/api/estimates/analyze` directly from the client — which now requires `x-internal-secret` and returns 401. Replaced with auth'd retry route.
+
+**Root cause:** Original architecture had no separation between internal server-to-server calls (needs secret) and user-initiated retries (needs session auth). The retry-analysis endpoint bridges this — it validates session auth, then makes the internal call with the secret.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
