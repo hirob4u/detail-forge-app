@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       .returning({ id: jobs.id });
 
     // Fire and forget -- do not await
-    const baseUrl = process.env.BETTER_AUTH_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://detailforge.io";
     fetch(`${baseUrl}/api/estimates/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -1234,4 +1234,22 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-22 -- fix/ai-analysis-url
+
+**Branch:** `fix/ai-analysis-url`
+**Commit:** `fix: use NEXT_PUBLIC_APP_URL for analysis callback instead of BETTER_AUTH_URL`
+**Date:** 2026-03-22
+**Status:** PR pending review
+
+**What was built:**
+- One-line fix: intake submit route used `BETTER_AUTH_URL` for the fire-and-forget AI analysis callback URL. After domain migration to detailforge.io, analysis requests were going to the wrong URL, causing jobs to stay stuck in "processing" forever.
+
+**Files modified (1):** src/app/api/intake/submit/route.ts
+
+**Corrected:** Replaced `process.env.BETTER_AUTH_URL` with `process.env.NEXT_PUBLIC_APP_URL ?? "https://detailforge.io"` — matching the pattern already used in quote send and quote approve routes.
+
+**Root cause:** `BETTER_AUTH_URL` was repurposed as a generic app base URL for the analysis callback. When the domain changed, this env var was updated for auth but the analysis callback silently broke because the fire-and-forget fetch swallows errors. No monitoring or alerting surfaced the failure.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
