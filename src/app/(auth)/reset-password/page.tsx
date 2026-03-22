@@ -3,40 +3,90 @@
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, CircleCheck } from "lucide-react";
-import { signIn } from "@/lib/auth-client";
+import { Loader2 } from "lucide-react";
+import { resetPassword } from "@/lib/auth-client";
 import Wordmark from "@/components/wordmark";
 
-export default function SignInPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const resetSuccess = searchParams.get("reset") === "success";
-  const [email, setEmail] = useState("");
+  const token = searchParams.get("token");
+
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  if (!token) {
+    return (
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <h1>
+            <Link
+              href="/"
+              className="inline-block transition-opacity hover:opacity-80"
+            >
+              <Wordmark className="text-3xl text-[var(--color-text)]" />
+            </Link>
+          </h1>
+        </div>
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
+          <p className="text-sm text-[var(--color-text)]">
+            Invalid or missing reset link.
+          </p>
+          <p className="mt-3 text-xs text-[var(--color-muted)]">
+            Please request a new password reset.
+          </p>
+          <Link
+            href="/forgot-password"
+            className="mt-4 inline-block text-sm text-[var(--color-purple-text)] hover:underline"
+          >
+            Request new reset link
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setLoading(true);
 
+    if (!token) {
+      setError("Missing reset token.");
+      return;
+    }
+
     try {
-      const { error: signInError } = await signIn.email({
-        email,
-        password,
+      const { error: resetError } = await resetPassword({
+        newPassword: password,
+        token,
       });
 
-      if (signInError) {
-        setError(signInError.message ?? "Sign in failed. Please try again.");
+      if (resetError) {
+        setError(
+          resetError.message ?? "Reset failed. The link may have expired.",
+        );
         setLoading(false);
         return;
       }
 
-      router.refresh();
-      router.push("/dashboard");
+      router.push("/sign-in?reset=success");
     } catch {
       setError("Network error. Please check your connection and try again.");
+    } finally {
       setLoading(false);
     }
   }
@@ -45,12 +95,15 @@ export default function SignInPage() {
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
         <h1>
-          <Link href="/" className="inline-block transition-opacity hover:opacity-80">
+          <Link
+            href="/"
+            className="inline-block transition-opacity hover:opacity-80"
+          >
             <Wordmark className="text-3xl text-[var(--color-text)]" />
           </Link>
         </h1>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
-          Sign in to your account
+          Choose a new password
         </p>
       </div>
 
@@ -58,13 +111,6 @@ export default function SignInPage() {
         onSubmit={handleSubmit}
         className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6"
       >
-        {resetSuccess && (
-          <p className="mb-4 flex items-center gap-2 rounded-[var(--radius-badge)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-[var(--color-green)]">
-            <CircleCheck className="h-4 w-4 shrink-0" />
-            Password reset successfully. Sign in with your new password.
-          </p>
-        )}
-
         {error && (
           <p className="mb-4 rounded-[var(--radius-badge)] bg-[var(--color-elevated)] px-3 py-2 text-sm text-destructive">
             {error}
@@ -74,45 +120,39 @@ export default function SignInPage() {
         <div className="space-y-4">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="password"
               className="mb-1.5 block text-sm font-medium text-[var(--color-text)]"
             >
-              Email
+              New password
             </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-[var(--color-text)]"
-              >
-                Password
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-[var(--color-purple-text)] hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
             <input
               id="password"
               type="password"
               required
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
-              placeholder="Enter your password"
+              placeholder="At least 8 characters"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="mb-1.5 block text-sm font-medium text-[var(--color-text)]"
+            >
+              Confirm password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              required
+              minLength={8}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-3 py-2 text-base text-[var(--color-text)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-purple-action)] focus:outline-none"
+              placeholder="Confirm your new password"
             />
           </div>
         </div>
@@ -125,22 +165,12 @@ export default function SignInPage() {
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Signing in...
+              Resetting...
             </span>
           ) : (
-            "Sign in"
+            "Reset password"
           )}
         </button>
-
-        <p className="mt-4 text-center text-sm text-[var(--color-muted)]">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/sign-up"
-            className="text-[var(--color-purple-text)] hover:underline"
-          >
-            Sign up
-          </Link>
-        </p>
       </form>
     </div>
   );

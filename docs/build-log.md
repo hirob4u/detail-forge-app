@@ -1202,4 +1202,36 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-22 -- feat/password-reset
+
+**Branch:** `feat/password-reset`
+**Commit:** `feat: password reset flow with email notification`
+**Date:** 2026-03-22
+**Status:** PR pending review
+
+**What was built:**
+- Full password reset flow: forgot-password → email → reset-password → sign-in with success banner
+- Better Auth `sendResetPassword` callback with Resend + React Email template (dark theme, purple badge)
+- Dynamic imports in auth.ts to avoid pulling email dependencies into middleware bundle
+- Forgot-password page with anti-enumeration defense (always shows success)
+- Reset-password page with token validation, password confirmation, min-length check
+- "Forgot password?" link on sign-in page + green success banner on ?reset=success
+- Proxy updated with new auth paths (redirect to dashboard if already authenticated)
+
+**Quality gate findings addressed:**
+- `as string` cast removed — replaced with runtime null guard inside handleSubmit
+- Email enumeration: always show success regardless of API response
+- render() error handling: try/catch wrapping entire sendResetPassword callback
+- setLoading(false) in finally block for consistent loading state cleanup
+
+**Files created (3):** forgot-password/page.tsx, reset-password/page.tsx, password-reset email template
+
+**Files modified (4):** auth.ts, auth-client.ts, sign-in/page.tsx, proxy.ts
+
+**Corrected:** Client method name was `requestPasswordReset` not `forgetPassword`. Static imports in auth.ts broke middleware bundle — fixed with dynamic imports.
+
+**Root cause:** Better Auth's client API naming differs from documentation examples. auth.ts is imported by proxy.ts (middleware), so top-level imports of email/react-email dependencies fail in the edge runtime.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

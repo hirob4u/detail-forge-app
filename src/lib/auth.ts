@@ -16,6 +16,36 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      try {
+        // Dynamic imports to avoid pulling email/React-Email into middleware bundle
+        const { render } = await import("@react-email/components");
+        const { default: PasswordResetEmail } = await import(
+          "@/lib/email-templates/password-reset"
+        );
+        const { getResend, DEFAULT_FROM } = await import("@/lib/email");
+
+        const html = await render(
+          PasswordResetEmail({
+            resetUrl: url,
+            userName: user.name,
+          }),
+        );
+        // Fire-and-forget to prevent timing attacks (email enumeration)
+        getResend()
+          .emails.send({
+            from: DEFAULT_FROM,
+            to: user.email,
+            subject: "Reset your DetailForge password",
+            html,
+          })
+          .catch((err) => {
+            console.error("Failed to send password reset email:", err);
+          });
+      } catch (err) {
+        console.error("Failed to render password reset email:", err);
+      }
+    },
   },
   plugins: [organization()],
 });
