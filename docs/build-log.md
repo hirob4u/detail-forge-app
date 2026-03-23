@@ -1351,4 +1351,25 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-23 -- Feat: Invite Email Template & Send-Invite Script
+
+**Branch:** `feat/invite-email`
+**Commit:** `feat: invite email template and send-invite script`
+**Date:** 2026-03-23
+**Status:** PR pending review
+
+**What was built:**
+- React Email invite template matching existing email design system (dark theme, purple accents, JetBrains Mono code display)
+- `send-invite` CLI script that creates an email-locked invite code AND sends the invite email via Resend in one step
+- Email validation, code collision retry, and safe arg parsing
+
+**Files added (2):** src/lib/email-templates/invite.tsx, scripts/send-invite.ts
+**Files modified (1):** package.json (added `send-invite` script)
+
+**Corrected:** Quality gate round 1 found: missing email validation (S1), no collision retry (S2), arg parsing truncation for values containing `=` (S3), `&apos;` entity in Preview component (M1). All fixed before round 2.
+
+**Root cause:** N/A (new feature, not a bugfix)
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
