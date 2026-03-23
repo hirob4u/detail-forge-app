@@ -23,10 +23,11 @@ export function generateQcChecklist(
   // Add flag-level items from AI assessment
   const flags = (aiAssessment?.flags as string[]) ?? [];
   flags.forEach((flag, i) => {
-    // Skip non-correctable flags -- they are customer expectation items, not work items
+    // Skip non-correctable flags and metadata flags -- they are not work items
     if (
       flag.toLowerCase().includes("non-correctable") ||
-      flag.toLowerCase().includes("customer should be aware")
+      flag.toLowerCase().includes("customer should be aware") ||
+      flag === "no-photos-submitted"
     )
       return;
 

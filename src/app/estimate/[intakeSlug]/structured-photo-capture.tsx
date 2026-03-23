@@ -179,8 +179,6 @@ const OPTIONAL_SHOTS: ShotDefinition[] = [
   },
 ];
 
-export const REQUIRED_SHOT_AREAS = REQUIRED_SHOTS.map((s) => s.area);
-
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
@@ -213,11 +211,13 @@ interface StructuredPhotoCaptureProps {
   onPhotosChange: (
     photos: Array<{ key: string; area: ShotArea; phase: "before" }>,
   ) => void;
+  submitRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
 export default function StructuredPhotoCapture({
   orgSlug,
   onPhotosChange,
+  submitRef,
 }: StructuredPhotoCaptureProps) {
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [mode, setMode] = useState<CaptureMode>("rapid");
@@ -562,9 +562,7 @@ export default function StructuredPhotoCapture({
 
   /* ---- Derived values ---- */
 
-  const completedRequired = REQUIRED_SHOTS.filter((s) =>
-    photos.some((p) => p.shotArea === s.area && p.status === "done"),
-  ).length;
+  const photosAdded = photos.filter((p) => p.status === "done").length;
 
   const totalPhotos = photos.length;
   const uploading = photos.filter((p) => p.status === "uploading").length;
@@ -579,15 +577,32 @@ export default function StructuredPhotoCapture({
     ? photos.find((p) => p.shotArea === shot.area && p.status === "error")
     : undefined;
 
-  // Which required areas are still missing (only "done" counts as filled)
-  const missingRequired = REQUIRED_SHOTS.filter(
-    (s) => !photos.some((p) => p.shotArea === s.area && p.status === "done"),
-  );
-
   /* ---- Render ---- */
 
   return (
     <div className="space-y-4">
+      {/* Orientation card */}
+      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-4 py-3">
+        <p className="text-sm leading-relaxed text-[var(--color-muted)]">
+          Photos speed up your quote — the more we can see, the more accurate
+          your estimate will be, and the less back and forth before we get you on
+          the schedule.
+        </p>
+      </div>
+
+      {/* Skip photos link — scrolls to submit and focuses it */}
+      <button
+        type="button"
+        aria-label="Skip photos and scroll to submit button"
+        onClick={() => {
+          submitRef?.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          submitRef?.current?.focus();
+        }}
+        className="w-full text-center text-xs text-[var(--color-muted)] underline underline-offset-2 transition-colors hover:text-[var(--color-text)]"
+      >
+        Skip photos — jump to submit
+      </button>
+
       {/* Mode toggle */}
       <div className="flex items-center gap-1.5" role="group" aria-label="Capture mode">
         {(
@@ -623,7 +638,7 @@ export default function StructuredPhotoCapture({
           <div>
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-medium text-[var(--color-text)]">
-                {completedRequired} of {REQUIRED_SHOTS.length} required
+                {photosAdded} added
               </span>
               {uploading > 0 && (
                 <span className="flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
@@ -642,7 +657,7 @@ export default function StructuredPhotoCapture({
               <div
                 className="h-full rounded-full bg-[var(--color-brand)] transition-all duration-300"
                 style={{
-                  width: `${(completedRequired / REQUIRED_SHOTS.length) * 100}%`,
+                  width: `${Math.min((photosAdded / REQUIRED_SHOTS.length) * 100, 100)}%`,
                 }}
               />
             </div>
@@ -794,26 +809,6 @@ export default function StructuredPhotoCapture({
             </div>
           )}
 
-          {/* Missing required areas hint */}
-          {totalPhotos > 0 && missingRequired.length > 0 && (
-            <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-3">
-              <span className="mb-2 block text-xs font-medium text-[var(--color-muted)]">
-                Still needed:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {missingRequired.map((s) => (
-                  <span
-                    key={s.area}
-                    className="rounded-[var(--radius-badge)] border border-[var(--color-border)] px-2 py-0.5 text-[10px] text-[var(--color-muted)]"
-                    style={{ fontFamily: "var(--font-data)" }}
-                  >
-                    {s.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Accepted formats note */}
           {totalPhotos === 0 && (
             <p className="text-center text-xs text-[var(--color-muted)]">
@@ -832,7 +827,7 @@ export default function StructuredPhotoCapture({
           <div>
             <div className="mb-2 flex justify-between">
               <span className="text-sm font-medium text-[var(--color-text)]">
-                {completedRequired} of {REQUIRED_SHOTS.length} required shots
+                {photosAdded} added
               </span>
               <span
                 className="text-xs text-[var(--color-muted)]"
@@ -845,7 +840,7 @@ export default function StructuredPhotoCapture({
               <div
                 className="h-full rounded-full bg-[var(--color-brand)] transition-all"
                 style={{
-                  width: `${(completedRequired / REQUIRED_SHOTS.length) * 100}%`,
+                  width: `${Math.min((photosAdded / REQUIRED_SHOTS.length) * 100, 100)}%`,
                 }}
               />
             </div>
@@ -858,21 +853,6 @@ export default function StructuredPhotoCapture({
                 <span className="text-base font-semibold text-[var(--color-text)]">
                   {shot.label}
                 </span>
-                {shot.required ? (
-                  <span
-                    className="rounded-[var(--radius-badge)] bg-[var(--color-brand)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-white"
-                    style={{ fontFamily: "var(--font-data)" }}
-                  >
-                    Required
-                  </span>
-                ) : (
-                  <span
-                    className="rounded-[var(--radius-badge)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-2 py-0.5 text-[10px] uppercase text-[var(--color-muted)]"
-                    style={{ fontFamily: "var(--font-data)" }}
-                  >
-                    Optional
-                  </span>
-                )}
               </div>
               <p className="text-sm leading-relaxed text-[var(--color-muted)]">
                 {shot.guidance}
@@ -943,27 +923,19 @@ export default function StructuredPhotoCapture({
                 "flex items-center gap-1.5 rounded-[var(--radius-button)] border px-4 py-2 text-sm font-medium transition-colors",
                 currentStep === 0
                   ? "border-[var(--color-border)] text-[var(--color-muted)] cursor-not-allowed"
-                  : "border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-purple-action)] hover:text-[var(--color-purple-action)]",
+                  : "border-[var(--color-border)] text-[var(--color-text)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]",
               )}
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
             </button>
 
-            <div className="flex flex-col items-center gap-1">
-              <span
-                className="text-sm font-medium text-[var(--color-text)]"
-                style={{ fontFamily: "var(--font-data)" }}
-              >
-                {currentStep + 1} / {ALL_SHOTS.length}
-              </span>
-              <span
-                className="text-[10px] uppercase tracking-widest text-[var(--color-muted)]"
-                style={{ fontFamily: "var(--font-data)" }}
-              >
-                {currentStep < REQUIRED_SHOTS.length ? "Required" : "Optional"}
-              </span>
-            </div>
+            <span
+              className="text-sm font-medium text-[var(--color-text)]"
+              style={{ fontFamily: "var(--font-data)" }}
+            >
+              {currentStep + 1} / {ALL_SHOTS.length}
+            </span>
 
             <button
               type="button"
@@ -992,22 +964,17 @@ export default function StructuredPhotoCapture({
       {/* ============================================================ */}
       {mode === "batch" && (
         <div className="space-y-6">
-          {/* Required shots */}
+          {/* Core shots */}
           <div>
             <div className="mb-3 flex items-center justify-between">
               <span className="text-sm font-semibold text-[var(--color-text)]">
-                Required Photos
+                Core Photos
               </span>
               <span
-                className={cn(
-                  "text-xs transition-colors",
-                  completedRequired === REQUIRED_SHOTS.length
-                    ? "text-[var(--color-green)]"
-                    : "text-[var(--color-muted)]",
-                )}
+                className="text-xs text-[var(--color-muted)]"
                 style={{ fontFamily: "var(--font-data)" }}
               >
-                {completedRequired} of {REQUIRED_SHOTS.length}
+                {photosAdded} added
               </span>
             </div>
             <div className="space-y-2">

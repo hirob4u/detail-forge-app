@@ -893,4 +893,14 @@ The original analyze call received `photoKeys` in the request body from intake s
 
 ---
 
+### Errata: Audit downstream consumers before introducing new domain flags (feat/optional-photos)
+
+**Branch:** `feat/optional-photos`
+
+**Lesson:** When a new boolean flag is added to an analysis result object (e.g., `no-photos-submitted`), the Blueprint scoping must identify all existing consumers of that object's flag set — not just the files being directly modified. The `no-photos-submitted` flag was introduced in `analyze/route.ts` but `qc-checklist.ts` was an unscoped consumer that would have surfaced the metadata flag as a QC work item. Caught in quality gate round 1, requiring an unplanned edit.
+
+**Add to Blueprint:** Before shipping any new flag on a domain object (job analysis result, job state, etc.), grep for all files that iterate over or reference that object's fields. Add those files to the Blueprint's "files affected" list and verify their behavior against the new flag before writing code.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
