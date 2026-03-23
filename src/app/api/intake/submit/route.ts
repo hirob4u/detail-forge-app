@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { organizations, customers, vehicles, jobs } from "@/lib/db/schema";
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
         photos: data.photoKeys,
         notes: data.notes || null,
         intents: data.intents,
+        photoUploadToken: crypto.randomBytes(32).toString("hex"),
       })
       .returning({ id: jobs.id });
 

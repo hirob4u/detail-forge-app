@@ -11,6 +11,8 @@ const PUBLIC_PREFIXES = [
   "/api/estimates/",
   "/quote/",
   "/api/quote/",
+  "/photos/",
+  "/api/photos/",
 ];
 
 const AUTH_PATHS = ["/sign-in", "/sign-up", "/waitlist", "/forgot-password", "/reset-password"];

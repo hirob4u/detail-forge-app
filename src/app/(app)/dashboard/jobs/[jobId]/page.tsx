@@ -9,6 +9,7 @@ import StageHistory from "./stage-history";
 import StagePipeline from "./stage-pipeline";
 import SocialExportPanel from "./_components/social-export-panel";
 import JobNotes from "./_components/job-notes";
+import PhotoViewer from "./_components/photo-viewer";
 import CollapsibleSection from "@/app/(app)/_components/collapsible-section";
 import StageBadge from "@/app/(app)/_components/stage-badge";
 import type { JobStage } from "@/lib/db/schema";
@@ -38,6 +39,8 @@ export default async function JobDetailPage({
       qcPhotos: jobs.qcPhotos,
       stageHistory: jobs.stageHistory,
       analysisRetryCount: jobs.analysisRetryCount,
+      hasNewPhotos: jobs.hasNewPhotos,
+      photoRequestSentAt: jobs.photoRequestSentAt,
       updatedAt: jobs.updatedAt,
     })
     .from(jobs)
@@ -112,6 +115,15 @@ export default async function JobDetailPage({
             Created {job.createdAt.toLocaleDateString()}
           </p>
         </div>
+
+        {/* Photo viewer — always available, independent of AI analysis */}
+        <PhotoViewer
+          jobId={job.id}
+          initialPhotoCount={((job.photos ?? []) as unknown[]).length}
+          hasNewPhotos={job.hasNewPhotos}
+          customerEmail={customer.email ?? null}
+          photoRequestSentAt={job.photoRequestSentAt?.toISOString() ?? null}
+        />
 
         {/* Persistent notes */}
         <JobNotes jobId={job.id} initialNotes={job.notes ?? ""} />
