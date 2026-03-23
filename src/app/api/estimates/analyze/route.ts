@@ -17,7 +17,10 @@ interface ScoreDimension {
   recommendedService: string;
 }
 
+import type { AiBriefing } from "@/lib/types/ai";
+
 interface ConditionAssessment {
+  briefing?: AiBriefing;
   scores: {
     paintCondition: ScoreDimension;
     scratchSeverity: ScoreDimension;
@@ -273,6 +276,18 @@ export async function POST(request: NextRequest) {
       assessment.confidence = Math.min(assessment.confidence, 20);
       if (!assessment.flags.includes("no-photos-submitted")) {
         assessment.flags.push("no-photos-submitted");
+      }
+      if (assessment.briefing) {
+        assessment.briefing.photoFollowUp = true;
+      } else {
+        // Create minimal briefing stub when LLM omitted it
+        assessment.briefing = {
+          summary: vehicleText,
+          customerIntent: "No specific preferences indicated.",
+          suggestedStartingPoint: "Request photos from customer before scoping services.",
+          upsellFlags: [],
+          photoFollowUp: true,
+        };
       }
     }
 
