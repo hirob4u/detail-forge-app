@@ -70,7 +70,7 @@ interface ReviewFormProps {
   jobId: string;
   assessment: ConditionAssessment;
   vehicle: { year: number; make: string; model: string; color: string };
-  customer: { firstName: string; lastName: string };
+  customer: { firstName: string; lastName: string | null };
   createdAt: string;
   stage: string;
   isQuoted: boolean;
@@ -442,7 +442,7 @@ export default function ReviewForm({
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-[var(--color-text)]">
-              {customer.firstName} {customer.lastName}
+              {customer.firstName}{customer.lastName ? ` ${customer.lastName}` : ""}
               <span className="font-normal text-[var(--color-muted)]">
                 {" "}&middot; {vehicle.year} {vehicle.make} {vehicle.model} &mdash; {vehicle.color}
               </span>

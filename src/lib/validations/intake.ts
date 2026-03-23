@@ -18,30 +18,41 @@ export type PresignRequest = z.infer<typeof presignRequestSchema>;
 
 // --- Intake form submission ---
 
-export const intakeSubmitSchema = z.object({
-  orgSlug: z.string().min(1),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Valid email is required"),
-  phone: z.string().min(1, "Phone number is required"),
-  vehicleYear: z
-    .number()
-    .int()
-    .min(1900, "Enter a valid year")
-    .max(new Date().getFullYear() + 2, "Enter a valid year"),
-  vehicleMake: z.string().min(1, "Vehicle make is required"),
-  vehicleModel: z.string().min(1, "Vehicle model is required"),
-  vehicleColor: z.string().min(1, "Vehicle color is required"),
-  notes: z.string().optional().default(""),
-  photoKeys: z
-    .array(
-      z.object({
-        key: z.string().min(1),
-        area: z.string().min(1),
-        phase: z.string().min(1),
-      }),
-    )
-    .default([]),
-});
+export const intakeSubmitSchema = z
+  .object({
+    orgSlug: z.string().min(1),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().optional().default(""),
+    email: z.string().email("Valid email is required").or(z.literal("")).default(""),
+    phone: z.string().optional().default(""),
+    vehicleYear: z
+      .number()
+      .int()
+      .min(1900, "Enter a valid year")
+      .max(new Date().getFullYear() + 2, "Enter a valid year"),
+    vehicleMake: z.string().min(1, "Vehicle make is required"),
+    vehicleModel: z.string().min(1, "Vehicle model is required"),
+    vehicleColor: z.string().min(1, "Vehicle color is required"),
+    notes: z.string().optional().default(""),
+    intents: z
+      .array(z.enum(["wash", "interior", "paint", "protection", "unsure"]))
+      .optional()
+      .default([]),
+    photoKeys: z
+      .array(
+        z.object({
+          key: z.string().min(1),
+          area: z.string().min(1),
+          phase: z.string().min(1),
+        }),
+      )
+      .default([]),
+  })
+  .refine(
+    (data) =>
+      (data.email !== undefined && data.email.length > 0) ||
+      (data.phone !== undefined && data.phone.length > 0),
+    { message: "Either email or phone is required", path: ["email"] },
+  );
 
 export type IntakeSubmit = z.infer<typeof intakeSubmitSchema>;

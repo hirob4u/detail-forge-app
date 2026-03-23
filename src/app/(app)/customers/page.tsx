@@ -62,14 +62,16 @@ export default async function CustomersPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-semibold text-[var(--color-text)]">
-                    {customer.firstName} {customer.lastName}
+                    {customer.firstName}{customer.lastName ? ` ${customer.lastName}` : ""}
                   </p>
-                  <a
-                    href={`mailto:${customer.email}`}
-                    className="mt-0.5 block text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
-                  >
-                    {customer.email}
-                  </a>
+                  {customer.email && (
+                    <a
+                      href={`mailto:${customer.email}`}
+                      className="mt-0.5 block text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
+                    >
+                      {customer.email}
+                    </a>
+                  )}
                   {customer.phone && (
                     <a
                       href={`tel:${stripPhone(customer.phone)}`}

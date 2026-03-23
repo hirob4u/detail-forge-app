@@ -99,9 +99,9 @@ export const customers = pgTable(
       .notNull()
       .references(() => organizations.id, { onDelete: "cascade" }),
     firstName: varchar("first_name", { length: 255 }).notNull(),
-    lastName: varchar("last_name", { length: 255 }).notNull(),
-    email: varchar("email", { length: 255 }).notNull(),
-    phone: varchar("phone", { length: 50 }).notNull(),
+    lastName: varchar("last_name", { length: 255 }),
+    email: varchar("email", { length: 255 }),
+    phone: varchar("phone", { length: 50 }),
     address: varchar("address", { length: 500 }).notNull(),
     notes: text("notes"),
     lifetimeSpend: numeric("lifetime_spend", { precision: 12, scale: 2 })
@@ -188,6 +188,7 @@ export const jobs = pgTable(
     estimateAmount: numeric("estimate_amount", { precision: 12, scale: 2 }),
     finalAmount: numeric("final_amount", { precision: 12, scale: 2 }),
     notes: text("notes"),
+    intents: jsonb("intents").$type<string[]>().default([]),
     qcPhotos: jsonb("qc_photos")
       .$type<{ key: string; area: string; uploadedAt: string }[]>()
       .default([]),
