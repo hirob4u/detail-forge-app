@@ -1333,4 +1333,22 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-22 -- Fix: Retry Analysis UX Flash & Missing Vehicle Info
+
+**Branch:** `fix/retry-analysis-ux`
+**Commit:** `fix: retry analysis UX flash and missing vehicle info on re-analysis`
+**Date:** 2026-03-22
+**Status:** PR pending review
+
+**What was built:**
+- retry-analysis route now sets `analysisStatus = "processing"` in DB before returning, eliminating race condition where polls read stale "failed" status
+- analyze route now fetches vehicle info from DB via vehicles table instead of relying on request body params (which were undefined on retry)
+- Cleaned up dead vehicle params from intake submit fire-and-forget body
+
+**Files modified (3):** retry-analysis/route.ts, analyze/route.ts, intake/submit/route.ts
+
+**Root cause:** Two bugs — (1) retry-analysis returned immediately without updating DB status, so the first poll read stale "failed" status causing a jarring UI flash. (2) retry-analysis only sent `{ jobId }` to the analyze endpoint, not vehicle info. The AI received "Vehicle: undefined undefined undefined in undefined" and produced a degraded assessment with many false flags.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
