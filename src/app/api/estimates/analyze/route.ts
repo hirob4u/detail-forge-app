@@ -12,7 +12,7 @@ import { r2, PHOTOS_BUCKET } from "@/lib/r2";
 // ---------------------------------------------------------------------------
 
 interface ScoreDimension {
-  score: number;
+  score: number | null;
   description: string;
   recommendedService: string;
 }
@@ -108,12 +108,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "jobId is required" }, { status: 400 });
   }
 
-  // Verify job exists and fetch stored photos as fallback
+  // Verify job exists and fetch stored photos/notes as fallback
   const [job] = await db
     .select({
       id: jobs.id,
       vehicleId: jobs.vehicleId,
       photos: jobs.photos,
+      notes: jobs.notes,
       analysisRetryCount: jobs.analysisRetryCount,
     })
     .from(jobs)
@@ -147,12 +148,7 @@ export async function POST(request: NextRequest) {
       ? photoKeys
       : (job.photos ?? []);
 
-  if (resolvedPhotoKeys.length === 0) {
-    return NextResponse.json(
-      { error: "No photos available for analysis" },
-      { status: 400 },
-    );
-  }
+  const hasPhotos = resolvedPhotoKeys.length > 0;
 
   // Confirm processing has begun and increment retry count
   await db
@@ -182,43 +178,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch photos from R2 (max 8)
-    const keysToFetch = resolvedPhotoKeys
-      .slice(0, MAX_PHOTOS)
-      .map((k) => (typeof k === "string" ? k : k.key));
-    const photoResults = await Promise.all(keysToFetch.map(fetchPhotoAsBase64));
-    const validPhotos = photoResults.filter(
-      (p): p is { base64: string; mediaType: "image/jpeg" } => p !== null,
-    );
+    // Build context text — always include vehicle info and customer notes
+    // Wrap user-supplied notes in XML delimiters to reduce prompt injection surface
+    // Escape angle brackets to prevent XML breakout
+    const escapedNotes = job.notes
+      ? job.notes.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      : null;
+    const notesText = escapedNotes
+      ? `\n<customer_notes>${escapedNotes}</customer_notes>`
+      : "";
+    const contextText = `${vehicleText}${notesText}`;
 
-    if (validPhotos.length === 0) {
-      await db
-        .update(jobs)
-        .set({ analysisStatus: "failed" })
-        .where(eq(jobs.id, jobId));
-      return NextResponse.json(
-        { error: "Failed to fetch any photos from storage" },
-        { status: 500 },
+    let userContent: Anthropic.ContentBlockParam[];
+
+    if (hasPhotos) {
+      // --- Photo path: fetch from R2 and include images ---
+      const keysToFetch = resolvedPhotoKeys
+        .slice(0, MAX_PHOTOS)
+        .map((k) => (typeof k === "string" ? k : k.key));
+      const photoResults = await Promise.all(keysToFetch.map(fetchPhotoAsBase64));
+      const validPhotos = photoResults.filter(
+        (p): p is { base64: string; mediaType: "image/jpeg" } => p !== null,
       );
+
+      if (validPhotos.length === 0) {
+        await db
+          .update(jobs)
+          .set({ analysisStatus: "failed" })
+          .where(eq(jobs.id, jobId));
+        return NextResponse.json(
+          { error: "Failed to fetch any photos from storage" },
+          { status: 500 },
+        );
+      }
+
+      const imageBlocks: Anthropic.ImageBlockParam[] = validPhotos.map((photo) => ({
+        type: "image" as const,
+        source: {
+          type: "base64" as const,
+          media_type: photo.mediaType,
+          data: photo.base64,
+        },
+      }));
+
+      userContent = [
+        { type: "text", text: contextText },
+        ...imageBlocks,
+      ];
+    } else {
+      // --- No-photo path: vehicle info + notes only ---
+      userContent = [
+        {
+          type: "text",
+          text: `${contextText}\n\nIMPORTANT: No photos were submitted with this estimate request. You cannot perform visual assessment. Set all photo-dependent scores to null. Focus your response on: vehicle-specific insights based on year/make/model/color, common service recommendations for this vehicle type and age, potential upsell opportunities, and flag that photo follow-up is recommended before finalizing the quote. Set confidence to 15 and include "no-photos-submitted" in flags.`,
+        },
+      ];
     }
-
-    // Build Claude API message content
-    const imageBlocks: Anthropic.ImageBlockParam[] = validPhotos.map((photo) => ({
-      type: "image" as const,
-      source: {
-        type: "base64" as const,
-        media_type: photo.mediaType,
-        data: photo.base64,
-      },
-    }));
-
-    const userContent: Anthropic.ContentBlockParam[] = [
-      {
-        type: "text",
-        text: vehicleText,
-      },
-      ...imageBlocks,
-    ];
 
     // Call Claude API
     const message = await anthropic.messages.create({
@@ -243,6 +258,18 @@ export async function POST(request: NextRequest) {
     // Parse JSON response
     const cleaned = stripMarkdownFences(textBlock.text);
     const assessment = JSON.parse(cleaned) as ConditionAssessment;
+
+    // Enforce null scores when no photos were submitted — Claude may
+    // return numeric scores despite being told not to
+    if (!hasPhotos) {
+      for (const key of Object.keys(assessment.scores) as Array<keyof typeof assessment.scores>) {
+        assessment.scores[key].score = null;
+      }
+      assessment.confidence = Math.min(assessment.confidence, 20);
+      if (!assessment.flags.includes("no-photos-submitted")) {
+        assessment.flags.push("no-photos-submitted");
+      }
+    }
 
     // Update job record with assessment and mark complete
     await db

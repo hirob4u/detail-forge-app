@@ -203,3 +203,13 @@ Root cause: `scripts/create-invite.ts` used `.split("=")[1]` to parse `--note=` 
 Action required: Use `indexOf("=")` + `substring(idx + 1)` to parse CLI args, preserving the full value after the first `=`. See `parseArg()` in `scripts/send-invite.ts` for the correct pattern.
 
 ---
+
+## [2026-03-23] Audit all consumers when introducing new flag values (feat/optional-photos)
+
+**Warning: When adding a new string value to a flags/tags array on a domain object, grep for all code that reads that array before quality gate review.**
+
+Root cause: The "no-photos-submitted" flag was added to `aiAssessment.flags` in the analyze route. `qc-checklist.ts` reads `flags` to generate QC work items and didn't filter this metadata flag, causing it to appear as a pending checklist item for the detailer. Quality gate round 2 caught this.
+
+Action required: Before adding a new flag value to any array field (flags, tags, intents), run `grep -r "\.flags" src/` (or equivalent) to find all consumers. Add the new value to any skip/filter lists in those consumers.
+
+---

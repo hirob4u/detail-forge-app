@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { maskPhone, stripPhone } from "@/lib/format";
 import StructuredPhotoCapture, {
-  REQUIRED_SHOT_AREAS,
   type ShotArea,
 } from "./structured-photo-capture";
 
@@ -15,6 +14,7 @@ interface IntakeFormProps {
 
 export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
   const router = useRouter();
+  const submitRef = useRef<HTMLButtonElement>(null);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -28,10 +28,6 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
   const [photos, setPhotos] = useState<
     Array<{ key: string; area: ShotArea; phase: "before" }>
   >([]);
-
-  const requiredComplete = REQUIRED_SHOT_AREAS.every((area) =>
-    photos.some((p) => p.area === area),
-  );
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -249,11 +245,12 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
           className={legendClass}
           style={{ fontFamily: "var(--font-data)" }}
         >
-          Vehicle Photos
+          Vehicle Photos <span className="normal-case tracking-normal text-[var(--color-muted)]">(optional)</span>
         </legend>
         <StructuredPhotoCapture
           orgSlug={orgSlug}
           onPhotosChange={setPhotos}
+          submitRef={submitRef}
         />
       </fieldset>
 
@@ -275,8 +272,9 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
       </fieldset>
 
       <button
+        ref={submitRef}
         type="submit"
-        disabled={loading || !requiredComplete}
+        disabled={loading}
         className="w-full rounded-[var(--radius-button)] bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-brand-hover)] disabled:bg-[var(--color-elevated)] disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
       >
         {loading ? "Submitting..." : "Request Estimate"}

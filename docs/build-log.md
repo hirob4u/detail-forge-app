@@ -1372,4 +1372,34 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### Phase 1 Intake Redesign — Remove Photo Gate
+
+**Branch:** `feat/optional-photos`
+**Commit:** `feat: make intake photos optional — remove 8-photo gate`
+**Date:** 2026-03-23
+**Status:** PR pending review
+
+**What was built:**
+- Removed 8-photo requirement that blocked intake form submission
+- Replaced "X of 8 required" counters with "X added" across all three capture modes (Rapid, Step-by-step, All at once)
+- Removed Required/Optional badges from guided mode shot cards
+- Added orientation card explaining photo value without gating
+- Added "Skip photos — jump to submit" navigation link in photo section
+- Marked photo section as "(optional)" in legend
+- Renamed batch mode "Required Photos" to "Core Photos"
+- Removed "Still needed" missing areas hint box
+- Handle zero-photo AI analysis gracefully: vehicle info + notes only path with null scores, low confidence, and "no-photos-submitted" flag
+- Post-parse enforcement: force null scores + cap confidence when no photos submitted
+- Customer notes now included in AI context (XML-escaped, wrapped in delimiters)
+- QC checklist filter updated to skip "no-photos-submitted" metadata flag
+- Fixed `--color-purple-action` on customer-facing guided mode Previous button hover
+
+**Files modified (4):** src/app/estimate/[intakeSlug]/intake-form.tsx, src/app/estimate/[intakeSlug]/structured-photo-capture.tsx, src/app/api/estimates/analyze/route.ts, src/lib/qc-checklist.ts
+
+**Corrected:** Quality gate round 1: duplicate skip buttons with conflicting behavior (S1), no null-score enforcement on no-photo path (S2), unused customerId in query (S3), unsanitized customer notes in AI prompt (S4). Round 2: redundant bottom skip button removed (S1), XML angle bracket escaping (S3), QC checklist filter for metadata flags (S4). Round 3: `&` character escaping in notes (S3), `--color-purple-action` on customer page (M3).
+
+**Root cause:** N/A (new feature — Phase 1 of intake redesign)
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
