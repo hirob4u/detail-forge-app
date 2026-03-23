@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import sharp from "sharp";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { jobs, prompts } from "@/lib/db/schema";
+import { jobs, prompts, vehicles } from "@/lib/db/schema";
 import { r2, PHOTOS_BUCKET } from "@/lib/r2";
 
 // ---------------------------------------------------------------------------
@@ -98,20 +98,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  const {
-    jobId,
-    photoKeys,
-    vehicleYear,
-    vehicleMake,
-    vehicleModel,
-    vehicleColor,
-  } = body as {
+  const { jobId, photoKeys } = body as {
     jobId: string;
     photoKeys: Array<string | { key: string; area: string; phase: string }>;
-    vehicleYear?: number;
-    vehicleMake?: string;
-    vehicleModel?: string;
-    vehicleColor?: string;
   };
 
   // Validate required fields
@@ -123,6 +112,7 @@ export async function POST(request: NextRequest) {
   const [job] = await db
     .select({
       id: jobs.id,
+      vehicleId: jobs.vehicleId,
       photos: jobs.photos,
       analysisRetryCount: jobs.analysisRetryCount,
     })
@@ -133,6 +123,23 @@ export async function POST(request: NextRequest) {
   if (!job) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
+
+  // Fetch vehicle info from DB — always authoritative, works for both
+  // initial intake and retries (previously retries sent "undefined" values)
+  const [vehicle] = await db
+    .select({
+      year: vehicles.year,
+      make: vehicles.make,
+      model: vehicles.model,
+      color: vehicles.color,
+    })
+    .from(vehicles)
+    .where(eq(vehicles.id, job.vehicleId))
+    .limit(1);
+
+  const vehicleText = vehicle
+    ? `Vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model} in ${vehicle.color}`
+    : "Vehicle information not available";
 
   // Use photoKeys from request body, or fall back to DB photos
   const resolvedPhotoKeys: Array<string | { key: string; area: string; phase: string }> =
@@ -208,7 +215,7 @@ export async function POST(request: NextRequest) {
     const userContent: Anthropic.ContentBlockParam[] = [
       {
         type: "text",
-        text: `Vehicle: ${vehicleYear} ${vehicleMake} ${vehicleModel} in ${vehicleColor}`,
+        text: vehicleText,
       },
       ...imageBlocks,
     ];

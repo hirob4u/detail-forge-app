@@ -885,4 +885,12 @@ The original analyze call received `photoKeys` in the request body from intake s
 
 ---
 
+### Errata: Analyze endpoint must be self-contained (fix/retry-analysis-ux)
+
+**Lesson:** The `/api/estimates/analyze` endpoint relied on callers to pass vehicle info in the request body. Initial intake passed it correctly, but retry did not — producing "undefined undefined undefined" in the AI prompt.
+
+**Add to Blueprint:** Any fire-and-forget endpoint that processes data should resolve all required context from the DB using the job ID, not rely on the caller to pass derived fields. The caller should only send the primary key. This makes the endpoint idempotent and safe to call from any trigger (intake, retry, admin tools).
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

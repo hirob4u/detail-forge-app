@@ -84,6 +84,14 @@ export async function POST(
     );
   }
 
+  // Set status to processing in DB BEFORE returning so polls see
+  // the correct state immediately — eliminates the flash of "failed"
+  // while the fire-and-forget analyze request is still in flight.
+  await db
+    .update(jobs)
+    .set({ analysisStatus: "processing" })
+    .where(eq(jobs.id, jobId));
+
   // Fire-and-forget to the analyze endpoint with internal secret
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? "https://detailforge.io";

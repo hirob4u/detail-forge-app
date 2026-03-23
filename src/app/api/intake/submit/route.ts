@@ -82,10 +82,6 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         jobId: job.id,
         photoKeys: data.photoKeys.map((p) => p.key),
-        vehicleYear: data.vehicleYear,
-        vehicleMake: data.vehicleMake,
-        vehicleModel: data.vehicleModel,
-        vehicleColor: data.vehicleColor,
       }),
     }).catch((err) => {
       console.error(
