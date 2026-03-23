@@ -233,3 +233,23 @@ Root cause: `intents` field accepted `z.array(z.string())` — any string. An at
 Action required: When adding a field that maps to a known set of values, always use `z.enum()` or `z.union()` at the Zod boundary. Never pass user-supplied strings into AI prompts without either allowlist validation or XML escaping.
 
 ---
+
+## [2026-03-23] Atomic JSONB array concat for concurrent-safe append (feat/photo-upload-followup)
+
+**Warning: Never read-then-write a JSONB array column when multiple writers can append to it. Use SQL-level `jsonb || $1::jsonb` in a single UPDATE.**
+
+Root cause: Photo submit route did `SELECT photos → merge in JS → UPDATE photos`, creating a race window where two concurrent uploads could overwrite each other's photos. Quality gate caught as Fatal.
+
+Action required: When appending to a JSONB array column, use `sql\`COALESCE(column, '[]'::jsonb) || ${JSON.stringify(newItems)}::jsonb\`` in the Drizzle `.set()` call. This is atomic at the database level.
+
+---
+
+## [2026-03-23] Validate R2 key prefixes on public submission endpoints (feat/photo-upload-followup)
+
+**Warning: Public endpoints that store R2 object keys must validate the key prefix matches the expected pattern (e.g., `followup/{orgId}/{jobId}/`). Without validation, a malicious caller can inject arbitrary keys into the job's photo array.**
+
+Root cause: Photo submit route accepted any string as a key — an attacker could reference keys from other orgs/jobs. Quality gate caught as Fatal.
+
+Action required: When accepting R2 keys from public endpoints, validate each key starts with the expected prefix derived from the DB-fetched job/org IDs. Never trust client-supplied keys without prefix validation.
+
+---

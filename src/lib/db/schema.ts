@@ -205,6 +205,9 @@ export const jobs = pgTable(
       >()
       .default([]),
     quoteToken: varchar("quote_token", { length: 64 }).unique(),
+    photoUploadToken: varchar("photo_upload_token", { length: 64 }).unique(),
+    hasNewPhotos: boolean("has_new_photos").notNull().default(false),
+    photoRequestSentAt: timestamp("photo_request_sent_at", { withTimezone: true }),
     quoteSentAt: timestamp("quote_sent_at", { withTimezone: true }),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     analysisRetryCount: integer("analysis_retry_count").notNull().default(0),

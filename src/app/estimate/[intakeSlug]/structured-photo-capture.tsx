@@ -212,12 +212,14 @@ interface StructuredPhotoCaptureProps {
     photos: Array<{ key: string; area: ShotArea; phase: "before" }>,
   ) => void;
   submitRef?: React.RefObject<HTMLButtonElement | null>;
+  presignEndpoint?: string;
 }
 
 export default function StructuredPhotoCapture({
   orgSlug,
   onPhotosChange,
   submitRef,
+  presignEndpoint = "/api/uploads/presign",
 }: StructuredPhotoCaptureProps) {
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [mode, setMode] = useState<CaptureMode>("rapid");
@@ -260,7 +262,7 @@ export default function StructuredPhotoCapture({
       const controller = abortControllerRef.current;
       if (!controller) return; // component unmounted before upload started
       const signal = controller.signal;
-      const presignRes = await fetch("/api/uploads/presign", {
+      const presignRes = await fetch(presignEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
