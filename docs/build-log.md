@@ -1402,4 +1402,32 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### Phase 2 Intake Redesign — Three-Step Wizard + Intent Tiles
+
+**Branch:** `feat/intake-wizard`
+**Commit:** `feat: three-step intake wizard with intent tiles`
+**Date:** 2026-03-23
+**Status:** PR pending review
+
+**What was built:**
+- Converted single-scroll intake form into 3-step wizard with client-side state
+- Step 1: Contact (firstName required, lastName optional, email OR phone) + Vehicle info
+- Step 2: Intent tile grid (5 tiles: wash, interior, paint, protection, unsure) + secondary notes field
+- Step 3: Photos (optional, unchanged from Phase 1)
+- Step progress indicator with completed/active/pending states, back-navigation via checkmarks
+- Schema migration: `intents` jsonb on jobs, `lastName`/`phone`/`email` nullable on customers
+- Zod validation with `.refine()` for email-OR-phone, `z.enum` allowlist for intents
+- AI analysis context now includes intent selections
+- All customer name displays handle nullable lastName gracefully
+- Customer email display conditionally renders (handles null from phone-only submissions)
+
+**Files added (4):** step-indicator.tsx, intent-tiles.tsx, 2 migration files
+**Files modified (9):** intake-form.tsx, schema.ts, validations/intake.ts, submit/route.ts, analyze/route.ts, review-form.tsx, job-card.tsx, customers/page.tsx, page.tsx (job detail), approve/route.ts
+
+**Corrected:** Quality gate round 1: operator precedence bug in hasPhone check (F1), intents prompt injection via arbitrary strings — fixed with z.enum allowlist (F2), empty email stored as "" creating broken mailto links — made email nullable (S1), null lastName rendering as "null" text in 5 locations (S2), stale errors on step indicator navigation (S3), native browser email validation conflicting with custom validation (M6).
+
+**Root cause:** N/A (new feature — Phase 2 of intake redesign)
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

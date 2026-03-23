@@ -96,7 +96,7 @@ export default async function JobDetailPage({
         {/* Compact metadata — customer + vehicle + created in one card */}
         <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-1">
           <p className="text-sm font-semibold text-[var(--color-text)]">
-            {customer.firstName} {customer.lastName}
+            {customer.firstName}{customer.lastName ? ` ${customer.lastName}` : ""}
             <span className="font-normal text-[var(--color-muted)]">
               {customer.phone ? <> &middot; {formatPhone(customer.phone)}</> : null}
             </span>
@@ -159,7 +159,7 @@ export default async function JobDetailPage({
           <StageControls
             jobId={job.id}
             currentStage={job.stage as JobStage}
-            customerEmail={customer.email}
+            customerEmail={customer.email ?? undefined}
             quoteTotal={job.finalQuote?.totalPrice}
             quoteSentAt={job.quoteSentAt}
           />

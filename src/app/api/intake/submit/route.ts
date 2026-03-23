@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
       .values({
         orgId: org.id,
         firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
+        lastName: data.lastName || null,
+        email: data.email || null,
+        phone: data.phone || null,
         address: "", // TODO: VERIFY — address is NOT NULL but not collected on intake
       })
       .returning({ id: customers.id });
@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
         vehicleId: vehicle.id,
         photos: data.photoKeys,
         notes: data.notes || null,
+        intents: data.intents,
       })
       .returning({ id: jobs.id });
 

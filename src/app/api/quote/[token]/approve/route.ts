@@ -116,7 +116,7 @@ export async function POST(
   if (org?.businessEmail) {
     try {
       const customerName = customer
-        ? `${customer.firstName} ${customer.lastName}`
+        ? `${customer.firstName}${customer.lastName ? ` ${customer.lastName}` : ""}`
         : "A customer";
       const vehicleDesc = vehicle
         ? `${vehicle.year} ${vehicle.make} ${vehicle.model}`

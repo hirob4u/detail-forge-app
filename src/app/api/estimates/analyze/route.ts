@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
       vehicleId: jobs.vehicleId,
       photos: jobs.photos,
       notes: jobs.notes,
+      intents: jobs.intents,
       analysisRetryCount: jobs.analysisRetryCount,
     })
     .from(jobs)
@@ -187,7 +188,11 @@ export async function POST(request: NextRequest) {
     const notesText = escapedNotes
       ? `\n<customer_notes>${escapedNotes}</customer_notes>`
       : "";
-    const contextText = `${vehicleText}${notesText}`;
+    const intentsArray = (job.intents ?? []) as string[];
+    const intentsText = intentsArray.length > 0
+      ? `\nCustomer is looking for: ${intentsArray.join(", ")}`
+      : "";
+    const contextText = `${vehicleText}${intentsText}${notesText}`;
 
     let userContent: Anthropic.ContentBlockParam[];
 

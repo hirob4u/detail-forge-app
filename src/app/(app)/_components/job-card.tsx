@@ -41,7 +41,7 @@ export default function JobCard({ job }: JobCardProps) {
           {/* Customer name + stage badge */}
           <div className="mb-1 flex flex-wrap items-center gap-2">
             <span className="text-sm font-semibold text-[var(--color-text)]">
-              {job.customer?.firstName} {job.customer?.lastName}
+              {job.customer?.firstName}{job.customer?.lastName ? ` ${job.customer.lastName}` : ""}
             </span>
             <StageBadge
               stage={job.stage}
