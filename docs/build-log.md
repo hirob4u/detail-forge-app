@@ -1313,4 +1313,24 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### 2026-03-22 -- Chore: Auto-Run Migrations on Vercel Deploy
+
+**Branch:** `chore/auto-migrations`
+**Commit:** `chore: auto-run drizzle migrations on Vercel build`
+**Date:** 2026-03-22
+**Status:** PR pending review
+
+**What was built:**
+- Build command changed to `npx drizzle-kit migrate && next build`
+- Added `db:migrate` script for manual use
+- Added forge pattern warning about destructive migrations
+
+**Files modified (2):** package.json, forge/patterns.md
+
+**Corrected:** N/A
+
+**Root cause:** Schema migration for `analysis_retry_count` ran on dev Neon but not production. Deployed code crashed with "column does not exist" on every page. Manual migration steps are error-prone — automating additive migrations in the build eliminates this class of bug.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
