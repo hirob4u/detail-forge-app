@@ -193,3 +193,13 @@ Root cause: The `/api/estimates/analyze` endpoint expected `vehicleYear/Make/Mod
 Action required: When building a fire-and-forget endpoint, the caller should send only the primary key (e.g., `jobId`). The endpoint resolves all context (vehicle, customer, photos, etc.) from the DB. This makes the endpoint safe to call from any trigger — intake, retry, admin tools, or future automation.
 
 ---
+
+## [2026-03-23] CLI arg parsing: never use `.split("=")[1]` (feat/invite-email)
+
+**Warning: `.split("=")[1]` silently truncates CLI argument values that contain `=` characters (base64 tokens, URLs, notes with equals signs).**
+
+Root cause: `scripts/create-invite.ts` used `.split("=")[1]` to parse `--note=` values. This pattern was copied into `send-invite.ts`. Quality gate caught that `--note="foo=bar"` would silently become `"foo`. The existing `create-invite.ts` still has this bug.
+
+Action required: Use `indexOf("=")` + `substring(idx + 1)` to parse CLI args, preserving the full value after the first `=`. See `parseArg()` in `scripts/send-invite.ts` for the correct pattern.
+
+---
