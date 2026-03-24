@@ -253,3 +253,25 @@ Root cause: Photo submit route accepted any string as a key — an attacker coul
 Action required: When accepting R2 keys from public endpoints, validate each key starts with the expected prefix derived from the DB-fetched job/org IDs. Never trust client-supplied keys without prefix validation.
 
 ---
+
+## [2026-03-23] No new patterns — fix/intake-ux-polish (#110)
+
+All changes were surgical 1-3 line UX fixes. No new anti-patterns or warnings discovered.
+
+---
+
+## [2026-03-23] No new patterns — feat/ai-briefing-card (#108)
+
+Prompt extension, shared type, and server component. No new anti-patterns discovered.
+
+---
+
+## [2026-03-24] Enforce process rules with hooks, not just documentation (chore/enforce-forge-errata)
+
+**Warning: Advisory process rules in CLAUDE.md get skipped when agents are under time pressure or sessions end abruptly. Only hook-enforced rules are reliably followed.**
+
+Root cause: "Update errata and forge after every PR" was documented in CLAUDE.md but not enforced. Build-log was kept current because it's the most prominent artifact. Errata and forge fell behind — 4 PRs merged without errata entries, 2 without forge entries.
+
+Action required: When adding a new mandatory process rule to CLAUDE.md, also add a Claude Code hook (PreToolUse on Bash) that blocks the relevant action (e.g., `git commit`) if the rule is not satisfied. Advisory rules decay; enforced rules persist.
+
+---

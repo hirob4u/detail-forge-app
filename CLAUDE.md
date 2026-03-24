@@ -30,8 +30,13 @@ No changes without an approved Blueprint. Spec must include: branch name, commit
 
 If skipping any step, state which and why. Silence is not consent to skip.
 
-### 3. Build Log + Errata
-Every PR gets an entry in `docs/build-log.md`. Every Blueprint that produces a lesson gets an entry in `docs/blueprint-errata.md` and `forge/patterns.md`. These files live in the repo (not just agent memory) so future sessions and agents can read them. No PR without a build log entry.
+### 3. Build Log + Errata + Forge (Three-File Rule)
+Every commit that touches `src/` or `drizzle/` **must** stage all three files:
+1. **`docs/build-log.md`** — what was built, what worked, what was corrected
+2. **`docs/blueprint-errata.md`** — lessons learned and "Add to Blueprint" entries
+3. **`forge/patterns.md`** — forward-looking warnings for future sessions
+
+If a commit has no errata or patterns to record, add a dated "No new errata" / "No new patterns" entry — do not leave the file unstaged. A PreToolUse hook (`.claude/hooks/pre-commit-forge-gate.sh`) enforces this at commit time and will block the commit if any of the three files is missing from staging. These files live in the repo (not just agent memory) so future sessions and agents can read them.
 
 ### 4. Visual Verification
 All font, icon, image, and asset changes must be visually verified before committing. Render → inspect → confirm → then commit. Never assume rendering is correct.

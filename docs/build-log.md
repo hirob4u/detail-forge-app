@@ -1506,4 +1506,28 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### Chore: Enforce Forge/Errata/Build-Log Updates (Three-File Rule)
+
+**Branch:** `chore/enforce-forge-errata`
+**Commit:** `chore: add pre-commit hook enforcing build-log, errata, and forge updates`
+**Date:** 2026-03-24
+**Status:** PR created
+
+**What was built:**
+- Claude Code `PreToolUse` hook (`.claude/hooks/pre-commit-forge-gate.sh`) that intercepts `git commit` commands and blocks if `docs/build-log.md`, `docs/blueprint-errata.md`, or `forge/patterns.md` are not staged when `src/` or `drizzle/` files are in the commit
+- Project-level `.claude/settings.json` with hook configuration
+- Standalone `scripts/check-forge-files.sh` for use outside Claude Code
+- Backfilled missing errata entries for PRs #107, #109, #110
+- Backfilled missing forge entries for #108, #110
+- Strengthened CLAUDE.md rule #3 to explicitly name all three files and reference the hook
+
+**Files added (3):** `.claude/settings.json`, `.claude/hooks/pre-commit-forge-gate.sh`, `scripts/check-forge-files.sh`
+**Files modified (3):** `CLAUDE.md`, `docs/blueprint-errata.md`, `forge/patterns.md`
+
+**Corrected:** N/A (process enforcement, no code logic)
+
+**Root cause:** Agents were skipping errata and forge updates because the rule was advisory. Build-log was mostly kept up to date, but `blueprint-errata.md` had gaps after #106 and `forge/patterns.md` was missing entries for #108 and #110.
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
