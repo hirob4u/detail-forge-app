@@ -2,7 +2,7 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { maskPhone, stripPhone } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import StructuredPhotoCapture, {
@@ -437,7 +437,14 @@ export default function IntakeForm({ orgSlug, orgName }: IntakeFormProps) {
               disabled={loading}
               className={cn(primaryBtnClass, "flex-1 ml-3")}
             >
-              {loading ? "Submitting..." : "Request Estimate"}
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Request Estimate"
+              )}
             </button>
           </div>
 

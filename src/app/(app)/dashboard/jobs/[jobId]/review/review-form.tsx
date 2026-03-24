@@ -573,9 +573,10 @@ export default function ReviewForm({
         </div>
       )}
 
-      {/* Vehicle mismatch warning — always visible */}
+      {/* Vehicle mismatch warning — only show when photos were submitted */}
       {assessment.vehicleVerification &&
-        !assessment.vehicleVerification.appearsToMatch && (
+        !assessment.vehicleVerification.appearsToMatch &&
+        hasPhotos && (
           <div className="rounded-[var(--radius-card)] border border-red-800 bg-red-950/40 p-4">
             <p className="mb-1 text-sm font-semibold text-red-400">
               Vehicle Mismatch Detected

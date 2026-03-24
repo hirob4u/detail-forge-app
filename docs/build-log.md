@@ -1457,4 +1457,26 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### UX Polish — Intake Spinner, Confirmation Footer, Intents, Analysis Panel, Mismatch Guard
+
+**Branch:** `fix/intake-ux-polish`
+**Commit:** `fix: intake submit spinner, confirmation footer, intents display, analysis panel UX, vehicle mismatch guard`
+**Date:** 2026-03-23
+**Status:** PR pending review
+
+**What was fixed:**
+- Submit button: added Loader2 spinner icon during form submission
+- Confirmation page: added "Powered by DetailForge.io" footer (was missing)
+- Job detail: customer intents now displayed as labeled badges below vehicle info
+- Analysis status panel: removed fake progress bar (replaced with spinner-only), increased stuck threshold from 2min to 3min
+- Review page: vehicle mismatch red banner suppressed when no photos submitted (AI can't verify without photos)
+
+**Files modified (5):** intake-form.tsx, confirmation/page.tsx, page.tsx (job detail), analysis-status-panel.tsx, review-form.tsx
+
+**Corrected:** N/A (direct fixes, no quality gate rounds needed — all changes are 1-3 line surgical edits)
+
+**Root cause:** UX gaps from rapid feature development across Phases 1-3
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
