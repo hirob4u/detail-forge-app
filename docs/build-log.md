@@ -1457,4 +1457,53 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### Post-Submission Photo Upload + Detailer Photo Viewer
+
+**Branch:** `feat/photo-upload-followup`
+**Commit:** `feat: post-submission photo upload, detailer photo viewer, photo request email`
+**Date:** 2026-03-23
+**Status:** PR pending review
+
+**What was built:**
+- Customer photo upload page at `/photos/{token}` — public, token-secured, branded with org identity
+- Reuses `StructuredPhotoCapture` component with configurable `presignEndpoint` prop
+- Detailer photo viewer on job detail page — horizontal filmstrip with `PhotoThumbnail` components, lightbox with keyboard navigation
+- "Request Photos" button sends branded email to customer with upload link
+- "Customer added new photos" banner with "Re-analyze" and "Dismiss" buttons
+- Schema: `photoUploadToken`, `hasNewPhotos`, `photoRequestSentAt` on jobs table
+- Token auto-generated on job creation
+- Photo submission uses atomic SQL `jsonb ||` concat (no race conditions)
+- Key validation: submitted keys must start with `followup/{orgId}/{jobId}/`
+
+**Files added (8):** photo-viewer.tsx, customer-photo-upload.tsx, photos/[token]/page.tsx, 3 API routes, email template, migration
+**Files modified (4):** schema.ts, proxy.ts, intake/submit/route.ts, structured-photo-capture.tsx, page.tsx (job detail)
+
+**Corrected:** Quality gate round 1: race condition on photo array merge — fixed with atomic SQL concat (F1), no key prefix validation on submitted photos — added prefix check (F2), token leaked in API response — removed (F3), expiring presigned logo URL in email — use permanent logoUrl (S5), lightbox missing body scroll lock and ARIA attributes (S2).
+
+**Root cause:** N/A (new feature)
+
+---
+
+### UX Polish — Intake Spinner, Confirmation Footer, Intents, Analysis Panel, Mismatch Guard
+
+**Branch:** `fix/intake-ux-polish`
+**Commit:** `fix: intake submit spinner, confirmation footer, intents display, analysis panel UX, vehicle mismatch guard`
+**Date:** 2026-03-23
+**Status:** PR pending review
+
+**What was fixed:**
+- Submit button: added Loader2 spinner icon during form submission
+- Confirmation page: added "Powered by DetailForge.io" footer (was missing)
+- Job detail: customer intents now displayed as labeled badges below vehicle info
+- Analysis status panel: removed fake progress bar (replaced with spinner-only), increased stuck threshold from 2min to 3min
+- Review page: vehicle mismatch red banner suppressed when no photos submitted (AI can't verify without photos)
+
+**Files modified (5):** intake-form.tsx, confirmation/page.tsx, page.tsx (job detail), analysis-status-panel.tsx, review-form.tsx
+
+**Corrected:** N/A (direct fixes, no quality gate rounds needed — all changes are 1-3 line surgical edits)
+
+**Root cause:** UX gaps from rapid feature development across Phases 1-3
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
