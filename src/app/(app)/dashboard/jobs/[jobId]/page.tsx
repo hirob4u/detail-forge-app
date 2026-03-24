@@ -9,6 +9,8 @@ import StageHistory from "./stage-history";
 import StagePipeline from "./stage-pipeline";
 import SocialExportPanel from "./_components/social-export-panel";
 import JobNotes from "./_components/job-notes";
+import AiBriefingCard from "./_components/ai-briefing-card";
+import type { AiBriefing } from "@/lib/types/ai";
 import PhotoViewer from "./_components/photo-viewer";
 import CollapsibleSection from "@/app/(app)/_components/collapsible-section";
 import StageBadge from "@/app/(app)/_components/stage-badge";
@@ -141,6 +143,15 @@ export default async function JobDetailPage({
             Created {job.createdAt.toLocaleDateString()}
           </p>
         </div>
+
+        {/* AI Briefing — shown when analysis is complete and briefing exists */}
+        {(() => {
+          if (job.analysisStatus !== "complete" || !job.aiAssessment) return null;
+          const assessment = job.aiAssessment as Record<string, unknown>;
+          const briefing = assessment.briefing as AiBriefing | undefined;
+          if (!briefing?.summary) return null;
+          return <AiBriefingCard briefing={briefing} />;
+        })()}
 
         {/* Photo viewer — always available, independent of AI analysis */}
         <PhotoViewer

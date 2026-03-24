@@ -1430,6 +1430,33 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+### Phase 3 Intake Redesign — AI Briefing Card
+
+**Branch:** `feat/ai-briefing`
+**Commit:** `feat: AI briefing card on job detail page`
+**Date:** 2026-03-23
+**Status:** PR pending review
+
+**What was built:**
+- Extended condition-assessment prompt with BRIEFING section (summary, customerIntent, suggestedStartingPoint, upsellFlags, photoFollowUp)
+- Added `briefing` to ConditionAssessment type (optional, backward compatible)
+- New `AiBriefingCard` server component with magenta AI indicator, section labels in JetBrains Mono, upsell bullet list, amber photo follow-up warning
+- Shared `AiBriefing` type in `lib/types/ai.ts`
+- Briefing renders between metadata card and notes on job detail page
+- No-photo enforcement: creates minimal briefing stub when LLM omits briefing and photos are missing
+- Prompt seeded to both dev and production databases
+- Semantic HTML: `<section aria-labelledby>` + `<h3>` heading on card
+
+**Files added (2):** ai-briefing-card.tsx, lib/types/ai.ts
+**Files modified (3):** analyze/route.ts, page.tsx (job detail), prompt-content.txt
+**Files seeded (not committed):** prompts table on dev (v4) and production (v3)
+
+**Corrected:** Quality gate round 1: triplicated AiBriefing type with no shared source (S1 — extracted to lib/types/ai.ts), no runtime validation of LLM briefing shape (S2 — added `briefing?.summary` guard + fallback stub), missing semantic HTML/ARIA on card (S3 — changed to section+h3). Also removed unnecessary `"use client"` (M2).
+
+**Root cause:** N/A (new feature — Phase 3 of intake redesign)
+
+---
+
 ### Post-Submission Photo Upload + Detailer Photo Viewer
 
 **Branch:** `feat/photo-upload-followup`

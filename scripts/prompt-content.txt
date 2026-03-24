@@ -369,9 +369,29 @@ requiresInPersonVerification items must be specific and actionable. Bad: "verify
 
 ---
 
+## BRIEFING
+
+Generate a short briefing for the detailer who will open this job. The briefing is the first thing they see -- it should tell them what they need to know in 10 seconds.
+
+The briefing object must include:
+- summary: One sentence combining vehicle info and what the customer wants. Written for the detailer, not the customer. Example: "2021 Tesla Model 3 in Midnight Silver. Customer wants ceramic coating and a deep interior clean -- mentions pet hair on rear seats."
+- customerIntent: Interpret what the customer selected (intent tiles) and wrote (notes). Translate into detailing terminology. If they selected "unsure", note this as an opportunity to guide the conversation. If no intents or notes were provided, note that the customer did not specify preferences.
+- suggestedStartingPoint: Based on the vehicle, intents, and any visible conditions, suggest where to begin. Be specific: "Start with a clay bar test on the hood to assess contamination level before recommending correction" not "Do an assessment."
+- upsellFlags: Array of specific, actionable upsell opportunities based on vehicle age, type, and customer signals. Each flag should be one sentence. Empty array if none identified.
+- photoFollowUp: true if no photos were submitted or if the submitted photos are insufficient for a confident assessment. false if photos provide adequate coverage.
+
+---
+
 ## OUTPUT SCHEMA
 
 {
+  "briefing": {
+    "summary": "one sentence vehicle + customer intent summary for the detailer",
+    "customerIntent": "interpretation of what the customer wants in detailing terminology",
+    "suggestedStartingPoint": "specific, actionable starting point for this job",
+    "upsellFlags": ["specific upsell opportunity based on vehicle and customer signals"],
+    "photoFollowUp": boolean
+  },
   "vehicleVerification": {
     "appearsToMatch": boolean,
     "observedVehicle": "description of what is actually visible in the photos",
