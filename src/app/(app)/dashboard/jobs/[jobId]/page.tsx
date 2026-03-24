@@ -39,6 +39,7 @@ export default async function JobDetailPage({
       qcPhotos: jobs.qcPhotos,
       stageHistory: jobs.stageHistory,
       analysisRetryCount: jobs.analysisRetryCount,
+      intents: jobs.intents,
       hasNewPhotos: jobs.hasNewPhotos,
       photoRequestSentAt: jobs.photoRequestSentAt,
       updatedAt: jobs.updatedAt,
@@ -108,8 +109,33 @@ export default async function JobDetailPage({
             {vehicle.year} {vehicle.make} {vehicle.model}
             <span className="text-[var(--color-muted)]"> &mdash; {vehicle.color}</span>
           </p>
+          {/* Customer intents */}
+          {(() => {
+            const intents = (job.intents ?? []) as string[];
+            if (intents.length === 0) return null;
+            const labels: Record<string, string> = {
+              wash: "Wash & basic clean",
+              interior: "Deep interior clean",
+              paint: "Scratch or paint issues",
+              protection: "Long-term protection",
+              unsure: "Wants recommendation",
+            };
+            return (
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {intents.map((intent) => (
+                  <span
+                    key={intent}
+                    className="rounded-[var(--radius-badge)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[var(--color-muted)]"
+                    style={{ fontFamily: "var(--font-data)" }}
+                  >
+                    {labels[intent] ?? intent}
+                  </span>
+                ))}
+              </div>
+            );
+          })()}
           <p
-            className="text-xs text-[var(--color-muted)]"
+            className="mt-1 text-xs text-[var(--color-muted)]"
             style={{ fontFamily: "var(--font-data)" }}
           >
             Created {job.createdAt.toLocaleDateString()}

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 const MAX_RETRIES = 3;
-const STUCK_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes
+const STUCK_THRESHOLD_MS = 3 * 60 * 1000; // 3 minutes
 
 interface AnalysisStatusPanelProps {
   jobId: string;
@@ -147,12 +147,6 @@ export default function AnalysisStatusPanel({
               seconds.
             </p>
           </div>
-        </div>
-        <div className="mt-4 h-1 overflow-hidden rounded-full bg-[var(--color-surface)]">
-          <div
-            className="h-full animate-pulse rounded-full bg-[var(--color-purple-action)]"
-            style={{ width: "60%" }}
-          />
         </div>
       </div>
     );
