@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import StageBadge from "./stage-badge";
+import LiveStageBadge from "./live-stage-badge";
 import type { FinalQuote } from "@/lib/types/quote";
 
 interface JobCardProps {
@@ -43,10 +44,18 @@ export default function JobCard({ job }: JobCardProps) {
             <span className="text-sm font-semibold text-[var(--color-text)]">
               {job.customer?.firstName}{job.customer?.lastName ? ` ${job.customer.lastName}` : ""}
             </span>
-            <StageBadge
-              stage={job.stage}
-              analysisStatus={job.analysisStatus}
-            />
+            {job.analysisStatus === "processing" ? (
+              <LiveStageBadge
+                jobId={job.id}
+                stage={job.stage}
+                analysisStatus={job.analysisStatus}
+              />
+            ) : (
+              <StageBadge
+                stage={job.stage}
+                analysisStatus={job.analysisStatus}
+              />
+            )}
             {isNewlyApproved && (
               <span
                 className="text-[10px] font-bold uppercase text-[var(--color-amber)] bg-[var(--color-amber)]/10 px-1.5 py-0.5 rounded-[var(--radius-badge)]"

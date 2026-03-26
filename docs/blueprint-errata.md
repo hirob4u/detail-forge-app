@@ -989,4 +989,13 @@ Server-side conditional rendering for 8 stage layouts. No quality gate correctio
 **Add to Blueprint:** Any client component that polls for status changes affecting server-rendered content MUST call `router.refresh()` when the polled state reaches a terminal value. This pattern applies to `AnalysisStatusPanel` and any future polling components. Without the refresh, server components remain stale until manual navigation.
 
 ---
+
+### No new errata — FIX-2 jobs-list-live-badge
+
+**Branch:** `fix/jobs-list-live-badge`
+**Date:** 2026-03-25
+
+Applied the `client poll → router.refresh` pattern from FIX-1 errata. No new lessons — same pattern, new location. `LiveStageBadge` mirrors `StageBadge` rendering exactly to avoid visual flash on refresh.
+
+---
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

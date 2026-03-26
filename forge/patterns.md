@@ -284,6 +284,12 @@ Pure layout refactor with server-side conditional rendering. No new anti-pattern
 
 ## [2026-03-25] Pattern: client poll → router.refresh for server component hydration
 
-When a client component polls an API and the result affects what server components render, the poll callback MUST call `router.refresh()` on terminal state detection. Without it, server components show stale props from initial page load. Guard with a ref to prevent duplicate refreshes.
+When a client component polls an API and the result affects what server components render, the poll callback MUST call `router.refresh()` on terminal state detection. Without it, server components show stale props from initial page load. Guard with a ref to prevent duplicate refreshes. Applied in: `AnalysisStatusPanel` (job detail), `LiveStageBadge` (jobs list).
+
+---
+
+## [2026-03-25] No new patterns — FIX-2 jobs-list-live-badge
+
+Same poll→refresh pattern applied to jobs list. No new anti-patterns.
 
 ---
