@@ -1573,4 +1573,15 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+## Fix: Analysis poll does not refresh server components on completion
+
+**Branch:** `fix/analysis-poll-refresh`
+**Date:** 2026-03-25
+**Bug:** When AI analysis completes after polling (>15s), `AnalysisStatusPanel` hides itself but server components (AI briefing, condition notes, pricing) still show stale data. User must manually refresh.
+**Root cause:** Poll callback updated client state but never called `router.refresh()` to re-render server components with fresh DB data.
+**Fix:** Added `router.refresh()` in poll callback when terminal state detected. Ref guard prevents duplicate refreshes.
+**Files modified (1):** analysis-status-panel.tsx
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

@@ -980,4 +980,13 @@ No quality gate corrections needed. Prompt extension, shared type, and server co
 Server-side conditional rendering for 8 stage layouts. No quality gate corrections needed — TS and ESLint clean on first pass. The `analysisStatus` type narrowing caught a `"pending"` value that doesn't exist in the enum (TS error, fixed immediately).
 
 ---
+
+### Errata: polling without router.refresh leaves stale server data
+
+**Branch:** `fix/analysis-poll-refresh`
+**Date:** 2026-03-25
+
+**Add to Blueprint:** Any client component that polls for status changes affecting server-rendered content MUST call `router.refresh()` when the polled state reaches a terminal value. This pattern applies to `AnalysisStatusPanel` and any future polling components. Without the refresh, server components remain stale until manual navigation.
+
+---
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

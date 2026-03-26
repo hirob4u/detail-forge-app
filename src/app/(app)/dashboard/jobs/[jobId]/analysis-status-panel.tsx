@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   Loader2,
   CircleAlert,
@@ -30,6 +31,9 @@ export default function AnalysisStatusPanel({
   initialUpdatedAt,
   photoCount,
 }: AnalysisStatusPanelProps) {
+  const router = useRouter();
+  const hasRefreshed = useRef(false);
+
   const [analysisStatus, setAnalysisStatus] = useState(initialAnalysisStatus);
   const [stage, setStage] = useState(initialStage);
   const [hasAssessment, setHasAssessment] = useState(initialHasAssessment);
@@ -57,10 +61,22 @@ export default function AnalysisStatusPanel({
       setHasAssessment(data.hasAssessment);
       setRetryCount(data.analysisRetryCount ?? 0);
       if (data.updatedAt) setUpdatedAt(data.updatedAt);
+
+      // When analysis finishes (complete or failed), refresh the server
+      // components so AI briefing, condition notes, and pricing cards
+      // pick up the new aiAssessment data from the DB.
+      if (
+        (data.analysisStatus === "complete" ||
+          data.analysisStatus === "failed") &&
+        !hasRefreshed.current
+      ) {
+        hasRefreshed.current = true;
+        router.refresh();
+      }
     } catch {
       // Silently ignore poll errors -- will retry on next interval
     }
-  }, [jobId]);
+  }, [jobId, router]);
 
   useEffect(() => {
     if (!shouldPoll) return;
