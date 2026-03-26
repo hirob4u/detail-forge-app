@@ -275,3 +275,9 @@ Root cause: "Update errata and forge after every PR" was documented in CLAUDE.md
 Action required: When adding a new mandatory process rule to CLAUDE.md, also add a Claude Code hook (PreToolUse on Bash) that blocks the relevant action (e.g., `git commit`) if the rule is not satisfied. Advisory rules decay; enforced rules persist.
 
 ---
+
+## [2026-03-25] No new patterns — OPS-1 stage-aware-job-detail
+
+Pure layout refactor with server-side conditional rendering. No new anti-patterns discovered. One TS error caught immediately (invalid enum value in comparison).
+
+---

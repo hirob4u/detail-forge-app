@@ -971,4 +971,13 @@ No quality gate corrections needed. Prompt extension, shared type, and server co
 **Add to Blueprint:** Any process rule that must be followed every time should be enforced by a hook, not just documented. Claude Code `PreToolUse` hooks can intercept `git commit` and block if required files are missing from staging. The hook script should exit 2 with a clear stderr message explaining what's missing and how to fix it.
 
 ---
+
+### No new errata — OPS-1 stage-aware-job-detail
+
+**Branch:** `feat/stage-aware-job-detail`
+**Date:** 2026-03-25
+
+Server-side conditional rendering for 8 stage layouts. No quality gate corrections needed — TS and ESLint clean on first pass. The `analysisStatus` type narrowing caught a `"pending"` value that doesn't exist in the enum (TS error, fixed immediately).
+
+---
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
