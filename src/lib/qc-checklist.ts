@@ -1,3 +1,5 @@
+import { normalizeFlags } from "@/lib/normalize-flags";
+
 export type ChecklistItem = {
   itemId: string;
   label: string;
@@ -20,20 +22,24 @@ export function generateQcChecklist(
     });
   });
 
-  // Add flag-level items from AI assessment
-  const flags = (aiAssessment?.flags as string[]) ?? [];
+  // Add flag-level items from AI assessment (handles both legacy
+  // string[] and new structured ConditionFlag[] formats)
+  const flags = normalizeFlags(aiAssessment?.flags);
   flags.forEach((flag, i) => {
-    // Skip non-correctable flags and metadata flags -- they are not work items
+    // Skip informational flags and metadata flags -- they are not work items
+    const searchText = `${flag.title} ${flag.description}`.toLowerCase();
     if (
-      flag.toLowerCase().includes("non-correctable") ||
-      flag.toLowerCase().includes("customer should be aware") ||
-      flag === "no-photos-submitted"
+      searchText.includes("non-correctable") ||
+      searchText.includes("customer should be aware") ||
+      flag.title === "No Photos Submitted" ||
+      flag.severity === "clear" ||
+      flag.severity === "upsell"
     )
       return;
 
     items.push({
       itemId: `flag-${i}`,
-      label: flag,
+      label: `${flag.title}: ${flag.description}`,
       status: "pending",
     });
   });

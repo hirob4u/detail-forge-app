@@ -11,32 +11,8 @@ import { r2, PHOTOS_BUCKET } from "@/lib/r2";
 // Types
 // ---------------------------------------------------------------------------
 
-interface ScoreDimension {
-  score: number | null;
-  description: string;
-  recommendedService: string;
-}
-
-import type { AiBriefing } from "@/lib/types/ai";
-
-interface ConditionAssessment {
-  briefing?: AiBriefing;
-  scores: {
-    paintCondition: ScoreDimension;
-    scratchSeverity: ScoreDimension;
-    contamination: ScoreDimension;
-    interior: ScoreDimension;
-    wheelsTrim: ScoreDimension;
-  };
-  recommendedServices: Array<{
-    name: string;
-    note?: string;
-    basePrice: number;
-    adjustedPrice: number;
-  }>;
-  confidence: number;
-  flags: string[];
-}
+import type { ConditionAssessment } from "@/lib/types/assessment";
+import { normalizeFlags } from "@/lib/normalize-flags";
 
 // ---------------------------------------------------------------------------
 // Claude client
@@ -238,7 +214,7 @@ export async function POST(request: NextRequest) {
       userContent = [
         {
           type: "text",
-          text: `${contextText}\n\nIMPORTANT: No photos were submitted with this estimate request. You cannot perform visual assessment. Set all photo-dependent scores to null. Focus your response on: vehicle-specific insights based on year/make/model/color, common service recommendations for this vehicle type and age, potential upsell opportunities, and flag that photo follow-up is recommended before finalizing the quote. Set confidence to 15 and include "no-photos-submitted" in flags.`,
+          text: `${contextText}\n\nIMPORTANT: No photos were submitted with this estimate request. You cannot perform visual assessment. Set all photo-dependent scores to null. Focus your response on: vehicle-specific insights based on year/make/model/color, common service recommendations for this vehicle type and age, potential upsell opportunities, and flag that photo follow-up is recommended before finalizing the quote. Set confidence to 15 and include a flag with severity "moderate", title "No Photos Submitted", and description explaining that photo follow-up is recommended.`,
         },
       ];
     }
@@ -265,7 +241,13 @@ export async function POST(request: NextRequest) {
 
     // Parse JSON response
     const cleaned = stripMarkdownFences(textBlock.text);
-    const assessment = JSON.parse(cleaned) as ConditionAssessment;
+    const raw = JSON.parse(cleaned) as Record<string, unknown>;
+
+    // Normalize flags — handles both legacy string[] and new structured format
+    const assessment: ConditionAssessment = {
+      ...raw,
+      flags: normalizeFlags(raw.flags),
+    } as ConditionAssessment;
 
     // Enforce null scores when no photos were submitted — Claude may
     // return numeric scores despite being told not to
@@ -274,8 +256,16 @@ export async function POST(request: NextRequest) {
         assessment.scores[key].score = null;
       }
       assessment.confidence = Math.min(assessment.confidence, 20);
-      if (!assessment.flags.includes("no-photos-submitted")) {
-        assessment.flags.push("no-photos-submitted");
+      const hasNoPhotosFlag = assessment.flags.some(
+        (f) => f.title === "No Photos Submitted" || f.description.includes("no-photos-submitted"),
+      );
+      if (!hasNoPhotosFlag) {
+        assessment.flags.unshift({
+          severity: "moderate",
+          title: "No Photos Submitted",
+          description:
+            "No photos were submitted with this estimate request. Photo follow-up is recommended before finalizing the quote.",
+        });
       }
       if (assessment.briefing) {
         assessment.briefing.photoFollowUp = true;

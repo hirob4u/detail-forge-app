@@ -113,6 +113,13 @@
       "when": 1774298165195,
       "tag": "0015_ordinary_gladiator",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1774363978454,
+      "tag": "0016_noisy_xorn",
+      "breakpoints": true
     }
   ]
 }

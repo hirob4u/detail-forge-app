@@ -1530,4 +1530,27 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+## feat/job-detail-redesign — Job detail page component extraction and layout overhaul
+
+**Branch:** `feat/job-detail-redesign`
+**Commit:** `feat: job detail page redesign — component extraction, detailer notes, assessment display`
+**Date:** 2026-03-25
+**Status:** PR pending review
+
+**What was built:**
+- Extracted inline job detail UI into dedicated components: CustomerCard, PackagePricingCard, AIConditionNotesCard, CustomerNotesCard
+- Added `detailerNotes` column to jobs table (migration 0016) — separate editable scratchpad from customer-submitted notes
+- Reworked job detail header: vehicle title with year/make/model/color, job ID badge, stage badge, edit link
+- Added AI assessment parsing with `normalizeFlags()` utility and `ConditionAssessment` type
+- Slimmed analysis-status-panel (removed fake progress bar, cleaner UX)
+- Review form reworked for cleaner quote building flow
+- Updated AI analysis prompt content
+- Enhanced QC checklist flag handling
+
+**Files added (6):** ai-condition-notes-card.tsx, customer-card.tsx, customer-notes-card.tsx, package-pricing-card.tsx, normalize-flags.ts, types/assessment.ts
+**Files modified (8):** page.tsx (job detail), analysis-status-panel.tsx, review/page.tsx, review/review-form.tsx, schema.ts, qc-checklist.ts, notes/route.ts, prompt-content.txt
+**Migration:** 0016_noisy_xorn.sql (ADD COLUMN IF NOT EXISTS detailer_notes)
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

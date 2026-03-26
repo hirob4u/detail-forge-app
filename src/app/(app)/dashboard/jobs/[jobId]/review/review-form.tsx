@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { QuoteLineItem, FinalQuote } from "@/lib/types/quote";
 import {
-  CircleAlert,
   ThumbsUp,
   ThumbsDown,
   CircleCheck,
@@ -38,27 +37,7 @@ function formatAreaLabel(area: string): string {
 // Types
 // ---------------------------------------------------------------------------
 
-interface VehicleVerification {
-  appearsToMatch: boolean;
-  observedVehicle: string;
-  submittedVehicle: string;
-  mismatchNote: string | null;
-}
-
-interface RecommendedService {
-  name: string;
-  note?: string;
-  basePrice: number;
-  adjustedPrice: number;
-}
-
-interface ConditionAssessment {
-  vehicleVerification?: VehicleVerification;
-  scores: Record<string, { score: number | null; description: string; recommendedService: string }>;
-  recommendedServices: RecommendedService[];
-  confidence: number;
-  flags: string[];
-}
+import type { ConditionAssessment } from "@/lib/types/assessment";
 
 type PhotoMeta = {
   key: string;
@@ -599,21 +578,44 @@ export default function ReviewForm({
           >
             <div className="space-y-3">
               {assessment.flags && assessment.flags.length > 0 ? (
-                assessment.flags.map((flag, i) => (
-                  <div
-                    key={i}
-                    className="rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-3"
-                  >
-                    <div className="flex gap-3">
-                      <div className="mt-0.5 flex-shrink-0">
-                        <CircleAlert className="h-4 w-4 text-[var(--color-amber)]" />
-                      </div>
-                      <p className="text-sm leading-relaxed text-[var(--color-text)]">
-                        {flag}
+                assessment.flags.map((flag, i) => {
+                  const severityColors: Record<string, { badge: string; icon: string }> = {
+                    moderate: {
+                      badge: "bg-[var(--color-amber)]/10 border-[var(--color-amber)]/40 text-[var(--color-amber)]",
+                      icon: "text-[var(--color-amber)]",
+                    },
+                    noted: {
+                      badge: "bg-[var(--color-elevated)] border-[var(--color-border)] text-[var(--color-muted)]",
+                      icon: "text-[var(--color-muted)]",
+                    },
+                    clear: {
+                      badge: "bg-[var(--color-green)]/10 border-[var(--color-green)]/40 text-[var(--color-green)]",
+                      icon: "text-[var(--color-green)]",
+                    },
+                    upsell: {
+                      badge: "bg-[var(--color-magenta)]/10 border-[var(--color-magenta)]/25 text-[var(--color-magenta)]",
+                      icon: "text-[var(--color-magenta)]",
+                    },
+                  };
+                  const colors = severityColors[flag.severity] ?? severityColors.noted;
+                  return (
+                    <div
+                      key={`${flag.severity}-${flag.title}-${i}`}
+                      className="rounded-[var(--radius-button)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-3 space-y-1.5"
+                    >
+                      <span
+                        className={`inline-block rounded-[var(--radius-badge)] border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${colors.badge}`}
+                        style={{ fontFamily: "var(--font-data)" }}
+                      >
+                        {flag.severity}
+                      </span>
+                      <p className="text-sm font-medium text-[var(--color-text)]">{flag.title}</p>
+                      <p className="text-sm leading-relaxed text-[var(--color-muted)]">
+                        {flag.description}
                       </p>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p className="text-sm text-[var(--color-muted)]">
                   No flags from the AI assessment.

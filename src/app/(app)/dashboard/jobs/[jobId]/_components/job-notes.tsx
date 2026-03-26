@@ -59,7 +59,7 @@ export default function JobNotes({ jobId, initialNotes }: JobNotesProps) {
         className="mb-2 block text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
         style={{ fontFamily: "var(--font-data)" }}
       >
-        Notes
+        Detailer Notes
       </label>
       <textarea
         value={notes}

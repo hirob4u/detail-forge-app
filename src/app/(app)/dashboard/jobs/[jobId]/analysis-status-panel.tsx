@@ -1,13 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import {
   Loader2,
-  CircleCheck,
   CircleAlert,
   RefreshCw,
-  ArrowRight,
   Mail,
 } from "lucide-react";
 
@@ -102,32 +99,9 @@ export default function AnalysisStatusPanel({
     }
   }
 
-  // State: Quoted — analysis complete and quote finalized
-  if (stage === "quoted") {
-    return (
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-elevated)] p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CircleCheck className="h-6 w-6 text-[var(--color-green)]" />
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-text)]">
-                Quote Finalized
-              </p>
-              <p className="mt-0.5 text-xs text-[var(--color-muted)]">
-                This job has been quoted.
-              </p>
-            </div>
-          </div>
-          <Link
-            href={`/dashboard/jobs/${jobId}/review`}
-            className="flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-purple-action)]"
-          >
-            View Quote
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </div>
-    );
+  // State: Quoted — handled by PackagePricingCard now
+  if (stage === "quoted" || stage === "sent" || stage === "approved" || stage === "inProgress" || stage === "qc" || stage === "complete") {
+    return null;
   }
 
   // State: Processing (not stuck) — spinner with photo count
@@ -204,32 +178,11 @@ export default function AnalysisStatusPanel({
     );
   }
 
-  // State: Complete — assessment ready
+  // State: Complete — assessment ready — handled by PackagePricingCard +
+  // AIConditionNotesCard now. Only render if analysis complete but no
+  // assessment (edge case).
   if (analysisStatus === "complete" && hasAssessment) {
-    return (
-      <div className="rounded-[var(--radius-card)] border border-[var(--color-purple-action)]/30 bg-[var(--color-purple-deep)]/20 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CircleCheck className="h-6 w-6 text-[var(--color-purple-action)]" />
-            <div>
-              <p className="text-sm font-semibold text-[var(--color-text)]">
-                AI Assessment Ready
-              </p>
-              <p className="mt-0.5 text-xs text-[var(--color-muted)]">
-                Review the findings and build your quote.
-              </p>
-            </div>
-          </div>
-          <Link
-            href={`/dashboard/jobs/${jobId}/review`}
-            className="flex items-center gap-2 rounded-[var(--radius-button)] bg-[var(--color-purple-action)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-purple-deep)]"
-          >
-            Review Assessment
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // State: Failed — with retry or support contact
