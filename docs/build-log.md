@@ -1584,4 +1584,19 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+## FIX-2: Jobs List Live Badge
+
+**Branch:** `fix/jobs-list-live-badge`
+**Date:** 2026-03-25
+**Blueprint:** `docs/blueprints/FIX-2-jobs-list-live-badge.md`
+
+**Bug:** On the `/jobs` list, the "ANALYZING..." badge never updates when analysis completes. User must navigate away and back.
+**Root cause:** Jobs list is a pure server component with no client-side polling.
+**Fix:** New `LiveStageBadge` client component that polls `/api/jobs/{id}/status` every 4s only for jobs in `processing` state. Calls `router.refresh()` on terminal state to re-render the full list with fresh data.
+
+**Files added (1):** live-stage-badge.tsx
+**Files modified (1):** job-card.tsx (conditional render: LiveStageBadge for processing, StageBadge for all others)
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
