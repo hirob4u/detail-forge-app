@@ -281,3 +281,9 @@ Action required: When adding a new mandatory process rule to CLAUDE.md, also add
 Pure layout refactor with server-side conditional rendering. No new anti-patterns discovered. One TS error caught immediately (invalid enum value in comparison).
 
 ---
+
+## [2026-03-25] Pattern: client poll → router.refresh for server component hydration
+
+When a client component polls an API and the result affects what server components render, the poll callback MUST call `router.refresh()` on terminal state detection. Without it, server components show stale props from initial page load. Guard with a ref to prevent duplicate refreshes.
+
+---
