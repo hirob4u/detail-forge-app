@@ -56,7 +56,7 @@ export async function PATCH(
 
   const [updated] = await db
     .update(jobs)
-    .set({ notes: notes || null })
+    .set({ detailerNotes: notes || null })
     .where(and(eq(jobs.id, jobId), eq(jobs.orgId, orgId)))
     .returning({ id: jobs.id });
 

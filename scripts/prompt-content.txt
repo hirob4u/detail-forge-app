@@ -329,9 +329,22 @@ Set confidence based on photo quality, coverage, lighting, and how much of the v
 50-69: Significant gaps in coverage or photo quality -- assessment is preliminary, many items require verification
 Below 50: Too many unknowns to produce a reliable estimate -- flag prominently and list exactly what photos are needed
 
-Confidence below 70 must always produce a clear statement at the top of the flags array: "PRELIMINARY ASSESSMENT -- photo coverage or quality was insufficient for a complete assessment. The following items require in-person verification before finalizing any quote."
+Confidence below 70 must always produce a flag at the top of the flags array with severity "moderate", title "Preliminary Assessment", and a description stating that photo coverage or quality was insufficient for a complete assessment and listing which items require in-person verification before finalizing any quote.
 
 Never present a low-confidence assessment as definitive. The detailer needs to know when to treat this as a starting point vs a reliable estimate.
+
+---
+
+## FLAG SEVERITY LEVELS
+
+Each flag must include a severity, a short title (2-4 words), and an actionable description. Use these severity levels:
+
+- **moderate** — Condition requires attention but is correctable within the recommended services. Swirl marks, staining, minor scratches that the quoted package can address. Helps the detailer set expectations with the customer.
+- **noted** — Observation recorded, no action needed but the detailer should be aware. Pet hair presence, odor, items left in vehicle. Informational, not a price driver.
+- **clear** — Explicitly clear finding, no issues detected. Good paint condition, clean interior, no oxidation. Confirms to the detailer that an area does not need extra work.
+- **upsell** — Opportunity for an additional service based on customer intent or vehicle condition. Ceramic coating on a car being sold, headlight restoration on aging lenses. Should connect to what the customer wants.
+
+Aim for 3-6 flags per assessment. Include at least one "clear" flag when applicable so the detailer knows what looks good, not just what looks bad. Always lead with the most actionable flags (moderate, upsell) before informational ones (noted, clear).
 
 ---
 
@@ -343,7 +356,7 @@ Never score contamination, oxidation, or damage based on vehicle age alone. Scor
 
 Clear coat failure rule: If clear coat failure, peeling, cracking, or heavy oxidation beyond recovery is detected or suspected on any panel, do NOT recommend paint correction or ceramic coating for that panel. Recommended services must never contradict the condition findings.
 
-Internal consistency rule: Recommended services must be consistent with scores and flags. A vehicle with a paint score of 8 or above should not have paint correction in recommendedServices. A vehicle with null interior score should not have interior detailing in recommendedServices. Never recommend a service that contradicts a non-correctable damage flag.
+Internal consistency rule: Recommended services must be consistent with scores and flags. A vehicle with a paint score of 8 or above should not have paint correction in recommendedServices. A vehicle with null interior score should not have interior detailing in recommendedServices. Never recommend a service that contradicts a flag with severity "moderate" describing non-correctable damage.
 
 Pricing rule: Base prices must reflect vehicle type, size, condition severity, and age. A full-size truck or SUV costs more than a sedan. An older vehicle in poor condition requiring more product and labor costs more. Do not apply generic flat pricing.
 
@@ -438,6 +451,10 @@ The briefing object must include:
   ],
   "confidence": number,
   "flags": [
-    "specific actionable flag for the detailer -- non-correctable damage, safety concerns, customer expectation items, and high-risk conditions"
+    {
+      "severity": "moderate | noted | clear | upsell",
+      "title": "Short flag title, 2-4 words",
+      "description": "Specific actionable detail for the detailer"
+    }
   ]
 }

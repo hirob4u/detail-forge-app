@@ -4,30 +4,8 @@ import { db } from "@/lib/db";
 import { jobs, vehicles, customers } from "@/lib/db/schema";
 import ReviewForm from "./review-form";
 import type { FinalQuote } from "@/lib/types/quote";
-
-interface ConditionAssessment {
-  vehicleVerification?: {
-    appearsToMatch: boolean;
-    observedVehicle: string;
-    submittedVehicle: string;
-    mismatchNote: string | null;
-  };
-  scores: {
-    paintCondition: { score: number | null; description: string; recommendedService: string };
-    scratchSeverity: { score: number | null; description: string; recommendedService: string };
-    contamination: { score: number | null; description: string; recommendedService: string };
-    interior: { score: number | null; description: string; recommendedService: string };
-    wheelsTrim: { score: number | null; description: string; recommendedService: string };
-  };
-  recommendedServices: Array<{
-    name: string;
-    note?: string;
-    basePrice: number;
-    adjustedPrice: number;
-  }>;
-  confidence: number;
-  flags: string[];
-}
+import type { ConditionAssessment } from "@/lib/types/assessment";
+import { normalizeFlags } from "@/lib/normalize-flags";
 
 export default async function ReviewPage({
   params,
@@ -79,7 +57,11 @@ export default async function ReviewPage({
     .where(eq(customers.id, job.customerId))
     .limit(1);
 
-  const assessment = job.aiAssessment as ConditionAssessment;
+  const rawAssessment = job.aiAssessment as Record<string, unknown>;
+  const assessment: ConditionAssessment = {
+    ...rawAssessment,
+    flags: normalizeFlags(rawAssessment.flags),
+  } as ConditionAssessment;
   const isQuoted = job.stage === "quoted";
 
   return (

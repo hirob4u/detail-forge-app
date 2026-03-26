@@ -971,5 +971,4 @@ No quality gate corrections needed. Prompt extension, shared type, and server co
 **Add to Blueprint:** Any process rule that must be followed every time should be enforced by a hook, not just documented. Claude Code `PreToolUse` hooks can intercept `git commit` and block if required files are missing from staging. The hook script should exit 2 with a clear stderr message explaining what's missing and how to fix it.
 
 ---
-
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

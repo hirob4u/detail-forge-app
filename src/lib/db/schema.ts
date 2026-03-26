@@ -188,6 +188,7 @@ export const jobs = pgTable(
     estimateAmount: numeric("estimate_amount", { precision: 12, scale: 2 }),
     finalAmount: numeric("final_amount", { precision: 12, scale: 2 }),
     notes: text("notes"),
+    detailerNotes: text("detailer_notes"),
     intents: jsonb("intents").$type<string[]>().default([]),
     qcPhotos: jsonb("qc_photos")
       .$type<{ key: string; area: string; uploadedAt: string }[]>()

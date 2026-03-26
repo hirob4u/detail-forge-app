@@ -12,10 +12,15 @@ import JobNotes from "./_components/job-notes";
 import AiBriefingCard from "./_components/ai-briefing-card";
 import type { AiBriefing } from "@/lib/types/ai";
 import PhotoViewer from "./_components/photo-viewer";
+import PackagePricingCard from "./_components/package-pricing-card";
+import CustomerCard from "./_components/customer-card";
+import AIConditionNotesCard from "./_components/ai-condition-notes-card";
+import CustomerNotesCard from "./_components/customer-notes-card";
 import CollapsibleSection from "@/app/(app)/_components/collapsible-section";
 import StageBadge from "@/app/(app)/_components/stage-badge";
 import type { JobStage } from "@/lib/db/schema";
-import { formatPhone } from "@/lib/format";
+import type { ConditionAssessment } from "@/lib/types/assessment";
+import { normalizeFlags } from "@/lib/normalize-flags";
 
 export default async function JobDetailPage({
   params,
@@ -36,6 +41,7 @@ export default async function JobDetailPage({
       customerId: jobs.customerId,
       orgId: jobs.orgId,
       notes: jobs.notes,
+      detailerNotes: jobs.detailerNotes,
       finalQuote: jobs.finalQuote,
       quoteSentAt: jobs.quoteSentAt,
       qcPhotos: jobs.qcPhotos,
@@ -88,63 +94,83 @@ export default async function JobDetailPage({
     .where(eq(organizations.id, job.orgId))
     .limit(1);
 
+  // ---------------------------------------------------------------------------
+  // Prepare AI assessment data for display
+  // ---------------------------------------------------------------------------
+
+  const rawAssessment = job.aiAssessment as Record<string, unknown> | null;
+  let parsedAssessment: ConditionAssessment | null = null;
+
+  if (rawAssessment && typeof rawAssessment === "object") {
+    parsedAssessment = {
+      ...rawAssessment,
+      flags: normalizeFlags(rawAssessment.flags),
+    } as ConditionAssessment;
+  }
+
+  // Derive a reasoning string from the top score descriptions
+  let aiReasoning: string | null = null;
+  if (parsedAssessment) {
+    const descriptions = Object.values(parsedAssessment.scores)
+      .filter((s) => s.description)
+      .map((s) => s.description);
+    // Use the first 2 descriptions as a summary if there are multiple
+    if (descriptions.length > 0) {
+      aiReasoning = descriptions.slice(0, 2).join(" ");
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[var(--color-text)]">Job Detail</h1>
-        <StageBadge stage={job.stage} analysisStatus={job.analysisStatus ?? ""} />
+      {/* ── Header: job ID + vehicle + stage + actions ──────────────── */}
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p
+            className="text-[11px] tracking-[0.04em] text-[var(--color-muted)]"
+            style={{ fontFamily: "var(--font-data)" }}
+          >
+            {job.id.slice(0, 8).toUpperCase()}
+          </p>
+          <h1 className="text-xl font-bold text-[var(--color-text)]">
+            {vehicle.year} {vehicle.make} {vehicle.model}
+            <span className="text-[var(--color-muted)]"> &mdash; {vehicle.color}</span>
+          </h1>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <StageBadge stage={job.stage} analysisStatus={job.analysisStatus ?? ""} />
+          <Link
+            href={`/dashboard/jobs/${jobId}/review`}
+            className="rounded-[var(--radius-button)] border border-[var(--color-border)] px-3 py-1.5 text-xs text-[var(--color-muted)] transition-colors hover:bg-[var(--color-hover)] hover:text-[var(--color-text)]"
+          >
+            Edit job
+          </Link>
+        </div>
       </div>
 
-      {/* Pipeline progress indicator */}
+      {/* ── Pipeline progress indicator ────────────────────────────── */}
       <StagePipeline currentStage={job.stage as JobStage} />
 
       <div className="mt-6 space-y-4">
-        {/* Compact metadata — customer + vehicle + created in one card */}
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-1">
-          <p className="text-sm font-semibold text-[var(--color-text)]">
-            {customer.firstName}{customer.lastName ? ` ${customer.lastName}` : ""}
-            <span className="font-normal text-[var(--color-muted)]">
-              {customer.phone ? <> &middot; {formatPhone(customer.phone)}</> : null}
-            </span>
-          </p>
-          <p className="text-sm text-[var(--color-text)]">
-            {vehicle.year} {vehicle.make} {vehicle.model}
-            <span className="text-[var(--color-muted)]"> &mdash; {vehicle.color}</span>
-          </p>
-          {/* Customer intents */}
-          {(() => {
-            const intents = (job.intents ?? []) as string[];
-            if (intents.length === 0) return null;
-            const labels: Record<string, string> = {
-              wash: "Wash & basic clean",
-              interior: "Deep interior clean",
-              paint: "Scratch or paint issues",
-              protection: "Long-term protection",
-              unsure: "Wants recommendation",
-            };
-            return (
-              <div className="mt-1 flex flex-wrap gap-1.5">
-                {intents.map((intent) => (
-                  <span
-                    key={intent}
-                    className="rounded-[var(--radius-badge)] border border-[var(--color-border)] bg-[var(--color-elevated)] px-2 py-0.5 text-[10px] uppercase tracking-wider text-[var(--color-muted)]"
-                    style={{ fontFamily: "var(--font-data)" }}
-                  >
-                    {labels[intent] ?? intent}
-                  </span>
-                ))}
-              </div>
-            );
-          })()}
-          <p
-            className="mt-1 text-xs text-[var(--color-muted)]"
-            style={{ fontFamily: "var(--font-data)" }}
-          >
-            Created {job.createdAt.toLocaleDateString()}
-          </p>
+        {/* ── Two-column grid: Package + Customer ────────────────── */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <PackagePricingCard
+            jobId={job.id}
+            stage={job.stage}
+            finalQuote={job.finalQuote}
+            aiAssessment={parsedAssessment}
+            analysisStatus={job.analysisStatus ?? ""}
+          />
+          <CustomerCard
+            customer={customer}
+            createdAt={job.createdAt}
+            intents={(job.intents ?? []) as string[]}
+          />
         </div>
 
-        {/* AI Briefing — shown when analysis is complete and briefing exists */}
+        {/* ── Customer notes (read-only, from intake) ──────────────── */}
+        <CustomerNotesCard notes={job.notes ?? ""} />
+
+        {/* ── AI Briefing — shown when analysis is complete and briefing exists */}
         {(() => {
           if (job.analysisStatus !== "complete" || !job.aiAssessment) return null;
           const assessment = job.aiAssessment as Record<string, unknown>;
@@ -153,7 +179,7 @@ export default async function JobDetailPage({
           return <AiBriefingCard briefing={briefing} />;
         })()}
 
-        {/* Photo viewer — always available, independent of AI analysis */}
+        {/* ── Photo viewer — always available ─────────────────────── */}
         <PhotoViewer
           jobId={job.id}
           initialPhotoCount={((job.photos ?? []) as unknown[]).length}
@@ -162,10 +188,19 @@ export default async function JobDetailPage({
           photoRequestSentAt={job.photoRequestSentAt?.toISOString() ?? null}
         />
 
-        {/* Persistent notes */}
-        <JobNotes jobId={job.id} initialNotes={job.notes ?? ""} />
+        {/* ── Detailer notes (editable scratchpad) ─────────────────── */}
+        <JobNotes jobId={job.id} initialNotes={job.detailerNotes ?? ""} />
 
-        {/* Analysis status / action panel */}
+        {/* ── AI condition highlights — slim bar, links to full ─────── */}
+        {parsedAssessment && (
+          <AIConditionNotesCard
+            jobId={job.id}
+            flags={parsedAssessment.flags}
+            reasoning={aiReasoning}
+          />
+        )}
+
+        {/* ── Analysis status — only shows processing/failed now ──── */}
         <AnalysisStatusPanel
           jobId={job.id}
           initialAnalysisStatus={job.analysisStatus}
@@ -176,7 +211,7 @@ export default async function JobDetailPage({
           photoCount={(job.photos ?? []).length}
         />
 
-        {/* QC link -- visible when job is in qc stage */}
+        {/* ── QC link — visible when job is in qc stage ──────────── */}
         {job.stage === "qc" && (
           <div className="rounded-[var(--radius-card)] border border-[var(--color-purple-action)]/40 bg-[var(--color-elevated)] p-4 flex items-center justify-between">
             <div>
@@ -197,7 +232,7 @@ export default async function JobDetailPage({
           </div>
         )}
 
-        {/* Stage controls */}
+        {/* ── Stage controls ──────────────────────────────────────── */}
         <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
           <h2
             className="mb-4 text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]"
@@ -214,7 +249,7 @@ export default async function JobDetailPage({
           />
         </section>
 
-        {/* Social export -- only for completed jobs */}
+        {/* ── Social export — only for completed jobs ─────────────── */}
         {job.stage === "complete" && org && (
           <SocialExportPanel
             jobId={job.id}
@@ -226,7 +261,7 @@ export default async function JobDetailPage({
           />
         )}
 
-        {/* Stage history — collapsed by default */}
+        {/* ── Stage history — collapsed by default ────────────────── */}
         <CollapsibleSection
           title="History"
           count={(job.stageHistory ?? []).length}
