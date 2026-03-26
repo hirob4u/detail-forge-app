@@ -145,10 +145,10 @@ export default function AnalysisStatusPanel({
   // State: Stuck (processing > 2 min)
   if (analysisStatus === "processing" && isStuck) {
     return (
-      <div className="rounded-[var(--radius-card)] border border-amber-700 bg-amber-950/40 p-6">
+      <div className="rounded-[var(--radius-card)] border border-[var(--color-amber)]/40 bg-[var(--color-amber)]/10 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <CircleAlert className="h-6 w-6 text-amber-400" />
+            <CircleAlert className="h-6 w-6 text-[var(--color-amber)]" />
             <div>
               <p className="text-sm font-semibold text-[var(--color-text)]">
                 Analysis is taking longer than expected
@@ -165,7 +165,7 @@ export default function AnalysisStatusPanel({
               type="button"
               onClick={handleRetryAnalysis}
               disabled={retrying}
-              className="flex items-center gap-2 rounded-[var(--radius-button)] border border-amber-700 px-4 py-2 text-sm font-medium text-amber-300 transition-colors hover:border-amber-500 hover:text-amber-200 disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
+              className="flex items-center gap-2 rounded-[var(--radius-button)] border border-[var(--color-amber)]/40 px-4 py-2 text-sm font-medium text-[var(--color-amber)] transition-colors hover:border-[var(--color-amber)]/60 hover:bg-[var(--color-amber)]/10 disabled:text-[var(--color-muted)] disabled:cursor-not-allowed"
             >
               <RefreshCw
                 className={`h-4 w-4 ${retrying ? "animate-spin" : ""}`}
@@ -203,10 +203,10 @@ export default function AnalysisStatusPanel({
 
   // State: Failed — with retry or support contact
   return (
-    <div className="rounded-[var(--radius-card)] border border-red-800 bg-red-950/40 p-6">
+    <div className="rounded-[var(--radius-card)] border border-[var(--color-destructive)]/40 bg-[var(--color-destructive)]/10 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <CircleAlert className="h-6 w-6 text-red-400" />
+          <CircleAlert className="h-6 w-6 text-[var(--color-destructive)]" />
           <div>
             <p className="text-sm font-semibold text-[var(--color-text)]">
               Analysis Failed
@@ -217,7 +217,7 @@ export default function AnalysisStatusPanel({
                 : "We were unable to complete the analysis after multiple attempts. Please contact support for assistance."}
             </p>
             {retryError && (
-              <p className="mt-1 text-xs text-red-400">{retryError}</p>
+              <p className="mt-1 text-xs text-[var(--color-destructive)]">{retryError}</p>
             )}
           </div>
         </div>

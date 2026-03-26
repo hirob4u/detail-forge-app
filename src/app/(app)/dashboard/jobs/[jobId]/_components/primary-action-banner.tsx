@@ -32,13 +32,13 @@ const VARIANT_STYLES: Record<
     border: "border-[var(--color-green)]/40",
     heading: "text-[var(--color-green)]",
     subtext: "text-[var(--color-muted)]",
-    cta: "bg-[var(--color-green)] hover:brightness-110 text-[var(--color-bg)]",
+    cta: "bg-[var(--color-green)]/10 border border-[var(--color-green)]/25 text-[var(--color-green)] hover:bg-[var(--color-green)]/20",
   },
   warning: {
     border: "border-[var(--color-amber)]/40",
     heading: "text-[var(--color-amber)]",
     subtext: "text-[var(--color-muted)]",
-    cta: "bg-[var(--color-amber)] hover:brightness-110 text-[var(--color-bg)]",
+    cta: "bg-[var(--color-amber)]/10 border border-[var(--color-amber)]/25 text-[var(--color-amber)] hover:bg-[var(--color-amber)]/20",
   },
   muted: {
     border: "border-[var(--color-border)]",

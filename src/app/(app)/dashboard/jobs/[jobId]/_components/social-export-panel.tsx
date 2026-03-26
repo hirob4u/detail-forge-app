@@ -102,7 +102,7 @@ export default function SocialExportPanel({
       </div>
 
       {error && (
-        <p className="mb-3 rounded-[var(--radius-badge)] bg-red-900/30 px-3 py-2 text-xs text-red-400">
+        <p className="mb-3 rounded-[var(--radius-badge)] bg-[var(--color-destructive)]/10 px-3 py-2 text-xs text-[var(--color-destructive)]">
           {error}
         </p>
       )}

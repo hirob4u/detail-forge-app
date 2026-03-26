@@ -88,7 +88,7 @@ export default function JobNotes({ jobId, initialNotes }: JobNotesProps) {
           </span>
         )}
         {error && (
-          <span className="text-xs text-red-400">{error}</span>
+          <span className="text-xs text-[var(--color-destructive)]">{error}</span>
         )}
       </div>
     </div>

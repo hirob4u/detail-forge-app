@@ -998,4 +998,15 @@ Server-side conditional rendering for 8 stage layouts. No quality gate correctio
 Applied the `client poll → router.refresh` pattern from FIX-1 errata. No new lessons — same pattern, new location. `LiveStageBadge` mirrors `StageBadge` rendering exactly to avoid visual flash on refresh.
 
 ---
+
+### Errata: hardcoded Tailwind palette colors bypass theming — OPS-2
+
+**Branch:** `fix/design-consistency-audit`
+**Date:** 2026-03-26
+
+**Add to Blueprint:** Never use raw Tailwind color palette classes (`text-red-400`, `bg-amber-950`, etc.) in DetailForge components. Always reference `var(--color-*)` CSS custom properties. This ensures theming consistency and makes color audits trivial (grep for `red-` or `amber-` should return zero matches in `src/app/`).
+
+**Add to Blueprint:** When creating "success" confirmation pages, reuse the established pattern: `CircleCheck` icon (lucide-react), `text-[var(--color-green)]`, inside `rounded-full bg-[var(--color-elevated)]` 16x16 container. Do not vary the icon or container shape between similar pages.
+
+---
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->

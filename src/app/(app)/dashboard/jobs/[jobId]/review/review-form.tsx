@@ -151,7 +151,7 @@ function ServiceLineItem({
           <button
             type="button"
             onClick={() => onRemove(index)}
-            className="shrink-0 text-[var(--color-muted)] transition-colors hover:text-red-400"
+            className="shrink-0 text-[var(--color-muted)] transition-colors hover:text-[var(--color-destructive)]"
             aria-label="Remove service"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -556,8 +556,8 @@ export default function ReviewForm({
       {assessment.vehicleVerification &&
         !assessment.vehicleVerification.appearsToMatch &&
         hasPhotos && (
-          <div className="rounded-[var(--radius-card)] border border-red-800 bg-red-950/40 p-4">
-            <p className="mb-1 text-sm font-semibold text-red-400">
+          <div className="rounded-[var(--radius-card)] border border-[var(--color-destructive)]/40 bg-[var(--color-destructive)]/10 p-4">
+            <p className="mb-1 text-sm font-semibold text-[var(--color-destructive)]">
               Vehicle Mismatch Detected
             </p>
             <p className="text-sm text-[var(--color-muted)]">

@@ -49,7 +49,7 @@ export default function RootLayout({
         ...allOrgFonts.map((f) => f.variable),
       ].join(" ")}
     >
-      <body className="antialiased bg-[#0A0A0F] text-[#E8E8EF]">
+      <body className="antialiased bg-[var(--color-background)] text-[var(--color-text)]">
         {children}
       </body>
     </html>

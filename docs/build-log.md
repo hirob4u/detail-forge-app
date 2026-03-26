@@ -1599,4 +1599,18 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+## OPS-2: Design Consistency Audit & Fixes
+
+**Branch:** `fix/design-consistency-audit`
+**Date:** 2026-03-26
+
+**What was fixed:**
+1. **Confirmation pages unified:** Quote-approved checkmark now matches estimate-submitted (same `CircleCheck` icon, green color, rounded-full elevated container)
+2. **Green/amber button readability:** PrimaryActionBanner success + warning CTA variants now use muted bg with colored text (matching dashboard pattern) instead of bright solid bg with dark text
+3. **Hardcoded colors → tokens:** Added `--color-destructive` token (#FF5252). Replaced all hardcoded Tailwind `red-*` and `amber-*` classes with `var(--color-*)` references. Fixed root layout hardcoded hex colors.
+
+**Files modified (9):** design-tokens.ts, globals.css, layout.tsx, approved/page.tsx, primary-action-banner.tsx, analysis-status-panel.tsx, review-form.tsx, job-notes.tsx, social-export-panel.tsx
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
