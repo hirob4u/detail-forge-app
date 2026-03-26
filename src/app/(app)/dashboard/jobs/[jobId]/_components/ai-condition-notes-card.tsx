@@ -1,4 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { ConditionFlag, FlagSeverity } from "@/lib/types/assessment";
 
 // ---------------------------------------------------------------------------
@@ -9,14 +14,14 @@ const SEVERITY_CONFIG: Record<
   FlagSeverity,
   { icon: string; color: string; priority: number }
 > = {
-  moderate: { icon: "⚠", color: "text-[var(--color-amber)]", priority: 1 },
-  upsell:   { icon: "↗", color: "text-[var(--color-magenta)]", priority: 2 },
-  noted:    { icon: "•", color: "text-[var(--color-muted)]", priority: 3 },
-  clear:    { icon: "✓", color: "text-[var(--color-green)]", priority: 4 },
+  moderate: { icon: "\u26A0", color: "text-[var(--color-amber)]", priority: 1 },
+  upsell:   { icon: "\u2197", color: "text-[var(--color-magenta)]", priority: 2 },
+  noted:    { icon: "\u2022", color: "text-[var(--color-muted)]", priority: 3 },
+  clear:    { icon: "\u2713", color: "text-[var(--color-green)]", priority: 4 },
 };
 
-/** Max flags to show inline before "View all" link. */
-const MAX_HIGHLIGHTS = 3;
+/** Max flags to show in collapsed teaser. */
+const MAX_TEASER = 3;
 
 // ---------------------------------------------------------------------------
 // Props
@@ -26,16 +31,21 @@ interface AIConditionNotesCardProps {
   jobId: string;
   flags: ConditionFlag[];
   reasoning: string | null;
+  /** Start expanded (show all flags). Default: false (3-flag teaser). */
+  defaultExpanded?: boolean;
 }
 
 // ---------------------------------------------------------------------------
-// Component — slim highlight bar
+// Component
 // ---------------------------------------------------------------------------
 
 export default function AIConditionNotesCard({
   jobId,
   flags,
+  defaultExpanded = false,
 }: AIConditionNotesCardProps) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+
   if (flags.length === 0) return null;
 
   // Sort by priority: moderate → upsell → noted → clear
@@ -45,8 +55,8 @@ export default function AIConditionNotesCard({
       (SEVERITY_CONFIG[b.severity]?.priority ?? 99),
   );
 
-  const highlights = sorted.slice(0, MAX_HIGHLIGHTS);
-  const remaining = flags.length - highlights.length;
+  const canExpand = flags.length > MAX_TEASER;
+  const visible = expanded ? sorted : sorted.slice(0, MAX_TEASER);
 
   return (
     <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3">
@@ -62,12 +72,12 @@ export default function AIConditionNotesCard({
         >
           AI condition notes
         </span>
-        {flags.length > MAX_HIGHLIGHTS && (
+        {!expanded && canExpand && (
           <span
             className="text-[10px] text-[var(--color-muted)]"
             style={{ fontFamily: "var(--font-data)" }}
           >
-            {MAX_HIGHLIGHTS} of {flags.length} shown
+            {MAX_TEASER} of {flags.length} shown
           </span>
         )}
         <span className="ml-auto text-[11px] text-[var(--color-muted)]">
@@ -75,9 +85,9 @@ export default function AIConditionNotesCard({
         </span>
       </div>
 
-      {/* Highlight rows */}
+      {/* Flag rows */}
       <div className="space-y-1.5">
-        {highlights.map((flag, i) => {
+        {visible.map((flag, i) => {
           const config = SEVERITY_CONFIG[flag.severity] ?? SEVERITY_CONFIG.noted;
           return (
             <div
@@ -88,26 +98,50 @@ export default function AIConditionNotesCard({
               <span className="font-medium text-[var(--color-text)]">
                 {flag.title}
               </span>
-              <span
-                className="text-[10px] uppercase tracking-wider text-[var(--color-muted)]"
-                style={{ fontFamily: "var(--font-data)" }}
-              >
-                {flag.severity}
-              </span>
+              {expanded && flag.description && (
+                <span className="text-xs text-[var(--color-muted)]">
+                  — {flag.description}
+                </span>
+              )}
+              {!expanded && (
+                <span
+                  className="text-[10px] uppercase tracking-wider text-[var(--color-muted)]"
+                  style={{ fontFamily: "var(--font-data)" }}
+                >
+                  {flag.severity}
+                </span>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Link to full assessment */}
-      <Link
-        href={`/dashboard/jobs/${jobId}/review`}
-        className="inline-block text-xs text-[var(--color-purple-text)] hover:underline"
-      >
-        {remaining > 0
-          ? `View all ${flags.length} condition notes →`
-          : "View full assessment →"}
-      </Link>
+      {/* Expand/collapse toggle + review link */}
+      <div className="flex items-center gap-3">
+        {canExpand && (
+          <button
+            type="button"
+            onClick={() => setExpanded((prev) => !prev)}
+            className="flex items-center gap-1 text-xs text-[var(--color-purple-text)] hover:underline"
+          >
+            <ChevronDown
+              className={cn(
+                "h-3 w-3 transition-transform duration-200",
+                expanded && "rotate-180",
+              )}
+            />
+            {expanded
+              ? "Show less"
+              : `Show all ${flags.length} notes`}
+          </button>
+        )}
+        <Link
+          href={`/dashboard/jobs/${jobId}/review`}
+          className="text-xs text-[var(--color-purple-text)] hover:underline"
+        >
+          View full assessment →
+        </Link>
+      </div>
     </div>
   );
 }

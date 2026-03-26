@@ -1553,4 +1553,24 @@ Added upload reliability: MAX_PHOTOS=20 cap with user-visible notices, UPLOAD_CO
 
 ---
 
+## OPS-1: Stage-Aware Job Detail Layout
+
+**Branch:** `feat/stage-aware-job-detail`
+**Commit:** `feat: stage-aware job detail layout with primary action zones`
+**Date:** 2026-03-25
+**Status:** PR pending review
+
+**What was built:**
+- Refactored job detail page from static vertical card stack into stage-aware layout with 3 zones: primary action, context, details (collapsed)
+- Each of 8 stages (created, quoted, sent, approved, inProgress, qc, complete, archived) renders a distinct primary action with clear CTA above the fold
+- New PrimaryActionBanner component with variant styles (default, success, warning, muted)
+- AIConditionNotesCard converted to client component with 3-flag teaser default + expand/collapse toggle
+- Sent-stage aging indicator computes days from stageHistory with visual variant (muted/warning)
+- All secondary content wrapped in CollapsibleSection (already supports inert attribute)
+
+**Files added (1):** primary-action-banner.tsx
+**Files modified (2):** page.tsx (major refactor — stage-aware zone rendering), ai-condition-notes-card.tsx (expand/collapse)
+
+---
+
 <!-- ADD NEW ENTRIES ABOVE THIS LINE -->
