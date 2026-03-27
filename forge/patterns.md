@@ -293,3 +293,9 @@ When a client component polls an API and the result affects what server componen
 Same poll→refresh pattern applied to jobs list. No new anti-patterns.
 
 ---
+
+## [2026-03-26] Pattern: no raw Tailwind palette colors — OPS-2
+
+All color references must use `var(--color-*)` tokens, never Tailwind palette names (`red-400`, `amber-700`, etc.). Found 11 instances across 5 files. Added `--color-destructive` token to fill the gap.
+
+---

@@ -13,6 +13,7 @@ export const colors = {
   green:        '#39FF14',
   cyan:         '#00E5FF',
   amber:        '#FFAB00',
+  destructive:  '#FF5252',
 };
 
 export const fonts = {

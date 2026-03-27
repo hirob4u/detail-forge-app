@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { jobs, organizations } from "@/lib/db/schema";
 import { colors } from "@/lib/design-tokens";
 import { FONT_VARIABLES } from "@/lib/fonts";
-import { CheckCircle2 } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import Wordmark from "@/components/wordmark";
 
 export default async function QuoteApprovedPage({
@@ -65,14 +65,8 @@ export default async function QuoteApprovedPage({
           )}
 
           {/* Success icon */}
-          <div
-            className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[var(--radius-card)]"
-            style={{ backgroundColor: `${brandColor}15` }}
-          >
-            <CheckCircle2
-              className="h-8 w-8"
-              style={{ color: brandColor }}
-            />
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-elevated)]">
+            <CircleCheck className="h-8 w-8 text-[var(--color-green)]" />
           </div>
 
           {/* Heading */}

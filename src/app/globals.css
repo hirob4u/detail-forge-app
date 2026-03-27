@@ -34,6 +34,7 @@
   --color-green: #39FF14;
   --color-cyan: #00E5FF;
   --color-amber: #FFAB00;
+  --color-destructive: #FF5252;
 
   /* shadcn semantic colors (mapped to DetailForge palette) */
   --color-foreground: #E8E8EF;
